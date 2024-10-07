@@ -56,5 +56,5 @@
         "temp/": true,
         "Temp/": true
     },
-    "dotnet.defaultSolution": "Elf 2D Platformer Prototype.sln"
+    "dotnet.defaultSolution": "Elf-2D-Platformer-Prototype.sln"
 }
