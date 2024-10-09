@@ -8,10 +8,27 @@ public class PlayerController : MonoBehaviour
     public float jumpForce = 5f;
     private Rigidbody2D rb;
     private bool isGrounded = true;
-    private bool facingRight = true; // To track which direction player is facing
+    private bool facingRight = true;
     private Camera mainCamera;
 
-    // Referensi ke Animator dan Bow Transform
+    // Jump variables
+    private int jumpCount = 0;
+    public int maxJumpCount = 2; // Maximum jumps (1 for single jump, 2 for double jump)
+
+    // Dash variables
+    public float dashSpeed = 20f;
+    public float dashDuration = 0.2f;
+    public float dashCooldown = 0.5f;
+    private bool isDashing = false;
+    private bool isInvincible = false;
+    private float lastDashTime = -10f;
+
+    private int dashDirection = 0; // -1 for left, 1 for right
+    private float doubleTapTime = 0.2f;
+    private KeyCode lastKeyPressed;
+    private float lastKeyTime;
+
+    // Reference to Animator and Bow Transform
     private Animator animator;
     public GameObject bowTransform; // Drag your bowTransform GameObject here in the inspector
 
@@ -22,44 +39,91 @@ public class PlayerController : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
         mainCamera = Camera.main;
 
-        // Mendapatkan komponen Animator
+        // Get Animator component
         animator = GetComponent<Animator>();
     }
 
     private void Update()
     {
-        Move();
-        HandleJump();
-        AimAtMouse();
-        UpdateAnimation(); // Panggil untuk update animasi
+        if (!isDashing)
+        {
+            Move();
+            HandleJump();
+            AimAtMouse();
+            UpdateAnimation(); // Update animation
+            CheckDash(); // Check for double tap input for dashing
+        }
+        else
+        {
+            // Stop any movement while dashing
+            rb.velocity = new Vector2(dashDirection * dashSpeed, rb.velocity.y);
+        }
     }
 
-    // Move using A and D keys
+    // Move with A and D keys
     private void Move()
     {
-        moveInput = Input.GetAxisRaw("Horizontal"); // A = -1, D = 1
-
-        Vector3 moveVelocity = new Vector3(moveInput * moveSpeed, rb.velocity.y, 0);
-        rb.velocity = moveVelocity;
-
-        // Flip character if moving in the opposite direction
-        if ((moveInput > 0 && !facingRight) || (moveInput < 0 && facingRight))
+        if (!isDashing) // Only allow movement if not dashing
         {
-            Flip();
-        }
+            moveInput = Input.GetAxisRaw("Horizontal"); // A = -1, D = 1
 
-        // Show or hide the bow based on movement
-        bowTransform.SetActive(moveInput != 0); // Hide if not moving
+            Vector3 moveVelocity = new Vector3(moveInput * moveSpeed, rb.velocity.y, 0);
+            rb.velocity = moveVelocity;
+
+            // Flip character if moving in the opposite direction
+            if ((moveInput > 0 && !facingRight) || (moveInput < 0 && facingRight))
+            {
+                Flip();
+            }
+
+            // Show or hide the bow based on movement
+            if (!Input.GetMouseButton(0)) // Only hide when not charging
+            {
+                ShowBow(moveInput != 0); // Hide if not moving
+            }
+        }
     }
 
-    // Update animasi isMoving
+    // Function to show or hide the bow
+    public void ShowBow(bool show)
+    {
+        bowTransform.SetActive(show);
+    }
+
+    // Function to check if the player is idle
+    public bool IsIdle()
+    {
+        return moveInput == 0;
+    }
+
+    // Update the animator parameters
     private void UpdateAnimation()
     {
-        // Update parameter animasi isMoving
         animator.SetBool("isMoving", moveInput != 0);
+        animator.SetBool("isGrounded", isGrounded); // Update grounded state
+
+        // Set jumping and falling states
+        if (!isGrounded)
+        {
+            if (rb.velocity.y > 0)
+            {
+                animator.SetBool("isJumping", true);
+                animator.SetBool("isFalling", false);
+            }
+            else
+            {
+                animator.SetBool("isJumping", false);
+                animator.SetBool("isFalling", true);
+            }
+        }
+        else
+        {
+            animator.SetBool("isJumping", false);
+            animator.SetBool("isFalling", false);
+        }
     }
 
-    // Aim at the mouse position (only for character rotation)
+    // Aim at the mouse position
     private void AimAtMouse()
     {
         Vector3 mousePosition = GetMouseWorldPosition();
@@ -75,7 +139,7 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    // Get the mouse position in the world
+    // Get mouse position in world
     private Vector3 GetMouseWorldPosition()
     {
         Vector3 mouseScreenPosition = Input.mousePosition;
@@ -84,7 +148,7 @@ public class PlayerController : MonoBehaviour
         return worldPosition;
     }
 
-    // Flip the character direction
+    // Flip the character
     private void Flip()
     {
         facingRight = !facingRight;
@@ -93,13 +157,24 @@ public class PlayerController : MonoBehaviour
         transform.localScale = scale;
     }
 
-    // Handle jump input with W
+    // Handle jumping with W key
     private void HandleJump()
     {
-        if (Input.GetKeyDown(KeyCode.W) && isGrounded)
+        if (Input.GetKeyDown(KeyCode.W))
         {
-            rb.velocity = new Vector2(rb.velocity.x, jumpForce);
-            isGrounded = false; // Jump once when W is pressed
+            if (isGrounded)
+            {
+                rb.velocity = new Vector2(rb.velocity.x, jumpForce);
+                isGrounded = false; // Set not grounded after jumping
+                jumpCount = 1; // Reset jump count
+                animator.SetBool("isJumping", true); // Update animator parameter
+            }
+            else if (jumpCount < maxJumpCount)
+            {
+                rb.velocity = new Vector2(rb.velocity.x, jumpForce);
+                jumpCount++;
+                animator.SetBool("isJumping", true); // Update animator parameter for double jump
+            }
         }
     }
 
@@ -109,6 +184,80 @@ public class PlayerController : MonoBehaviour
         if (collision.gameObject.CompareTag("Ground"))
         {
             isGrounded = true;
+            jumpCount = 0; // Reset jump count
+            animator.SetBool("isGrounded", true); // Update animator parameter
         }
+    }
+
+    private void OnCollisionExit2D(Collision2D collision)
+    {
+        if (collision.gameObject.CompareTag("Ground"))
+        {
+            isGrounded = false; // Update grounded state when leaving ground
+            animator.SetBool("isGrounded", false);
+        }
+    }
+
+    // Check for double tap input for dashing
+    private void CheckDash()
+    {
+        if (Time.time - lastDashTime > dashCooldown)
+        {
+            if (Input.GetKeyDown(KeyCode.D))
+            {
+                if (lastKeyPressed == KeyCode.D && Time.time - lastKeyTime < doubleTapTime)
+                {
+                    StartDash(1); // Dash to the right
+                }
+                else
+                {
+                    lastKeyPressed = KeyCode.D;
+                    lastKeyTime = Time.time;
+                }
+            }
+            else if (Input.GetKeyDown(KeyCode.A))
+            {
+                if (lastKeyPressed == KeyCode.A && Time.time - lastKeyTime < doubleTapTime)
+                {
+                    StartDash(-1); // Dash to the left
+                }
+                else
+                {
+                    lastKeyPressed = KeyCode.A;
+                    lastKeyTime = Time.time;
+                }
+            }
+        }
+    }
+
+    // Start the dash movement
+    private void StartDash(int direction)
+    {
+        dashDirection = direction;
+        isDashing = true;
+        isInvincible = true;
+        animator.SetTrigger("StartDash"); // Trigger the dash animation
+        StartCoroutine(DashCoroutine());
+    }
+
+    // Coroutine to handle dash duration and cooldown
+    private IEnumerator DashCoroutine()
+    {
+        float startTime = Time.time;
+
+        while (Time.time < startTime + dashDuration)
+        {
+            yield return null; // Wait until the dash is over
+        }
+
+        isDashing = false;
+        isInvincible = false;
+        lastDashTime = Time.time;
+    }
+
+    // Function to make the player invincible during the dash
+    public bool IsInvincible()
+    {
+        return isInvincible;
     }
 }
