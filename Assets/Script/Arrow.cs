@@ -4,27 +4,27 @@ using UnityEngine;
 
 public class Arrow : MonoBehaviour
 {
-    public float lifetime = 5f; // Waktu sebelum panah dihancurkan
-    public float colliderDelay = 0.2f; // Waktu sebelum collider diaktifkan
-
-    private Collider2D arrowCollider; // Collider pada panah
+    public float lifetime = 5f; // Time before arrow is destroyed
+    public float colliderDelay = 0.2f; // Time before collider is enabled
+    private Collider2D arrowCollider; // Arrow's collider
+    private float damage; // Damage dealt by the arrow
 
     private void Start()
     {
-        // Ambil komponen collider
+        // Get the collider component
         arrowCollider = GetComponent<Collider2D>();
 
-        // Matikan collider di awal
+        // Disable the collider initially
         arrowCollider.enabled = false;
 
-        // Aktifkan kembali collider setelah beberapa waktu
+        // Enable collider after delay
         StartCoroutine(EnableColliderAfterDelay());
 
-        // Hancurkan panah setelah waktu tertentu
+        // Destroy the arrow after its lifetime expires
         Destroy(gameObject, lifetime);
     }
 
-    // Coroutine untuk mengaktifkan kembali collider setelah delay
+    // Coroutine to enable collider after a short delay
     private IEnumerator EnableColliderAfterDelay()
     {
         yield return new WaitForSeconds(colliderDelay);
@@ -33,7 +33,13 @@ public class Arrow : MonoBehaviour
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        // Hancurkan panah saat menabrak objek
+        // Destroy the arrow upon hitting an object
         Destroy(gameObject);
+    }
+
+    // Function to set the damage of the arrow
+    public void SetDamage(float arrowDamage)
+    {
+        damage = arrowDamage;
     }
 }
