@@ -627,6 +627,7 @@ GameObject:
   m_Component:
   - component: {fileID: 986643906}
   - component: {fileID: 986643907}
+  - component: {fileID: 986643908}
   m_Layer: 3
   m_Name: BowTransform
   m_TagString: Untagged
@@ -702,6 +703,27 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!95 &986643908
+Animator:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 986643905}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: ed65dc6e62b22ec45aa07d59a808007b, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &1168725617
 GameObject:
   m_ObjectHideFlags: 0
@@ -1434,10 +1456,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   arrowPrefab: {fileID: 4202928060292712031, guid: e1d112512c32bab4a87dc58b8e88c301, type: 3}
+  specialArrowPrefab: {fileID: 4202928060292712031, guid: 3d227ee590db899438044a8e2927bb2a, type: 3}
   bowTransform: {fileID: 986643906}
   maxArrowSpeed: 30
   chargeSpeed: 5
-  timeBetweenFiring: 0
+  timeBetweenFiring: 0.5
   chargeSlider: {fileID: 422868088}
   baseDamage: 10
   midDamage: 15
@@ -1837,6 +1860,10 @@ PrefabInstance:
     - target: {fileID: 3421324168895882774, guid: 33d4af79126235c4091a3fa7f73fdc1b, type: 3}
       propertyPath: m_Name
       value: Enemy
+      objectReference: {fileID: 0}
+    - target: {fileID: 3421324168895882774, guid: 33d4af79126235c4091a3fa7f73fdc1b, type: 3}
+      propertyPath: m_Layer
+      value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 3421324168895882774, guid: 33d4af79126235c4091a3fa7f73fdc1b, type: 3}
       propertyPath: m_TagString

@@ -1,14 +1,16 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI; // Tambahkan ini untuk mengakses UI
+using UnityEngine.UI;
 
 public class Shooting : MonoBehaviour
 {
+    private Animator bowAnimator; // Reference to the bow's Animator
     private Camera mainCam;
     private Vector3 mousePos;
     private Transform playerTransform;
-    public GameObject arrowPrefab; // Prefab for the arrow
+    public GameObject arrowPrefab; // Prefab for the normal arrow
+    public GameObject specialArrowPrefab; // Prefab for the special arrow
     public Transform bowTransform; // Position where arrows are spawned
     public float maxArrowSpeed = 15f; // Maximum arrow speed (constant)
     public float chargeSpeed = 5f; // Speed of charging (how fast charge builds)
@@ -19,13 +21,15 @@ public class Shooting : MonoBehaviour
     public float timeBetweenFiring = 0.5f; // Cooldown time between firing
     private PlayerController playerController;
 
-    // UI Slider untuk charge bar
-    public Slider chargeSlider; // Tambahkan referensi slider
+    // UI Slider for charge bar
+    public Slider chargeSlider; // Reference to the slider
 
     // Damage values
     public float baseDamage = 10f;
     public float midDamage = 15f;
     public float maxDamage = 20f;
+
+    private bool usingSpecialArrow = false; // To check if the player is using special arrows
 
     private void Start()
     {
@@ -33,16 +37,101 @@ public class Shooting : MonoBehaviour
         playerTransform = transform.parent; // Get the reference of the player (parent)
         playerController = playerTransform.GetComponent<PlayerController>(); // Get PlayerController
 
-        // Pastikan slider di-reset di awal
+        // Reset slider at the start
         if (chargeSlider != null)
         {
-            chargeSlider.value = 0f; // Set slider ke 0 di awal
-            chargeSlider.maxValue = 1f; // Slider range antara 0 hingga 1
+            chargeSlider.value = 0f; // Set slider to 0 initially
+            chargeSlider.maxValue = 1f; // Slider range between 0 and 1
         }
+        
+        {
+        // Ambil referensi Animator dari bowTransform
+        bowAnimator = bowTransform.GetComponent<Animator>();
+    }
     }
 
     private void Update()
     {
+
+        if (Input.GetMouseButtonDown(0) && canFire)
+        {
+            isCharging = true;
+            currentCharge = 0f;
+            playerController.ShowBow(true); // Tampilkan busur ketika mouse ditekan
+
+            // Mulai animasi charge
+            bowAnimator.SetBool("isCharging", true);
+        }
+
+        if (Input.GetMouseButton(0) && isCharging)
+        {
+            currentCharge += chargeSpeed * Time.deltaTime;
+            currentCharge = Mathf.Clamp(currentCharge, 0f, 1f); // Pastikan charge di rentang 0 sampai 1
+
+            // Update slider UI
+            if (chargeSlider != null)
+            {
+                chargeSlider.value = currentCharge;
+            }
+        }
+
+        if (Input.GetMouseButtonUp(0) && isCharging)
+        {
+            isCharging = false;
+            FireArrow(currentCharge); // Tembak panah setelah charge selesai
+            canFire = false;
+            currentCharge = 0f;
+
+            // Setel animasi kembali ke keadaan default
+            bowAnimator.SetBool("isCharging", false);
+
+            if (chargeSlider != null)
+            {
+                chargeSlider.value = 0f;
+            }
+        }
+
+        if (!isCharging && playerController.IsIdle())
+        {
+            playerController.ShowBow(false); // Sembunyikan busur ketika idle
+        }
+
+        if (Input.GetMouseButtonDown(0) && canFire)
+    {
+        isCharging = true;
+        currentCharge = 0f;
+        playerController.ShowBow(true); // Show bow on mouse click
+        bowTransform.GetComponent<Animator>().SetBool("isCharging", true); // Set charging animation
+    }
+
+    // Charging while holding left mouse button
+    if (Input.GetMouseButton(0) && isCharging)
+    {
+        currentCharge += chargeSpeed * Time.deltaTime;
+        currentCharge = Mathf.Clamp(currentCharge, 0f, 1f); // Keep charge value between 0 and 1
+
+        // Update slider UI
+        if (chargeSlider != null)
+        {
+            chargeSlider.value = currentCharge; // Update slider value with charge
+        }
+    }
+
+    // Release arrow when mouse button is released
+    if (Input.GetMouseButtonUp(0) && isCharging)
+    {
+        isCharging = false;
+        FireArrow(currentCharge); // Shoot arrow with accumulated charge
+        canFire = false;
+        currentCharge = 0f; // Reset charge
+        bowTransform.GetComponent<Animator>().SetBool("isCharging", false); // Stop charging animation
+
+        // Reset slider to 0 after shooting
+        if (chargeSlider != null)
+        {
+            chargeSlider.value = 0f;
+        }
+    }
         // Get mouse position in world coordinates
         mousePos = mainCam.ScreenToWorldPoint(Input.mousePosition);
         Vector3 rotation = mousePos - transform.position;
@@ -75,7 +164,7 @@ public class Shooting : MonoBehaviour
             // Update slider UI
             if (chargeSlider != null)
             {
-                chargeSlider.value = currentCharge; // Sesuaikan nilai slider dengan charge
+                chargeSlider.value = currentCharge; // Update slider value with charge
             }
         }
 
@@ -87,7 +176,7 @@ public class Shooting : MonoBehaviour
             canFire = false;
             currentCharge = 0f; // Reset charge
 
-            // Reset slider ke 0 setelah menembak
+            // Reset slider to 0 after shooting
             if (chargeSlider != null)
             {
                 chargeSlider.value = 0f;
@@ -110,13 +199,19 @@ public class Shooting : MonoBehaviour
         {
             playerController.ShowBow(false); // Hide bow when idle
         }
+
+        // Switch between normal and special arrow on 'X' key press
+        if (Input.GetKeyDown(KeyCode.X))
+        {
+            usingSpecialArrow = !usingSpecialArrow; // Toggle between normal and special arrow
+        }
     }
 
     // Function to fire the arrow
     private void FireArrow(float charge)
     {
-        // Instantiate the arrow
-        GameObject arrow = Instantiate(arrowPrefab, bowTransform.position, bowTransform.rotation);
+        // Instantiate the appropriate arrow prefab
+        GameObject arrow = Instantiate(usingSpecialArrow ? specialArrowPrefab : arrowPrefab, bowTransform.position, bowTransform.rotation);
 
         // Get Rigidbody2D component to apply velocity
         Rigidbody2D rb = arrow.GetComponent<Rigidbody2D>();
@@ -153,4 +248,9 @@ public class Shooting : MonoBehaviour
             arrow.transform.localScale = arrowScale;
         }
     }
+    public bool IsCharging()
+    {
+     return isCharging; // isCharging adalah variabel yang Anda gunakan untuk menandakan proses charge
+    }
+
 }

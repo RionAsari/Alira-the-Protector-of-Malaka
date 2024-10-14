@@ -10,6 +10,7 @@ public class PlayerController : MonoBehaviour
     private bool isGrounded = true;
     private bool facingRight = true;
     private Camera mainCamera;
+    private bool usingSpecialArrow = false;
 
     // Jump variables
     private int jumpCount = 0;
@@ -52,6 +53,11 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
+        if (Input.GetKeyDown(KeyCode.X))
+        {
+            usingSpecialArrow = !usingSpecialArrow; // Toggle between regular and special arrows
+            Debug.Log("Using Special Arrow: " + usingSpecialArrow);
+        }
         if (!isDashing)
         {
             Move();
@@ -106,6 +112,7 @@ public class PlayerController : MonoBehaviour
     // Update the animator parameters
     private void UpdateAnimation()
     {
+        // Update movement and grounded animations
         animator.SetBool("isMoving", moveInput != 0);
         animator.SetBool("isGrounded", isGrounded); // Update grounded state
 
@@ -128,8 +135,21 @@ public class PlayerController : MonoBehaviour
             animator.SetBool("isJumping", false);
             animator.SetBool("isFalling", false);
         }
-    }
 
+        // Update dash animation
+        animator.SetBool("isDashing", isDashing);
+
+        // Check for charging state from Shooting script
+        Shooting shooting = GetComponentInChildren<Shooting>(); // Assuming Shooting is attached to a child object
+        if (shooting != null && shooting.IsCharging()) 
+        {
+            animator.SetBool("isCharging", true); // Add this parameter in your Animator for bow charging
+        }
+        else
+        {
+            animator.SetBool("isCharging", false);
+        }
+    }
     // Aim at the mouse position
     private void AimAtMouse()
     {
@@ -284,4 +304,5 @@ public class PlayerController : MonoBehaviour
         // You can handle player death here (e.g., playing a death animation, restarting the level, etc.)
         Debug.Log("Player died.");
     }
+
 }
