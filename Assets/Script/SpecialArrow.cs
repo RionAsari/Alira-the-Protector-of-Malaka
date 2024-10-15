@@ -1,31 +1,39 @@
 using System.Collections;
 using UnityEngine;
 
-public class SpecialArrow : Arrow // Inherits from Arrow
+public class SpecialArrow : MonoBehaviour
 {
-    public float disableDuration = 5f; // Duration enemies are disabled
+    public float disableDuration = 5f; // Durasi musuh dinonaktifkan
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        // Check if the arrow collides with an enemy
+        // Jika panah mengenai musuh dengan tag "Enemy"
         if (collision.gameObject.CompareTag("Enemy"))
         {
-            // Disable the enemy for a duration
             Enemy enemy = collision.gameObject.GetComponent<Enemy>();
-            if (enemy != null)
+
+            if (enemy != null && !enemy.isAlly) // Cek apakah musuh bukan sekutu
             {
-                StartCoroutine(DisableEnemy(enemy));
+                StartCoroutine(DisableEnemy(enemy)); // Disable musuh
             }
         }
-        
-        // Destroy the arrow upon hitting an object
+
+        // Hancurkan panah setelah mengenai objek
         Destroy(gameObject);
     }
 
+    // Coroutine untuk menonaktifkan musuh
     private IEnumerator DisableEnemy(Enemy enemy)
     {
-        enemy.Disable(); // Assuming you have a method to disable enemy behavior
-        yield return new WaitForSeconds(disableDuration);
-        enemy.Enable(); // Re-enable enemy behavior after the duration
+        enemy.isHackable = true; // Set musuh menjadi hackable
+        yield return enemy.DisableEnemy(); // Memanggil fungsi DisableEnemy di script Enemy
+
+        yield return new WaitForSeconds(disableDuration); // Tunggu sampai disable duration selesai
+
+        if (!enemy.isAlly) // Jika musuh belum di-hack, musuh dihancurkan
+        {
+            enemy.isHackable = false; // Musuh tidak bisa di-hack lagi
+            Destroy(enemy.gameObject); // Hancurkan musuh
+        }
     }
 }

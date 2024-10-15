@@ -139,17 +139,10 @@ public class PlayerController : MonoBehaviour
         // Update dash animation
         animator.SetBool("isDashing", isDashing);
 
-        // Check for charging state from Shooting script
-        Shooting shooting = GetComponentInChildren<Shooting>(); // Assuming Shooting is attached to a child object
-        if (shooting != null && shooting.IsCharging()) 
-        {
-            animator.SetBool("isCharging", true); // Add this parameter in your Animator for bow charging
-        }
-        else
-        {
-            animator.SetBool("isCharging", false);
-        }
+        // Remove charging state logic
+        // If you had logic for checking charging, it is removed here
     }
+
     // Aim at the mouse position
     private void AimAtMouse()
     {
@@ -304,5 +297,4 @@ public class PlayerController : MonoBehaviour
         // You can handle player death here (e.g., playing a death animation, restarting the level, etc.)
         Debug.Log("Player died.");
     }
-
 }

@@ -12,7 +12,8 @@ GameObject:
   - component: {fileID: 1158534449454082867}
   - component: {fileID: 1142777727660818131}
   - component: {fileID: 2392162141302194621}
-  - component: {fileID: 3146081498477277398}
+  - component: {fileID: 8045452720880080914}
+  - component: {fileID: 1107073934544001400}
   m_Layer: 0
   m_Name: Enemy
   m_TagString: Untagged
@@ -149,7 +150,7 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 4
---- !u!114 &3146081498477277398
+--- !u!114 &8045452720880080914
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -158,6 +159,42 @@ MonoBehaviour:
   m_GameObject: {fileID: 3421324168895882774}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d962469b5a6213c4086debb63f9041ca, type: 3}
+  m_Script: {fileID: 11500000, guid: bba200a60258a0347aa275f56fd2c639, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  health: 3
+  moveSpeed: 2
+  attackRange: 3
+  damageAmount: 10
+  detectionRange: 10
+  hackableDuration: 5
+  allyDuration: 10
+  playerTransform: {fileID: 0}
+  enemyLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  allyAttackRange: 7
+  isDisabled: 0
+  isHackable: 0
+  isAlly: 0
+--- !u!95 &1107073934544001400
+Animator:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3421324168895882774}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 0}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
