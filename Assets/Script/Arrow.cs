@@ -7,6 +7,7 @@ public class Arrow : MonoBehaviour
     public float colliderDelay = 0.2f; // Time before the collider is enabled
     private Collider2D arrowCollider; // Arrow's collider
     private float damage; // Damage dealt by the arrow
+    public float chargeLevel; // Added for managing charge levels
 
     private void Start()
     {
@@ -39,6 +40,9 @@ public class Arrow : MonoBehaviour
             if (enemy != null)
             {
                 enemy.TakeDamage((int)damage); // Deal damage to enemy
+
+                // Handle hacking logic
+                enemy.HandleHacking(chargeLevel); // Pass charge level to enemy
             }
         }
 
@@ -50,5 +54,10 @@ public class Arrow : MonoBehaviour
     public void SetDamage(float arrowDamage)
     {
         damage = arrowDamage;
+    }
+
+    public void SetChargeLevel(float level)
+    {
+        chargeLevel = level; // Set charge level
     }
 }

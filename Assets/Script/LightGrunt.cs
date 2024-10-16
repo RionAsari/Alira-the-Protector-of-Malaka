@@ -3,30 +3,30 @@ using UnityEngine;
 
 public class Enemy : MonoBehaviour
 {
-    public float health = 100f;
-    public float moveSpeed = 2f;
-    public float attackRange = 5f;
-    public float damageAmount = 10f;
-    public float detectionRange = 10f;
-    public float hackableDuration = 5f;
-    public float allyDuration = 10f;
-    public Transform playerTransform; // Transform player
-    public LayerMask enemyLayer; // For detecting other enemies
-    public float allyAttackRange = 7f; // Range to detect other enemies
+    public float health = 100f; // Enemy health
+    public float moveSpeed = 2f; // Enemy movement speed
+    public float attackRange = 5f; // Distance to attack player or enemies
+    public float damageAmount = 10f; // Damage dealt to player/enemies
+    public float detectionRange = 10f; // Range to detect player
+    public float hackableDuration = 5f; // Time before the enemy can be hacked again
+    public float allyDuration = 10f; // Time before the enemy is destroyed after becoming an ally
+    public Transform playerTransform; // Transform for the player
+    public LayerMask enemyLayer; // Layer for detecting other enemies
+    public float allyAttackRange = 7f; // Range to detect other enemies when hacked
 
-    public bool isDisabled = false;
-    public bool isHackable = false;
-    public bool isAlly = false;
+    public bool isDisabled = false; // Is the enemy disabled?
+    public bool isHackable = true; // Can the enemy be hacked? Set to true by default
+    public bool isAlly = false; // Is the enemy an ally?
 
-    private float initialHealth;
-    private Rigidbody2D rb;
-    private Animator animator;
-    private bool alreadyAttacked = false;
-    private SpriteRenderer spriteRenderer; // Untuk flip sprite
+    private float initialHealth; // Store initial health
+    private Rigidbody2D rb; // Rigidbody for movement
+    private Animator animator; // Animator for animations
+    private bool alreadyAttacked = false; // Flag to prevent double attacks
+    private SpriteRenderer spriteRenderer; // For flipping the sprite
+    private bool isChasingPlayer = false; // Track if the enemy is chasing the player
 
     private void Start()
     {
-        // Pastikan untuk mendapatkan transform player
         GameObject playerObject = GameObject.FindWithTag("Player");
         if (playerObject != null)
         {
@@ -40,9 +40,9 @@ public class Enemy : MonoBehaviour
         initialHealth = health;
         rb = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
-        spriteRenderer = GetComponent<SpriteRenderer>(); // Ambil komponen SpriteRenderer
+        spriteRenderer = GetComponent<SpriteRenderer>(); // Get the SpriteRenderer component
 
-        StartCoroutine(IdleMovement());
+        StartCoroutine(IdleMovement()); // Start idle movement coroutine
     }
 
     private void Update()
@@ -61,9 +61,6 @@ public class Enemy : MonoBehaviour
         {
             DetectAndAttackPlayer();
         }
-
-        // Flip musuh agar menghadap ke arah pemain
-        FacePlayer();
 
         // Hack the enemy when "F" is pressed and the enemy is hackable
         if (Input.GetKeyDown(KeyCode.F) && isHackable)
@@ -86,11 +83,14 @@ public class Enemy : MonoBehaviour
 
     private IEnumerator IdleMovement()
     {
-        while (!isAlly && !isDisabled)
+        while (!isAlly && !isDisabled && !isChasingPlayer)
         {
-            rb.velocity = new Vector2(moveSpeed, rb.velocity.y);
-            yield return new WaitForSeconds(2f);
-            moveSpeed = -moveSpeed;
+            // Gerakan acak ke kanan dan kiri
+            float randomDirection = Random.Range(-1f, 1f);
+            rb.velocity = new Vector2(randomDirection * moveSpeed, rb.velocity.y);
+            yield return new WaitForSeconds(2f); // Gerak selama 2 detik
+            rb.velocity = Vector2.zero; // Henti sejenak
+            yield return new WaitForSeconds(1f); // Henti selama 1 detik
         }
     }
 
@@ -100,6 +100,7 @@ public class Enemy : MonoBehaviour
 
         if (distanceToPlayer < detectionRange && distanceToPlayer > attackRange)
         {
+            isChasingPlayer = true; // Start chasing the player
             Vector2 direction = (playerTransform.position - transform.position).normalized;
             rb.velocity = new Vector2(direction.x * moveSpeed, rb.velocity.y);
             animator.SetBool("isWalking", true); // Activate walk animation
@@ -112,6 +113,11 @@ public class Enemy : MonoBehaviour
         {
             rb.velocity = Vector2.zero;
             animator.SetBool("isWalking", false); // Return to idle if not moving
+            isChasingPlayer = false; // Stop chasing the player if out of range
+            if (!isChasingPlayer)
+            {
+                StartCoroutine(IdleMovement()); // Return to idle movement if not chasing
+            }
         }
     }
 
@@ -139,7 +145,6 @@ public class Enemy : MonoBehaviour
     {
         animator.SetTrigger("isDead"); // Trigger death animation
         rb.velocity = Vector2.zero; // Stop movement
-        // Optional: add delay before destroying the object
         Invoke("DestroyEnemy", 2f); // Wait for 2 seconds after death animation
     }
 
@@ -157,7 +162,6 @@ public class Enemy : MonoBehaviour
         // Start the countdown to destroy the enemy if not hacked within the duration
         yield return new WaitForSeconds(hackableDuration);
 
-        // Only destroy if not hacked
         if (!isHackable && !isAlly)
         {
             Die();
@@ -168,13 +172,21 @@ public class Enemy : MonoBehaviour
         }
     }
 
+    public void HandleHacking(float chargeLevel)
+    {
+        if (isHackable) // Only proceed if the enemy is hackable
+        {
+            HackEnemy(); // Call the hacking method directly
+        }
+    }
+
     private void HackEnemy()
     {
         isHackable = false; // After being hacked, the enemy cannot be hacked again
         isAlly = true; // The enemy becomes an ally
         health = initialHealth; // Restore health
         isDisabled = false;
-        animator.SetTrigger("Hacked");
+        gameObject.tag = "Ally"; // Change tag to Ally
 
         // Start the countdown for destroying the hacked enemy after ally duration
         StartCoroutine(DestroyHackedEnemy());
@@ -189,10 +201,10 @@ public class Enemy : MonoBehaviour
     private void FollowPlayer()
     {
         float distanceToPlayer = Vector2.Distance(transform.position, playerTransform.position);
+        Vector2 direction = (playerTransform.position - transform.position).normalized; // Calculate direction to player
 
         if (distanceToPlayer > 1f)
         {
-            Vector2 direction = (playerTransform.position - transform.position).normalized;
             rb.velocity = new Vector2(direction.x * moveSpeed, rb.velocity.y);
             animator.SetBool("isWalking", true); // Activate walk animation when approaching player
         }
@@ -201,32 +213,46 @@ public class Enemy : MonoBehaviour
             rb.velocity = Vector2.zero; // Stop moving when close to the player
             animator.SetBool("isWalking", false); // Switch to idle animation when close
         }
+
+        // Flip the sprite to face the player
+        spriteRenderer.flipX = direction.x < 0; // Flip sprite based on direction to player
     }
 
     private void DetectAndAttackEnemies()
     {
+        // Use the existing enemy layer mask to find enemies within range
         Collider2D[] enemiesInRange = Physics2D.OverlapCircleAll(transform.position, allyAttackRange, enemyLayer);
 
         if (enemiesInRange.Length > 0)
         {
-            Transform closestEnemy = enemiesInRange[0].transform;
+            Transform closestEnemy = null;
+            float closestDistance = float.MaxValue;
 
-            for (int i = 1; i < enemiesInRange.Length; i++)
+            // Find the closest enemy tagged "Enemy"
+            foreach (var enemyCollider in enemiesInRange)
             {
-                if (Vector2.Distance(transform.position, enemiesInRange[i].transform.position) <
-                    Vector2.Distance(transform.position, closestEnemy.position))
+                if (enemyCollider.CompareTag("Enemy"))
                 {
-                    closestEnemy = enemiesInRange[i].transform;
+                    float distanceToEnemy = Vector2.Distance(transform.position, enemyCollider.transform.position);
+                    if (distanceToEnemy < closestDistance)
+                    {
+                        closestDistance = distanceToEnemy;
+                        closestEnemy = enemyCollider.transform;
+                    }
                 }
             }
 
-            // Move towards and attack the closest enemy
-            Vector2 directionToEnemy = (closestEnemy.position - transform.position).normalized;
-            rb.velocity = new Vector2(directionToEnemy.x * moveSpeed, rb.velocity.y);
-
-            if (Vector2.Distance(transform.position, closestEnemy.position) <= attackRange && !alreadyAttacked)
+            // If a closest enemy is found, move towards and attack it
+            if (closestEnemy != null)
             {
-                StartCoroutine(AttackEnemy(closestEnemy));
+                Vector2 directionToEnemy = (closestEnemy.position - transform.position).normalized;
+                rb.velocity = new Vector2(directionToEnemy.x * moveSpeed, rb.velocity.y);
+
+                // Attack if within attack range
+                if (Vector2.Distance(transform.position, closestEnemy.position) <= attackRange && !alreadyAttacked)
+                {
+                    StartCoroutine(AttackEnemy(closestEnemy));
+                }
             }
         }
     }
@@ -246,26 +272,6 @@ public class Enemy : MonoBehaviour
         alreadyAttacked = false;
     }
 
-    // Membalikkan sprite musuh agar melihat ke arah player
-    private void FacePlayer()
-    {
-        if (playerTransform == null)
-        {
-            return; // Jika playerTransform tidak ada, abaikan.
-        }
-
-        // Jika posisi pemain di kanan musuh, sprite harus tidak ter-flip (menghadap kanan)
-        if (playerTransform.position.x > transform.position.x)
-        {
-            spriteRenderer.flipX = false;
-        }
-        // Jika posisi pemain di kiri musuh, sprite harus flip (menghadap kiri)
-        else if (playerTransform.position.x < transform.position.x)
-        {
-            spriteRenderer.flipX = true;
-        }
-    }
-
     private void OnCollisionEnter2D(Collision2D collision)
     {
         if (collision.gameObject.CompareTag("Player") && isAlly)
@@ -277,6 +283,6 @@ public class Enemy : MonoBehaviour
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(transform.position, allyAttackRange);
+        Gizmos.DrawWireSphere(transform.position, allyAttackRange); // Draw detection range
     }
 }

@@ -3,37 +3,38 @@ using UnityEngine;
 
 public class SpecialArrow : MonoBehaviour
 {
-    public float disableDuration = 5f; // Durasi musuh dinonaktifkan
+    public float disableDuration = 5f; // Duration the enemy is disabled
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        // Jika panah mengenai musuh dengan tag "Enemy"
+        // If it collides with an enemy
         if (collision.gameObject.CompareTag("Enemy"))
         {
             Enemy enemy = collision.gameObject.GetComponent<Enemy>();
 
-            if (enemy != null && !enemy.isAlly) // Cek apakah musuh bukan sekutu
+            if (enemy != null && !enemy.isAlly) // Check if enemy is not an ally
             {
-                StartCoroutine(DisableEnemy(enemy)); // Disable musuh
+                enemy.HandleHacking(0.5f); // Pass a generic charge level, can be adjusted if needed
+                StartCoroutine(DisableEnemy(enemy)); // Disable the enemy
             }
         }
 
-        // Hancurkan panah setelah mengenai objek
+        // Destroy the arrow after hitting an object
         Destroy(gameObject);
     }
 
-    // Coroutine untuk menonaktifkan musuh
+    // Coroutine to disable the enemy
     private IEnumerator DisableEnemy(Enemy enemy)
     {
-        enemy.isHackable = true; // Set musuh menjadi hackable
-        yield return enemy.DisableEnemy(); // Memanggil fungsi DisableEnemy di script Enemy
+        enemy.isHackable = true; // Set enemy to hackable
+        yield return enemy.DisableEnemy(); // Call DisableEnemy in the Enemy script
 
-        yield return new WaitForSeconds(disableDuration); // Tunggu sampai disable duration selesai
+        yield return new WaitForSeconds(disableDuration); // Wait for disable duration
 
-        if (!enemy.isAlly) // Jika musuh belum di-hack, musuh dihancurkan
+        if (!enemy.isAlly) // If the enemy is not hacked yet
         {
-            enemy.isHackable = false; // Musuh tidak bisa di-hack lagi
-            Destroy(enemy.gameObject); // Hancurkan musuh
+            enemy.isHackable = false; // Set to not hackable
+            Destroy(enemy.gameObject); // Destroy the enemy
         }
     }
 }
