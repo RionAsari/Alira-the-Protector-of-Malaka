@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &3421324168895882774
+--- !u!1 &1672096669087751056
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,41 +8,41 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 965367218767407767}
-  - component: {fileID: 1158534449454082867}
-  - component: {fileID: 1142777727660818131}
-  - component: {fileID: 2392162141302194621}
-  - component: {fileID: 8045452720880080914}
-  - component: {fileID: 1107073934544001400}
-  m_Layer: 0
-  m_Name: Enemy
-  m_TagString: Untagged
+  - component: {fileID: 6916685205281347019}
+  - component: {fileID: 9198166527330614663}
+  - component: {fileID: 5270191945989025668}
+  - component: {fileID: 4196080890971634259}
+  - component: {fileID: 8757138267589507744}
+  - component: {fileID: 699974577769252332}
+  m_Layer: 6
+  m_Name: PerfectLightGrunt
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &965367218767407767
+--- !u!4 &6916685205281347019
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3421324168895882774}
+  m_GameObject: {fileID: 1672096669087751056}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 4.01, y: -0.38, z: 0}
+  m_LocalPosition: {x: -11.7, y: -0.4, z: 0}
   m_LocalScale: {x: 0.2988, y: 0.2784, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!212 &1158534449454082867
+--- !u!212 &9198166527330614663
 SpriteRenderer:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3421324168895882774}
+  m_GameObject: {fileID: 1672096669087751056}
   m_Enabled: 1
   m_CastShadows: 0
   m_ReceiveShadows: 0
@@ -88,13 +88,13 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!70 &1142777727660818131
+--- !u!70 &5270191945989025668
 CapsuleCollider2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3421324168895882774}
+  m_GameObject: {fileID: 1672096669087751056}
   m_Enabled: 1
   m_Density: 1
   m_Material: {fileID: 0}
@@ -123,14 +123,14 @@ CapsuleCollider2D:
   m_Offset: {x: 1.02, y: -0.22}
   m_Size: {x: 9.2, y: 10.83}
   m_Direction: 0
---- !u!50 &2392162141302194621
+--- !u!50 &4196080890971634259
 Rigidbody2D:
   serializedVersion: 4
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3421324168895882774}
+  m_GameObject: {fileID: 1672096669087751056}
   m_BodyType: 0
   m_Simulated: 1
   m_UseFullKinematicContacts: 0
@@ -150,20 +150,20 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 4
---- !u!114 &8045452720880080914
+--- !u!114 &8757138267589507744
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3421324168895882774}
+  m_GameObject: {fileID: 1672096669087751056}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: bba200a60258a0347aa275f56fd2c639, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   health: 3
-  moveSpeed: 2
+  moveSpeed: 4
   attackRange: 3
   damageAmount: 10
   detectionRange: 10
@@ -172,19 +172,19 @@ MonoBehaviour:
   playerTransform: {fileID: 0}
   enemyLayer:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 64
   allyAttackRange: 7
   isDisabled: 0
   isHackable: 0
   isAlly: 0
---- !u!95 &1107073934544001400
+--- !u!95 &699974577769252332
 Animator:
   serializedVersion: 5
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3421324168895882774}
+  m_GameObject: {fileID: 1672096669087751056}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
   m_Controller: {fileID: 9100000, guid: 64b13cd7348e8c64d96afc3e438aff17, type: 2}
