@@ -120,7 +120,7 @@ CapsuleCollider2D:
   m_IsTrigger: 0
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: 2.21, y: -0.22}
+  m_Offset: {x: 1.02, y: -0.22}
   m_Size: {x: 9.2, y: 10.83}
   m_Direction: 0
 --- !u!50 &2392162141302194621
@@ -187,7 +187,7 @@ Animator:
   m_GameObject: {fileID: 3421324168895882774}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 64b13cd7348e8c64d96afc3e438aff17, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0

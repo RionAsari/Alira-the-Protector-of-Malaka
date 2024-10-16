@@ -10,7 +10,7 @@ public class Enemy : MonoBehaviour
     public float detectionRange = 10f;
     public float hackableDuration = 5f;
     public float allyDuration = 10f;
-    public Transform playerTransform;
+    public Transform playerTransform; // Transform player
     public LayerMask enemyLayer; // For detecting other enemies
     public float allyAttackRange = 7f; // Range to detect other enemies
 
@@ -22,19 +22,36 @@ public class Enemy : MonoBehaviour
     private Rigidbody2D rb;
     private Animator animator;
     private bool alreadyAttacked = false;
-    private Coroutine disableCoroutine;
+    private SpriteRenderer spriteRenderer; // Untuk flip sprite
 
     private void Start()
     {
+        // Pastikan untuk mendapatkan transform player
+        GameObject playerObject = GameObject.FindWithTag("Player");
+        if (playerObject != null)
+        {
+            playerTransform = playerObject.transform;
+        }
+        else
+        {
+            Debug.LogWarning("Player not found. Make sure the player has the 'Player' tag.");
+        }
+
         initialHealth = health;
         rb = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
+        spriteRenderer = GetComponent<SpriteRenderer>(); // Ambil komponen SpriteRenderer
 
         StartCoroutine(IdleMovement());
     }
 
     private void Update()
     {
+        if (health <= 0)
+        {
+            return; // Stop updating if enemy is dead
+        }
+
         if (isAlly)
         {
             FollowPlayer();
@@ -45,10 +62,25 @@ public class Enemy : MonoBehaviour
             DetectAndAttackPlayer();
         }
 
+        // Flip musuh agar menghadap ke arah pemain
+        FacePlayer();
+
         // Hack the enemy when "F" is pressed and the enemy is hackable
         if (Input.GetKeyDown(KeyCode.F) && isHackable)
         {
             HackEnemy();
+        }
+
+        // Handle Idle and Walking animation
+        if (rb.velocity.magnitude > 0)
+        {
+            animator.SetBool("isWalking", true);
+            animator.SetBool("isIdle", false);
+        }
+        else
+        {
+            animator.SetBool("isWalking", false);
+            animator.SetBool("isIdle", true);
         }
     }
 
@@ -70,17 +102,23 @@ public class Enemy : MonoBehaviour
         {
             Vector2 direction = (playerTransform.position - transform.position).normalized;
             rb.velocity = new Vector2(direction.x * moveSpeed, rb.velocity.y);
+            animator.SetBool("isWalking", true); // Activate walk animation
         }
         else if (distanceToPlayer <= attackRange && !alreadyAttacked)
         {
             StartCoroutine(AttackPlayer());
+        }
+        else
+        {
+            rb.velocity = Vector2.zero;
+            animator.SetBool("isWalking", false); // Return to idle if not moving
         }
     }
 
     private IEnumerator AttackPlayer()
     {
         alreadyAttacked = true;
-        animator.SetTrigger("Attack");
+        animator.SetTrigger("isAttacking"); // Call attack animation
         playerTransform.GetComponent<PlayerController>().TakeDamage((int)damageAmount);
 
         yield return new WaitForSeconds(1f);
@@ -99,6 +137,14 @@ public class Enemy : MonoBehaviour
 
     private void Die()
     {
+        animator.SetTrigger("isDead"); // Trigger death animation
+        rb.velocity = Vector2.zero; // Stop movement
+        // Optional: add delay before destroying the object
+        Invoke("DestroyEnemy", 2f); // Wait for 2 seconds after death animation
+    }
+
+    private void DestroyEnemy()
+    {
         Destroy(gameObject);
     }
 
@@ -106,13 +152,13 @@ public class Enemy : MonoBehaviour
     {
         isDisabled = true;
         rb.velocity = Vector2.zero; // Stop movement
-        animator.SetTrigger("Disabled");
+        animator.SetTrigger("isDisabled"); // Trigger disable animation
 
         // Start the countdown to destroy the enemy if not hacked within the duration
         yield return new WaitForSeconds(hackableDuration);
 
         // Only destroy if not hacked
-        if (!isHackable)
+        if (!isHackable && !isAlly)
         {
             Die();
         }
@@ -127,6 +173,7 @@ public class Enemy : MonoBehaviour
         isHackable = false; // After being hacked, the enemy cannot be hacked again
         isAlly = true; // The enemy becomes an ally
         health = initialHealth; // Restore health
+        isDisabled = false;
         animator.SetTrigger("Hacked");
 
         // Start the countdown for destroying the hacked enemy after ally duration
@@ -143,14 +190,16 @@ public class Enemy : MonoBehaviour
     {
         float distanceToPlayer = Vector2.Distance(transform.position, playerTransform.position);
 
-        if (distanceToPlayer > 2f)
+        if (distanceToPlayer > 1f)
         {
             Vector2 direction = (playerTransform.position - transform.position).normalized;
             rb.velocity = new Vector2(direction.x * moveSpeed, rb.velocity.y);
+            animator.SetBool("isWalking", true); // Activate walk animation when approaching player
         }
         else
         {
             rb.velocity = Vector2.zero; // Stop moving when close to the player
+            animator.SetBool("isWalking", false); // Switch to idle animation when close
         }
     }
 
@@ -185,7 +234,7 @@ public class Enemy : MonoBehaviour
     private IEnumerator AttackEnemy(Transform enemy)
     {
         alreadyAttacked = true;
-        animator.SetTrigger("Attack");
+        animator.SetTrigger("isAttacking"); // Trigger attack animation
 
         Enemy enemyScript = enemy.GetComponent<Enemy>();
         if (enemyScript != null && !enemyScript.isAlly) // Only attack enemies that are not allies
@@ -197,7 +246,26 @@ public class Enemy : MonoBehaviour
         alreadyAttacked = false;
     }
 
-    // To move past the player and not be blocked by them
+    // Membalikkan sprite musuh agar melihat ke arah player
+    private void FacePlayer()
+    {
+        if (playerTransform == null)
+        {
+            return; // Jika playerTransform tidak ada, abaikan.
+        }
+
+        // Jika posisi pemain di kanan musuh, sprite harus tidak ter-flip (menghadap kanan)
+        if (playerTransform.position.x > transform.position.x)
+        {
+            spriteRenderer.flipX = false;
+        }
+        // Jika posisi pemain di kiri musuh, sprite harus flip (menghadap kiri)
+        else if (playerTransform.position.x < transform.position.x)
+        {
+            spriteRenderer.flipX = true;
+        }
+    }
+
     private void OnCollisionEnter2D(Collision2D collision)
     {
         if (collision.gameObject.CompareTag("Player") && isAlly)
