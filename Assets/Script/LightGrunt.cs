@@ -13,6 +13,7 @@ public class Enemy : MonoBehaviour
     public Transform playerTransform; 
     public LayerMask enemyLayer; 
     public float allyAttackRange = 7f; 
+    public float hackDistance = 2f; // Distance within which hacking is allowed
 
     public bool isDisabled = false; 
     public bool isHackable = true; 
@@ -25,6 +26,8 @@ public class Enemy : MonoBehaviour
     private bool alreadyAttacked = false; 
     private SpriteRenderer spriteRenderer; 
     private bool isChasingPlayer = false; 
+    private Coroutine patrolCoroutine; // Reference to the patrol coroutine
+    private Coroutine disableCoroutine; // Reference to the disable coroutine
 
     private void Start()
     {
@@ -43,7 +46,7 @@ public class Enemy : MonoBehaviour
         animator = GetComponent<Animator>();
         spriteRenderer = GetComponent<SpriteRenderer>();
 
-        StartCoroutine(Patrol());
+        patrolCoroutine = StartCoroutine(Patrol()); // Start patrol coroutine
     }
 
     private void Update()
@@ -60,15 +63,15 @@ public class Enemy : MonoBehaviour
         }
         else if (isAlly)
         {
-            // Logic for ally state if needed
+            DetectAndAttackEnemies();
         }
         else if (!isDisabled)
         {
             DetectAndAttackPlayer();
         }
 
-        // Hack the enemy when "F" is pressed and the enemy is hackable
-        if (Input.GetKeyDown(KeyCode.F) && isHackable)
+        // Hack the enemy when "F" is pressed, the enemy is hackable, and within hack distance
+        if (Input.GetKeyDown(KeyCode.F) && isHackable && Vector2.Distance(transform.position, playerTransform.position) <= hackDistance)
         {
             HackEnemy();
         }
@@ -97,9 +100,8 @@ public class Enemy : MonoBehaviour
         }
         else
         {
-            rb.velocity = Vector2.zero;
+            rb.velocity = Vector2.zero; // Stop movement when idle
             isChasingPlayer = false; 
-            StartCoroutine(Patrol()); 
         }
     }
 
@@ -107,11 +109,13 @@ public class Enemy : MonoBehaviour
     {
         while (!isAlly && !isDisabled && !isHacked)
         {
+            // Move to the right
             rb.velocity = new Vector2(moveSpeed, rb.velocity.y);
             spriteRenderer.flipX = false; 
 
             yield return new WaitForSeconds(2f);
 
+            // Move to the left
             rb.velocity = new Vector2(-moveSpeed, rb.velocity.y);
             spriteRenderer.flipX = true; 
 
@@ -140,35 +144,57 @@ public class Enemy : MonoBehaviour
         {
             Die();
         }
+        else
+        {
+            // Stop the enemy completely when taking damage
+            rb.velocity = Vector2.zero; 
+        }
     }
 
     private void Die()
     {
         animator.SetTrigger("isDead"); 
         rb.velocity = Vector2.zero; 
-        Invoke("DestroyEnemy", 2f); 
+        // Start the coroutine to wait for the animation to finish
+        StartCoroutine(DestroyAfterAnimation());
     }
 
-    private void DestroyEnemy()
+    private IEnumerator DestroyAfterAnimation()
     {
+        // Wait for the duration of the death animation
+        // Adjust this duration to match the length of your death animation
+        yield return new WaitForSeconds(1.5f); // Replace with your animation duration
         Destroy(gameObject);
     }
 
     public IEnumerator DisableEnemy()
     {
         isDisabled = true;
-        rb.velocity = Vector2.zero; 
+        rb.velocity = Vector2.zero; // Stop movement
+        rb.isKinematic = true; // Prevents movement due to physics
         animator.SetTrigger("isDisabled"); 
+        // Stop the patrol coroutine if it's running
+        if (patrolCoroutine != null)
+        {
+            StopCoroutine(patrolCoroutine);
+            patrolCoroutine = null; // Reset the reference
+        }
+        // Disable the collider to prevent interactions
+        GetComponent<Collider2D>().enabled = false; 
 
-        yield return new WaitForSeconds(hackableDuration);
+        // Wait for 5 seconds before checking if it's still not hacked
+        yield return new WaitForSeconds(5f);
 
-        if (!isHackable && !isAlly)
+        if (!isHacked && !isAlly)
         {
             Die();
         }
         else
         {
             isDisabled = false; 
+            rb.isKinematic = false; // Restore physics interaction when re-enabled
+            GetComponent<Collider2D>().enabled = true; // Re-enable the collider
+            patrolCoroutine = StartCoroutine(Patrol()); // Restart patrol coroutine
         }
     }
 
@@ -186,12 +212,13 @@ public class Enemy : MonoBehaviour
         isAlly = true; 
         isHacked = true; // Set isHacked to true
         health = initialHealth; 
-        rb.velocity = Vector2.zero; // Stop moving
+        rb.velocity = Vector2.zero; // Stop moving temporarily
         gameObject.tag = "Ally"; 
 
         // Trigger the isHacked animation state
         animator.SetTrigger("isHacked");
 
+        // Start the coroutine to destroy the enemy after being an ally for 10 seconds
         StartCoroutine(DestroyHackedEnemy());
     }
 
@@ -215,7 +242,7 @@ public class Enemy : MonoBehaviour
         }
         else
         {
-            rb.velocity = Vector2.zero; 
+            rb.velocity = Vector2.zero; // Stop movement when close to the player
             animator.SetBool("isWalking", false); 
         }
 
@@ -276,7 +303,7 @@ public class Enemy : MonoBehaviour
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        if (collision.gameObject.CompareTag("Player") && isAlly)
+        if (isDisabled && collision.collider.CompareTag("Player"))
         {
             Physics2D.IgnoreCollision(collision.collider, GetComponent<Collider2D>());
         }
@@ -285,6 +312,12 @@ public class Enemy : MonoBehaviour
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(transform.position, allyAttackRange); 
+        Gizmos.DrawWireSphere(transform.position, detectionRange);
+        Gizmos.color = Color.blue;
+        Gizmos.DrawWireSphere(transform.position, attackRange);
+        Gizmos.color = Color.green;
+        Gizmos.DrawWireSphere(transform.position, allyAttackRange);
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(transform.position, hackDistance);
     }
 }
