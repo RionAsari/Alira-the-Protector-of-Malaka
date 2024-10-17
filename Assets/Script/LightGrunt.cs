@@ -13,12 +13,12 @@ public class Enemy : MonoBehaviour
     public Transform playerTransform; 
     public LayerMask enemyLayer; 
     public float allyAttackRange = 7f; 
-    public float hackDistance = 2f; // Distance within which hacking is allowed
+    public float hackDistance = 2f; 
 
     public bool isDisabled = false; 
     public bool isHackable = true; 
     public bool isAlly = false; 
-    public bool isHacked = false; // New state to indicate if the enemy is hacked
+    public bool isHacked = false; 
 
     private float initialHealth; 
     private Rigidbody2D rb; 
@@ -26,8 +26,7 @@ public class Enemy : MonoBehaviour
     private bool alreadyAttacked = false; 
     private SpriteRenderer spriteRenderer; 
     private bool isChasingPlayer = false; 
-    private Coroutine patrolCoroutine; // Reference to the patrol coroutine
-    private Coroutine disableCoroutine; // Reference to the disable coroutine
+    private Coroutine patrolCoroutine; 
 
     private void Start()
     {
@@ -46,14 +45,19 @@ public class Enemy : MonoBehaviour
         animator = GetComponent<Animator>();
         spriteRenderer = GetComponent<SpriteRenderer>();
 
-        patrolCoroutine = StartCoroutine(Patrol()); // Start patrol coroutine
+        // Check if required components are found
+        if (rb == null) Debug.LogError("Rigidbody2D is missing!", this);
+        if (animator == null) Debug.LogError("Animator is missing!", this);
+        if (spriteRenderer == null) Debug.LogError("SpriteRenderer is missing!", this);
+
+        patrolCoroutine = StartCoroutine(Patrol()); 
     }
 
     private void Update()
     {
         if (health <= 0)
         {
-            return; // Stop updating if enemy is dead
+            return; 
         }
 
         if (isHacked)
@@ -71,7 +75,7 @@ public class Enemy : MonoBehaviour
         }
 
         // Hack the enemy when "F" is pressed, the enemy is hackable, and within hack distance
-        if (Input.GetKeyDown(KeyCode.F) && isHackable && Vector2.Distance(transform.position, playerTransform.position) <= hackDistance)
+        if (Input.GetKeyDown(KeyCode.F) && isHackable && playerTransform != null && Vector2.Distance(transform.position, playerTransform.position) <= hackDistance)
         {
             HackEnemy();
         }
@@ -92,7 +96,7 @@ public class Enemy : MonoBehaviour
             Vector2 direction = (playerTransform.position - transform.position).normalized;
 
             rb.velocity = new Vector2(direction.x * moveSpeed, rb.velocity.y);
-            spriteRenderer.flipX = direction.x < 0; 
+            spriteRenderer.flipX = direction.x > 0; // Flipping logic reversed
         }
         else if (distanceToPlayer <= attackRange && !alreadyAttacked)
         {
@@ -100,7 +104,7 @@ public class Enemy : MonoBehaviour
         }
         else
         {
-            rb.velocity = Vector2.zero; // Stop movement when idle
+            rb.velocity = Vector2.zero; 
             isChasingPlayer = false; 
         }
     }
@@ -111,13 +115,13 @@ public class Enemy : MonoBehaviour
         {
             // Move to the right
             rb.velocity = new Vector2(moveSpeed, rb.velocity.y);
-            spriteRenderer.flipX = false; 
+            spriteRenderer.flipX = true; // Flipping logic reversed
 
             yield return new WaitForSeconds(2f);
 
             // Move to the left
             rb.velocity = new Vector2(-moveSpeed, rb.velocity.y);
-            spriteRenderer.flipX = true; 
+            spriteRenderer.flipX = false; // Flipping logic reversed
 
             yield return new WaitForSeconds(2f);
         }
@@ -129,7 +133,15 @@ public class Enemy : MonoBehaviour
         animator.SetTrigger("isAttacking"); 
         if (playerTransform != null)
         {
-            playerTransform.GetComponent<PlayerController>().TakeDamage((int)damageAmount);
+            PlayerController playerController = playerTransform.GetComponent<PlayerController>();
+            if (playerController != null)
+            {
+                playerController.TakeDamage((int)damageAmount);
+            }
+            else
+            {
+                Debug.LogError("PlayerController is missing on the player!", this);
+            }
         }
 
         yield return new WaitForSeconds(1f);
@@ -146,7 +158,6 @@ public class Enemy : MonoBehaviour
         }
         else
         {
-            // Stop the enemy completely when taking damage
             rb.velocity = Vector2.zero; 
         }
     }
@@ -155,14 +166,11 @@ public class Enemy : MonoBehaviour
     {
         animator.SetTrigger("isDead"); 
         rb.velocity = Vector2.zero; 
-        // Start the coroutine to wait for the animation to finish
         StartCoroutine(DestroyAfterAnimation());
     }
 
     private IEnumerator DestroyAfterAnimation()
     {
-        // Wait for the duration of the death animation
-        // Adjust this duration to match the length of your death animation
         yield return new WaitForSeconds(1.5f); // Replace with your animation duration
         Destroy(gameObject);
     }
@@ -170,19 +178,18 @@ public class Enemy : MonoBehaviour
     public IEnumerator DisableEnemy()
     {
         isDisabled = true;
-        rb.velocity = Vector2.zero; // Stop movement
-        rb.isKinematic = true; // Prevents movement due to physics
+        rb.velocity = Vector2.zero; 
+        rb.isKinematic = true; 
         animator.SetTrigger("isDisabled"); 
-        // Stop the patrol coroutine if it's running
+
         if (patrolCoroutine != null)
         {
             StopCoroutine(patrolCoroutine);
-            patrolCoroutine = null; // Reset the reference
+            patrolCoroutine = null; 
         }
-        // Disable the collider to prevent interactions
+
         GetComponent<Collider2D>().enabled = false; 
 
-        // Wait for 5 seconds before checking if it's still not hacked
         yield return new WaitForSeconds(5f);
 
         if (!isHacked && !isAlly)
@@ -192,9 +199,9 @@ public class Enemy : MonoBehaviour
         else
         {
             isDisabled = false; 
-            rb.isKinematic = false; // Restore physics interaction when re-enabled
-            GetComponent<Collider2D>().enabled = true; // Re-enable the collider
-            patrolCoroutine = StartCoroutine(Patrol()); // Restart patrol coroutine
+            rb.isKinematic = false; 
+            GetComponent<Collider2D>().enabled = true; 
+            patrolCoroutine = StartCoroutine(Patrol()); 
         }
     }
 
@@ -210,15 +217,13 @@ public class Enemy : MonoBehaviour
     {
         isHackable = false; 
         isAlly = true; 
-        isHacked = true; // Set isHacked to true
+        isHacked = true; 
         health = initialHealth; 
-        rb.velocity = Vector2.zero; // Stop moving temporarily
+        rb.velocity = Vector2.zero; 
         gameObject.tag = "Ally"; 
 
-        // Trigger the isHacked animation state
         animator.SetTrigger("isHacked");
 
-        // Start the coroutine to destroy the enemy after being an ally for 10 seconds
         StartCoroutine(DestroyHackedEnemy());
     }
 
@@ -242,11 +247,11 @@ public class Enemy : MonoBehaviour
         }
         else
         {
-            rb.velocity = Vector2.zero; // Stop movement when close to the player
+            rb.velocity = Vector2.zero; 
             animator.SetBool("isWalking", false); 
         }
 
-        spriteRenderer.flipX = direction.x < 0; 
+        spriteRenderer.flipX = direction.x > 0; // Flipping logic reversed
     }
 
     private void DetectAndAttackEnemies()
@@ -281,7 +286,7 @@ public class Enemy : MonoBehaviour
                     StartCoroutine(AttackEnemy(closestEnemy));
                 }
 
-                spriteRenderer.flipX = directionToEnemy.x < 0; 
+                spriteRenderer.flipX = directionToEnemy.x > 0; // Flipping logic reversed
             }
         }
     }
@@ -317,7 +322,5 @@ public class Enemy : MonoBehaviour
         Gizmos.DrawWireSphere(transform.position, attackRange);
         Gizmos.color = Color.green;
         Gizmos.DrawWireSphere(transform.position, allyAttackRange);
-        Gizmos.color = Color.yellow;
-        Gizmos.DrawWireSphere(transform.position, hackDistance);
     }
 }

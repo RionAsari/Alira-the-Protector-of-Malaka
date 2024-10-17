@@ -4,8 +4,9 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-    public float moveSpeed = 5f;
-    public float jumpForce = 5f;
+    public float moveSpeed = 8f; // Increased speed
+    public float jumpForce = 8f; // Increased jump force
+    public float fallMultiplier = 2.5f; // Fall speed multiplier
     private Rigidbody2D rb;
     private bool isGrounded = true;
     private bool facingRight = true;
@@ -42,6 +43,7 @@ public class PlayerController : MonoBehaviour
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
+        rb.gravityScale = 3f; // Set gravity scale for faster falling
         mainCamera = Camera.main;
 
         // Get Animator component
@@ -70,6 +72,12 @@ public class PlayerController : MonoBehaviour
         {
             // Stop any movement while dashing
             rb.velocity = new Vector2(dashDirection * dashSpeed, rb.velocity.y);
+        }
+
+        // Apply fall multiplier
+        if (rb.velocity.y < 0)
+        {
+            rb.velocity += Vector2.up * Physics2D.gravity.y * (fallMultiplier - 1) * Time.deltaTime;
         }
     }
 
@@ -106,7 +114,7 @@ public class PlayerController : MonoBehaviour
     // Function to check if the player is idle
     public bool IsIdle()
     {
-        return moveInput == 0;
+        return moveInput == 0 && isGrounded; // Player is idle when not moving and is grounded
     }
 
     // Update the animator parameters
@@ -138,9 +146,6 @@ public class PlayerController : MonoBehaviour
 
         // Update dash animation
         animator.SetBool("isDashing", isDashing);
-
-        // Remove charging state logic
-        // If you had logic for checking charging, it is removed here
     }
 
     // Aim at the mouse position
