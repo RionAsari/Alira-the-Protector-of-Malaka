@@ -15,8 +15,6 @@ public class LightGrunt : MonoBehaviour
     public float allyAttackRange = 7f; 
     public float hackDistance = 2f; 
 
-    public float knockbackForce = 5f; // Added variable for knockback force
-
     public bool isDisabled = false; 
     public bool isHackable = true; 
     public bool isAlly = false; 
@@ -185,14 +183,6 @@ public class LightGrunt : MonoBehaviour
             if (playerController != null)
             {
                 playerController.TakeDamage(25); // Deal 25 damage to the player
-
-                // Apply knockback effect to the player
-                Vector2 knockbackDirection = (playerTransform.position - transform.position).normalized; // Direction from enemy to player
-                Rigidbody2D playerRb = playerTransform.GetComponent<Rigidbody2D>();
-                if (playerRb != null)
-                {
-                    playerRb.AddForce(knockbackDirection * knockbackForce, ForceMode2D.Impulse); // Apply knockback force
-                }
             }
         }
         yield return new WaitForSeconds(1f);
@@ -285,13 +275,16 @@ public class LightGrunt : MonoBehaviour
 
         if (patrolCoroutine != null)
         {
-            StopCoroutine(patrolCoroutine); // Stop patrolling if the enemy is disabled
+            StopCoroutine(patrolCoroutine); // Stop patrolling
+            patrolCoroutine = null; 
         }
 
-        yield return new WaitForSeconds(duration);
-        isDisabled = false; 
-        rb.isKinematic = false; // Resume physics interactions
-        animator.SetTrigger("isActive"); 
-        patrolCoroutine = StartCoroutine(Patrol()); // Resume patrolling
+        GetComponent<Collider2D>().enabled = false; // Disable collider to prevent further hits
+
+        yield return new WaitForSeconds(duration); // Wait for the disable duration
+
+        // Allow hacking after disabling
+        isHacked = false; // Reset hacking state to allow hacking
+        HackEnemy(); // Call hack method to convert it to an ally
     }
 }
