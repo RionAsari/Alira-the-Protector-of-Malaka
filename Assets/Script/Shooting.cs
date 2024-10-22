@@ -9,7 +9,7 @@ public class Shooting : MonoBehaviour
     private Camera mainCam;
     private Vector3 mousePos;
     private Transform playerTransform;
-    
+
     public GameObject arrowPrefab; // Prefab for the normal arrow
     public GameObject specialArrowPrefab; // Prefab for the special arrow
     public Transform bowTransform; // Position where arrows are spawned
@@ -25,6 +25,7 @@ public class Shooting : MonoBehaviour
 
     // UI Slider for charge bar
     public Slider chargeSlider; // Reference to the slider
+    private const float maxChargeTime = 2.5f; // Change time needed for full charge to 2.5 seconds
 
     // Damage values
     public float baseDamage = 25f; // Damage for 1%-49%
@@ -32,6 +33,9 @@ public class Shooting : MonoBehaviour
     public float maxDamage = 100f; // Damage for 100%
 
     private bool usingSpecialArrow = false; // To check if the player is using special arrows
+
+    // Offset for slider position
+    public Vector3 sliderOffset = new Vector3(0, 2, 0); // Offset to place slider above player
 
     private void Start()
     {
@@ -44,6 +48,7 @@ public class Shooting : MonoBehaviour
         {
             chargeSlider.value = 0f; // Set slider to 0 initially
             chargeSlider.maxValue = 1f; // Slider range between 0 and 1
+            chargeSlider.gameObject.SetActive(false); // Hide slider at the start
         }
 
         // Get reference to the bow's Animator
@@ -67,6 +72,12 @@ public class Shooting : MonoBehaviour
         // Rotate the bow
         transform.rotation = Quaternion.Euler(0, 0, rotZ);
 
+        // Update the slider position to follow the player
+        if (chargeSlider != null)
+        {
+            chargeSlider.transform.position = Camera.main.WorldToScreenPoint(playerTransform.position + sliderOffset);
+        }
+
         // Handle charging
         if (Input.GetMouseButtonDown(0) && canFire)
         {
@@ -74,19 +85,27 @@ public class Shooting : MonoBehaviour
             currentCharge = 0f;
             playerController.ShowBow(true); // Show bow on mouse click
 
+            // Show slider
+            if (chargeSlider != null)
+            {
+                chargeSlider.gameObject.SetActive(true);
+            }
+
             // Start charging animation
             bowAnimator.SetBool("isCharging", true);
         }
 
         if (Input.GetMouseButton(0) && isCharging)
         {
-            currentCharge += chargeSpeed * Time.deltaTime;
+            // Increase charge based on time
+            currentCharge += (chargeSpeed / maxChargeTime) * Time.deltaTime;
             currentCharge = Mathf.Clamp(currentCharge, 0f, 1f); // Keep charge value between 0 and 1
 
             // Update slider UI
             if (chargeSlider != null)
             {
                 chargeSlider.value = currentCharge;
+                UpdateSliderColor(currentCharge); // Update the color of the slider
             }
         }
 
@@ -100,10 +119,11 @@ public class Shooting : MonoBehaviour
             // Reset bow animation
             bowAnimator.SetBool("isCharging", false);
 
-            // Reset slider to 0 after shooting
+            // Hide slider after shooting
             if (chargeSlider != null)
             {
-                chargeSlider.value = 0f;
+                chargeSlider.value = 0f; // Reset slider
+                chargeSlider.gameObject.SetActive(false); // Hide slider
             }
         }
 
@@ -128,6 +148,23 @@ public class Shooting : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.X))
         {
             usingSpecialArrow = !usingSpecialArrow; // Toggle between normal and special arrow
+        }
+    }
+
+    // Function to update the slider color based on charge
+    private void UpdateSliderColor(float charge)
+    {
+        if (charge < 0.5f) // 1%-49%
+        {
+            chargeSlider.fillRect.GetComponent<Image>().color = Color.green; // Set to green
+        }
+        else if (charge < 1f) // 50%-99%
+        {
+            chargeSlider.fillRect.GetComponent<Image>().color = Color.yellow;
+        }
+        else // 100%
+        {
+            chargeSlider.fillRect.GetComponent<Image>().color = Color.red; // Set to red
         }
     }
 

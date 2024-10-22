@@ -165,18 +165,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   health: 3
   maxHealth: 100
-  moveSpeed: 4
+  moveSpeed: 3
   attackRange: 3
   damageAmount: 10
   detectionRange: 10
   allyDuration: 10
-  playerTransform: {fileID: 0}
   enemyLayer:
     serializedVersion: 2
     m_Bits: 64
-  allyAttackRange: 7
+  allyAttackRange: 10
   hackDistance: 2
-  knockbackForce: 10
+  attackCooldown: 2
   isDisabled: 0
   isHackable: 0
   isAlly: 0
@@ -561,7 +560,7 @@ MonoBehaviour:
   Low: {r: 0.8584906, g: 0, b: 0, a: 0}
   Medium: {r: 1, g: 0.94383824, b: 0.2688679, a: 0}
   High: {r: 0.65636224, g: 1, b: 0.3443396, a: 0}
-  Offset: {x: 0, y: 0, z: 0}
+  Offset: {x: 0, y: 3, z: 0}
 --- !u!1 &8314738396189981349
 GameObject:
   m_ObjectHideFlags: 0

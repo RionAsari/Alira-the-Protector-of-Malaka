@@ -7,7 +7,13 @@ public class HealthbarBehaviour : MonoBehaviour
     public Color Low;             // Color for low health
     public Color Medium;          // Color for medium health
     public Color High;            // Color for high health
-    public Vector3 Offset;        // Offset for health bar position
+    public Vector3 Offset = new Vector3(0, 2f, 0); // Sesuaikan nilai Y sesuai kebutuhan
+
+    private void Start()
+    {
+        // Initialize the slider as inactive at the start
+        Slider.gameObject.SetActive(false);
+    }
 
     public void SetHealth(float health, float maxHealth)
     {
@@ -18,17 +24,21 @@ public class HealthbarBehaviour : MonoBehaviour
 
         // Change color based on the health percentage
         float healthPercentage = health / maxHealth;
-        if (healthPercentage < 0.3f) // Low health
+        if (health == maxHealth) // Full health (100%)
         {
-            Slider.fillRect.GetComponentInChildren<Image>().color = Low;
+            Slider.fillRect.GetComponentInChildren<Image>().color = Color.green; // Set to green
         }
-        else if (healthPercentage < 0.7f) // Medium health
+        else if (healthPercentage <= 0.8f && healthPercentage > 0.4f) // 80%-40%
         {
-            Slider.fillRect.GetComponentInChildren<Image>().color = Medium;
+            Slider.fillRect.GetComponentInChildren<Image>().color = Color.yellow; // Set to yellow
         }
-        else // High health
+        else if (health > 0) // 39%-1
         {
-            Slider.fillRect.GetComponentInChildren<Image>().color = High;
+            Slider.fillRect.GetComponentInChildren<Image>().color = Color.red; // Set to red
+        }
+        else // Health is zero
+        {
+            Destroy(Slider.gameObject); // Destroy the slider if health is zero
         }
     }
 
@@ -41,7 +51,7 @@ public class HealthbarBehaviour : MonoBehaviour
 
     void Update()
     {
-        // You can remove the following code if you update the position in LightGrunt
-        // Slider.transform.position = Camera.main.WorldToScreenPoint(transform.parent.position + Offset);
+        // Uncomment the following line if you want to continuously update the position of the health bar
+        // UpdatePosition(transform.parent.position); // Assuming this script is attached to the health bar UI object
     }
 }
