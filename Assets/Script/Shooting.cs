@@ -9,11 +9,13 @@ public class Shooting : MonoBehaviour
     private Camera mainCam;
     private Vector3 mousePos;
     private Transform playerTransform;
+
     public GameObject arrowPrefab; // Prefab for the normal arrow
     public GameObject specialArrowPrefab; // Prefab for the special arrow
     public Transform bowTransform; // Position where arrows are spawned
     public float maxArrowSpeed = 15f; // Maximum arrow speed (constant)
     public float chargeSpeed = 5f; // Speed of charging (how fast charge builds)
+    
     private float currentCharge = 0f; // Amount of charge
     private bool isCharging = false; // Is the player currently charging?
     private bool canFire = true;
@@ -23,13 +25,17 @@ public class Shooting : MonoBehaviour
 
     // UI Slider for charge bar
     public Slider chargeSlider; // Reference to the slider
+    private const float maxChargeTime = 2.5f; // Change time needed for full charge to 2.5 seconds
 
     // Damage values
-    public float baseDamage = 10f;
-    public float midDamage = 15f;
-    public float maxDamage = 20f;
+    public float baseDamage = 25f; // Damage for 1%-49%
+    public float midDamage = 50f; // Damage for 50%-99%
+    public float maxDamage = 100f; // Damage for 100%
 
     private bool usingSpecialArrow = false; // To check if the player is using special arrows
+
+    // Offset for slider position
+    public Vector3 sliderOffset = new Vector3(0, 2, 0); // Offset to place slider above player
 
     private void Start()
     {
@@ -42,96 +48,15 @@ public class Shooting : MonoBehaviour
         {
             chargeSlider.value = 0f; // Set slider to 0 initially
             chargeSlider.maxValue = 1f; // Slider range between 0 and 1
+            chargeSlider.gameObject.SetActive(false); // Hide slider at the start
         }
-        
-        {
-        // Ambil referensi Animator dari bowTransform
+
+        // Get reference to the bow's Animator
         bowAnimator = bowTransform.GetComponent<Animator>();
-    }
     }
 
     private void Update()
     {
-
-        if (Input.GetMouseButtonDown(0) && canFire)
-        {
-            isCharging = true;
-            currentCharge = 0f;
-            playerController.ShowBow(true); // Tampilkan busur ketika mouse ditekan
-
-            // Mulai animasi charge
-            bowAnimator.SetBool("isCharging", true);
-        }
-
-        if (Input.GetMouseButton(0) && isCharging)
-        {
-            currentCharge += chargeSpeed * Time.deltaTime;
-            currentCharge = Mathf.Clamp(currentCharge, 0f, 1f); // Pastikan charge di rentang 0 sampai 1
-
-            // Update slider UI
-            if (chargeSlider != null)
-            {
-                chargeSlider.value = currentCharge;
-            }
-        }
-
-        if (Input.GetMouseButtonUp(0) && isCharging)
-        {
-            isCharging = false;
-            FireArrow(currentCharge); // Tembak panah setelah charge selesai
-            canFire = false;
-            currentCharge = 0f;
-
-            // Setel animasi kembali ke keadaan default
-            bowAnimator.SetBool("isCharging", false);
-
-            if (chargeSlider != null)
-            {
-                chargeSlider.value = 0f;
-            }
-        }
-
-        if (!isCharging && playerController.IsIdle())
-        {
-            playerController.ShowBow(false); // Sembunyikan busur ketika idle
-        }
-
-        if (Input.GetMouseButtonDown(0) && canFire)
-    {
-        isCharging = true;
-        currentCharge = 0f;
-        playerController.ShowBow(true); // Show bow on mouse click
-        bowTransform.GetComponent<Animator>().SetBool("isCharging", true); // Set charging animation
-    }
-
-    // Charging while holding left mouse button
-    if (Input.GetMouseButton(0) && isCharging)
-    {
-        currentCharge += chargeSpeed * Time.deltaTime;
-        currentCharge = Mathf.Clamp(currentCharge, 0f, 1f); // Keep charge value between 0 and 1
-
-        // Update slider UI
-        if (chargeSlider != null)
-        {
-            chargeSlider.value = currentCharge; // Update slider value with charge
-        }
-    }
-
-    // Release arrow when mouse button is released
-    if (Input.GetMouseButtonUp(0) && isCharging)
-    {
-        isCharging = false;
-        FireArrow(currentCharge); // Shoot arrow with accumulated charge
-        canFire = false;
-        currentCharge = 0f; // Reset charge
-        bowTransform.GetComponent<Animator>().SetBool("isCharging", false); // Stop charging animation
-
-        // Reset slider to 0 after shooting
-        if (chargeSlider != null)
-        {
-            chargeSlider.value = 0f;
-        }
-    }
         // Get mouse position in world coordinates
         mousePos = mainCam.ScreenToWorldPoint(Input.mousePosition);
         Vector3 rotation = mousePos - transform.position;
@@ -147,39 +72,58 @@ public class Shooting : MonoBehaviour
         // Rotate the bow
         transform.rotation = Quaternion.Euler(0, 0, rotZ);
 
-        // Start charging when left mouse button is pressed
+        // Update the slider position to follow the player
+        if (chargeSlider != null)
+        {
+            chargeSlider.transform.position = Camera.main.WorldToScreenPoint(playerTransform.position + sliderOffset);
+        }
+
+        // Handle charging
         if (Input.GetMouseButtonDown(0) && canFire)
         {
             isCharging = true;
             currentCharge = 0f;
             playerController.ShowBow(true); // Show bow on mouse click
+
+            // Show slider
+            if (chargeSlider != null)
+            {
+                chargeSlider.gameObject.SetActive(true);
+            }
+
+            // Start charging animation
+            bowAnimator.SetBool("isCharging", true);
         }
 
-        // Charging while holding left mouse button
         if (Input.GetMouseButton(0) && isCharging)
         {
-            currentCharge += chargeSpeed * Time.deltaTime;
+            // Increase charge based on time
+            currentCharge += (chargeSpeed / maxChargeTime) * Time.deltaTime;
             currentCharge = Mathf.Clamp(currentCharge, 0f, 1f); // Keep charge value between 0 and 1
 
             // Update slider UI
             if (chargeSlider != null)
             {
-                chargeSlider.value = currentCharge; // Update slider value with charge
+                chargeSlider.value = currentCharge;
+                UpdateSliderColor(currentCharge); // Update the color of the slider
             }
         }
 
-        // Release arrow when mouse button is released
         if (Input.GetMouseButtonUp(0) && isCharging)
         {
             isCharging = false;
             FireArrow(currentCharge); // Shoot arrow with accumulated charge
-            canFire = false;
-            currentCharge = 0f; // Reset charge
+            canFire = false; // Set cooldown
+            currentCharge = 0f;
 
-            // Reset slider to 0 after shooting
+            // Reset bow animation
+            bowAnimator.SetBool("isCharging", false);
+
+            // Hide slider after shooting
             if (chargeSlider != null)
             {
-                chargeSlider.value = 0f;
+                chargeSlider.value = 0f; // Reset slider
+                chargeSlider.gameObject.SetActive(false); // Hide slider
             }
         }
 
@@ -207,6 +151,23 @@ public class Shooting : MonoBehaviour
         }
     }
 
+    // Function to update the slider color based on charge
+    private void UpdateSliderColor(float charge)
+    {
+        if (charge < 0.5f) // 1%-49%
+        {
+            chargeSlider.fillRect.GetComponent<Image>().color = Color.green; // Set to green
+        }
+        else if (charge < 1f) // 50%-99%
+        {
+            chargeSlider.fillRect.GetComponent<Image>().color = Color.yellow;
+        }
+        else // 100%
+        {
+            chargeSlider.fillRect.GetComponent<Image>().color = Color.red; // Set to red
+        }
+    }
+
     // Function to fire the arrow
     private void FireArrow(float charge)
     {
@@ -223,21 +184,28 @@ public class Shooting : MonoBehaviour
         rb.velocity = shootDirection * maxArrowSpeed;
 
         // Calculate arrow damage based on charge level
-        float arrowDamage = baseDamage;
-        if (charge >= 0.5f && charge < 1f) // Half charge
+        float arrowDamage = baseDamage; // Default damage
+
+        // Update damage based on charge percentage
+        if (charge < 0.5f) // 1%-49%
         {
-            arrowDamage = midDamage;
+            arrowDamage = baseDamage; // 25
         }
-        else if (charge >= 1f) // Full charge
+        else if (charge < 1f) // 50%-99%
         {
-            arrowDamage = maxDamage;
+            arrowDamage = midDamage; // 50
+        }
+        else // 100%
+        {
+            arrowDamage = maxDamage; // 100
         }
 
         // Assign damage to the arrow
         Arrow arrowScript = arrow.GetComponent<Arrow>();
         if (arrowScript != null)
         {
-            arrowScript.SetDamage(arrowDamage);
+            arrowScript.SetDamage(Mathf.RoundToInt(arrowDamage)); // Set damage
+            arrowScript.SetChargeLevel(charge); // Set charge level for the arrow
         }
 
         // Flip the arrow sprite if player is facing left
@@ -248,9 +216,9 @@ public class Shooting : MonoBehaviour
             arrow.transform.localScale = arrowScale;
         }
     }
+
     public bool IsCharging()
     {
-     return isCharging; // isCharging adalah variabel yang Anda gunakan untuk menandakan proses charge
+        return isCharging; // Return charging state
     }
-
 }

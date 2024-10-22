@@ -36,10 +36,6 @@ public class PlayerController : MonoBehaviour
 
     private float moveInput;
 
-    // Player health
-    public int maxHealth = 100;
-    private int currentHealth;
-
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -48,9 +44,6 @@ public class PlayerController : MonoBehaviour
 
         // Get Animator component
         animator = GetComponent<Animator>();
-
-        // Set player's current health to max health
-        currentHealth = maxHealth;
     }
 
     private void Update()
@@ -284,22 +277,5 @@ public class PlayerController : MonoBehaviour
     public bool IsInvincible()
     {
         return isInvincible;
-    }
-
-    // Function to handle damage taken by the player
-    public void TakeDamage(int damage)
-    {
-        currentHealth -= damage;
-        if (currentHealth <= 0)
-        {
-            Die();
-        }
-    }
-
-    // Function to handle player death
-    private void Die()
-    {
-        // You can handle player death here (e.g., playing a death animation, restarting the level, etc.)
-        Debug.Log("Player died.");
     }
 }
