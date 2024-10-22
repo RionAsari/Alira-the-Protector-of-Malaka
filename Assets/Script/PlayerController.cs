@@ -36,10 +36,6 @@ public class PlayerController : MonoBehaviour
 
     private float moveInput;
 
-    // Player health
-    public int maxHealth = 100;
-    private int currentHealth;
-
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -48,9 +44,6 @@ public class PlayerController : MonoBehaviour
 
         // Get Animator component
         animator = GetComponent<Animator>();
-
-        // Set player's current health to max health
-        currentHealth = maxHealth;
     }
 
     private void Update()
@@ -212,13 +205,6 @@ public class PlayerController : MonoBehaviour
             jumpCount = 0; // Reset jump count
             animator.SetBool("isGrounded", true); // Update animator parameter
         }
-
-        // Handle collision with LightGrunt
-        if (collision.gameObject.CompareTag("LightGrunt"))
-        {
-            // Take damage from LightGrunt
-            TakeDamage(25);
-        }
     }
 
     private void OnCollisionExit2D(Collision2D collision)
@@ -291,28 +277,5 @@ public class PlayerController : MonoBehaviour
     public bool IsInvincible()
     {
         return isInvincible;
-    }
-
-    // Function to take damage
-    public void TakeDamage(int damage)
-    {
-        if (!isInvincible)
-        {
-            currentHealth -= damage;
-            Debug.Log("Player Health: " + currentHealth);
-
-            // Check if the player is dead
-            if (currentHealth <= 0)
-            {
-                Die();
-            }
-        }
-    }
-
-    // Function to handle player death
-    private void Die()
-    {
-        Debug.Log("Player has died.");
-        // Implement death logic (e.g., respawn or game over)
     }
 }

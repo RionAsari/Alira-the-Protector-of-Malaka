@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: 1834658618478135128}
   m_Layer: 0
   m_Name: Arrow
-  m_TagString: Untagged
+  m_TagString: Arrow
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -127,6 +127,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   lifetime: 5
+  colliderDelay: 0.2
+  chargeLevel: 0
+  isSpecialArrow: 0
 --- !u!70 &1834658618478135128
 CapsuleCollider2D:
   m_ObjectHideFlags: 0

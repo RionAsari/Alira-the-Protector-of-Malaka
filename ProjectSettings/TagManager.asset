@@ -8,6 +8,8 @@ TagManager:
   - Enemy
   - Ally
   - LightGrunt
+  - Arrow
+  - Hacked
   layers:
   - Default
   - TransparentFX

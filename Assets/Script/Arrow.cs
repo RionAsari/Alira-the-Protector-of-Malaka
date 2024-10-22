@@ -7,7 +7,7 @@ public class Arrow : MonoBehaviour
     public float colliderDelay = 0.2f; // Time before the collider is enabled
     private Collider2D arrowCollider; // Arrow's collider
     private float damage; // Damage dealt by the arrow
-    public float chargeLevel; // Added for managing charge levels
+    public float chargeLevel; // For managing charge levels
     public bool isSpecialArrow = false; // Flag to identify if the arrow is special
 
     private void Start()
@@ -15,48 +15,60 @@ public class Arrow : MonoBehaviour
         // Get the collider component
         arrowCollider = GetComponent<Collider2D>();
 
-        // Disable the collider initially
-        arrowCollider.enabled = false;
-
-        // Enable collider after delay
-        StartCoroutine(EnableColliderAfterDelay());
+        // Make the arrow's collider a trigger
+        if (arrowCollider != null)
+        {
+            arrowCollider.isTrigger = true; // Set collider to be a trigger
+        }
 
         // Destroy the arrow after its lifetime expires
         Destroy(gameObject, lifetime);
     }
 
-    // Coroutine to enable collider after a short delay
-    private IEnumerator EnableColliderAfterDelay()
+    private void OnTriggerEnter2D(Collider2D other)
     {
-        yield return new WaitForSeconds(colliderDelay);
-        arrowCollider.enabled = true;
-    }
-
-    private void OnCollisionEnter2D(Collision2D collision)
-    {
-        // Check if it collides with an enemy
-        if (collision.gameObject.CompareTag("Enemy") || collision.gameObject.CompareTag("LightGrunt"))
+        // Ignore player and HackedLightGrunt, handle LightGrunt
+        if (other.CompareTag("Player"))
         {
-            LightGrunt enemy = collision.gameObject.GetComponent<LightGrunt>();
+            // Do nothing if it hits the player
+            Debug.Log("Arrow hit the player: " + other.gameObject.name);
+            return;
+        }
+        else if (other.CompareTag("Ally")) // Check for HackedLightGrunt
+        {
+            // Do nothing if it hits HackedLightGrunt
+            Debug.Log("Arrow hit an ally: " + other.gameObject.name);
+            return; // Prevent further processing for HackedLightGrunt
+        }
+        else if (other.CompareTag("LightGrunt"))
+        {
+            LightGrunt enemy = other.GetComponent<LightGrunt>();
+
             if (enemy != null)
             {
-                if (isSpecialArrow)
-                {
-                    // Disable the enemy if it's a special arrow
-                    StartCoroutine(enemy.DisableEnemy(5f)); // Disable for 5 seconds
-                }
-                else
-                {
-                    // Calculate damage based on charge level for regular arrows
-                    int damageToDeal = CalculateDamage();
-                    damageToDeal = Mathf.Min(damageToDeal, Mathf.FloorToInt(enemy.maxHealth));
-                    enemy.TakeDamage(damageToDeal); // Call method to reduce health
-                }
+                HandleHit(enemy); // Handle the hit logic for LightGrunt
             }
         }
 
         // Destroy the arrow upon hitting an object
         Destroy(gameObject);
+    }
+
+    // Method to handle the hit logic for LightGrunt
+    private void HandleHit(LightGrunt enemy)
+    {
+        if (isSpecialArrow)
+        {
+            // Disable the enemy if it's a special arrow
+            StartCoroutine(enemy.DisableEnemy(5f)); // Disable for 5 seconds
+        }
+        else
+        {
+            // Calculate damage based on charge level for regular arrows
+            int damageToDeal = CalculateDamage();
+            damageToDeal = Mathf.Min(damageToDeal, Mathf.FloorToInt(enemy.maxHealth));
+            enemy.TakeDamage(damageToDeal); // Call method to reduce health
+        }
     }
 
     // Calculate damage based on charge level
@@ -81,6 +93,12 @@ public class Arrow : MonoBehaviour
     public void SetDamage(float arrowDamage)
     {
         damage = arrowDamage; // Set damage value
+    }
+
+    // Function to get the damage of the arrow
+    public float GetDamage()
+    {
+        return damage; // Return the damage value
     }
 
     // Function to set the charge level of the arrow
