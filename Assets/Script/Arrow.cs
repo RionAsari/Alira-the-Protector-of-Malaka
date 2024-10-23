@@ -27,26 +27,26 @@ public class Arrow : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        // Ignore player and HackedLightGrunt, handle LightGrunt
+        // Ignore player and allies, handle enemies
         if (other.CompareTag("Player"))
         {
             // Do nothing if it hits the player
             Debug.Log("Arrow hit the player: " + other.gameObject.name);
             return;
         }
-        else if (other.CompareTag("Ally")) // Check for HackedLightGrunt
+        else if (other.CompareTag("Ally")) 
         {
-            // Do nothing if it hits HackedLightGrunt
+            // Do nothing if it hits an ally
             Debug.Log("Arrow hit an ally: " + other.gameObject.name);
-            return; // Prevent further processing for HackedLightGrunt
+            return;
         }
-        else if (other.CompareTag("LightGrunt"))
+        else if (other.CompareTag("Enemy")) // Check for any enemy tagged as "Enemy"
         {
-            LightGrunt enemy = other.GetComponent<LightGrunt>();
+            LightGrunt enemy = other.GetComponent<LightGrunt>(); // Still using LightGrunt component
 
             if (enemy != null)
             {
-                HandleHit(enemy); // Handle the hit logic for LightGrunt
+                HandleHit(enemy); // Handle the hit logic for any "Enemy" tag
             }
         }
 
@@ -54,7 +54,7 @@ public class Arrow : MonoBehaviour
         Destroy(gameObject);
     }
 
-    // Method to handle the hit logic for LightGrunt
+    // Method to handle the hit logic for LightGrunt (which is now under the "Enemy" tag)
     private void HandleHit(LightGrunt enemy)
     {
         if (isSpecialArrow)

@@ -1,107 +1,164 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class HackedLightGrunt : MonoBehaviour
 {
     public float health = 100f;
     public float maxHealth = 100f;
-    public float moveSpeed = 2f;
-    public float detectionRange = 10f;
-    public float attackRange = 1.5f;
-    public float attackDamage = 10f;
-    public float attackCooldown = 1f;
-    public LayerMask enemyLayer;
+    public HealthbarBehaviour healthbar; 
+    public float followDistance = 3f; 
+    public float followSpeed = 3f; 
+    public float attackRange = 1.5f; 
+    public float enemyDetectRange = 5f; 
+    public float attackCooldown = 2f; 
+    public float damage = 10f; 
 
-    private Rigidbody2D rb;
     private Animator animator;
-    private bool canAttack = true;
+    private Transform player; 
+    private Transform currentTarget; 
+    private float lastAttackTime; 
+
+    private Collider2D playerCollider; 
+    private Collider2D enemyCollider; 
 
     private void Start()
     {
         health = maxHealth;
-        rb = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
+        player = GameObject.FindGameObjectWithTag("Player").transform; 
+
+        playerCollider = player.GetComponent<Collider2D>();
+        enemyCollider = GetComponent<Collider2D>();
+
+        if (playerCollider != null && enemyCollider != null)
+        {
+            Physics2D.IgnoreCollision(playerCollider, enemyCollider);
+        }
+
+        if (healthbar != null)
+        {
+            healthbar.SetHealth(health, maxHealth);
+        }
+
+        lastAttackTime = Time.time;
     }
 
     private void Update()
     {
-        DetectAndAttackEnemies();
+        UpdateAnimation();
+        DetectEnemyOrFollowPlayer(); 
+        UpdateHealthBar();
+    }
 
-        animator.SetBool("isWalking", rb.velocity.magnitude > 0);
+    private void UpdateAnimation()
+    {
+        animator.SetBool("isWalking", false); 
+    }
 
-        if (rb.velocity.x != 0)
+    private void UpdateHealthBar()
+    {
+        if (healthbar != null)
         {
-            UpdateFacingDirection(rb.velocity.x);
+            healthbar.UpdatePosition(transform.position);
         }
     }
 
-    private void UpdateFacingDirection(float moveDirectionX)
+    private void DetectEnemyOrFollowPlayer()
     {
-        if (moveDirectionX > 0 && transform.localScale.x < 0)
-        {
-            transform.localScale = new Vector3(Mathf.Abs(transform.localScale.x), transform.localScale.y, transform.localScale.z);
-        }
-        else if (moveDirectionX < 0 && transform.localScale.x > 0)
-        {
-            transform.localScale = new Vector3(-Mathf.Abs(transform.localScale.x), transform.localScale.y, transform.localScale.z);
-        }
-    }
+        GameObject[] enemies = GameObject.FindGameObjectsWithTag("Enemy");
+        float nearestDistance = Mathf.Infinity;
+        currentTarget = null;
 
-    private void DetectAndAttackEnemies()
-    {
-        Collider2D[] enemiesInRange = Physics2D.OverlapCircleAll(transform.position, detectionRange, enemyLayer);
-        Transform target = null;
-        float closestDistance = float.MaxValue;
-
-        foreach (var enemyCollider in enemiesInRange)
+        foreach (GameObject enemy in enemies)
         {
-            LightGrunt enemyScript = enemyCollider.GetComponent<LightGrunt>();
-            if (enemyScript != null && enemyScript.health > 0 && !enemyScript.isHacked)
+            float distanceToEnemy = Vector3.Distance(transform.position, enemy.transform.position);
+            if (distanceToEnemy < nearestDistance && distanceToEnemy <= enemyDetectRange)
             {
-                float distanceToEnemy = Vector2.Distance(transform.position, enemyCollider.transform.position);
-                if (distanceToEnemy < closestDistance)
+                nearestDistance = distanceToEnemy;
+                currentTarget = enemy.transform;
+            }
+        }
+
+        if (currentTarget != null)
+        {
+            float distance = Vector3.Distance(transform.position, currentTarget.position);
+
+            if (distance <= attackRange)
+            {
+                AttackEnemy();
+            }
+            else
+            {
+                ChaseEnemy();
+            }
+        }
+        else
+        {
+            FollowPlayer();
+        }
+    }
+
+    private void FollowPlayer()
+    {
+        if (player != null)
+        {
+            float distance = Vector3.Distance(transform.position, player.position);
+
+            if (distance > followDistance)
+            {
+                Vector3 direction = (player.position - transform.position).normalized;
+                transform.position += direction * followSpeed * Time.deltaTime;
+
+                animator.SetBool("isWalking", true);
+            }
+            else
+            {
+                animator.SetBool("isWalking", false);
+            }
+        }
+    }
+
+    private void ChaseEnemy()
+    {
+        if (currentTarget != null)
+        {
+            Vector3 direction = (currentTarget.position - transform.position).normalized;
+            transform.position += direction * followSpeed * Time.deltaTime;
+
+            animator.SetBool("isWalking", true);
+        }
+    }
+
+    private void AttackEnemy()
+    {
+        if (Time.time >= lastAttackTime + attackCooldown)
+        {
+            animator.SetTrigger("isAttacking");
+
+            // Hanya menyerang jika target bertag "Enemy"
+            if (currentTarget != null && currentTarget.CompareTag("Enemy"))
+            {
+                LightGrunt enemyScript = currentTarget.GetComponent<LightGrunt>();
+                if (enemyScript != null)
                 {
-                    closestDistance = distanceToEnemy;
-                    target = enemyCollider.transform;
+                    enemyScript.TakeDamage(damage); 
                 }
             }
+
+            lastAttackTime = Time.time;
         }
-
-        if (target != null)
-        {
-            Vector2 directionToTarget = (target.position - transform.position).normalized;
-            rb.velocity = new Vector2(directionToTarget.x * moveSpeed, rb.velocity.y);
-            if (Vector2.Distance(transform.position, target.position) <= attackRange && canAttack)
-            {
-                Attack(target.gameObject);
-            }
-        }
-    }
-
-    private void Attack(GameObject enemy)
-    {
-        animator.SetTrigger("Attack");
-
-        LightGrunt lightGrunt = enemy.GetComponent<LightGrunt>();
-        if (lightGrunt != null)
-                {
-            lightGrunt.TakeDamage(attackDamage); // Inflict damage to the LightGrunt
-        }
-
-        canAttack = false;
-        StartCoroutine(ResetAttackCooldown());
-    }
-
-    private IEnumerator ResetAttackCooldown()
-    {
-        yield return new WaitForSeconds(attackCooldown);
-        canAttack = true;
     }
 
     public void TakeDamage(float damage)
     {
         health -= damage;
         if (health < 0) health = 0;
+
+        if (healthbar != null)
+        {
+            healthbar.SetHealth(health, maxHealth);
+        }
 
         if (health <= 0)
         {
@@ -112,16 +169,11 @@ public class HackedLightGrunt : MonoBehaviour
     private void Die()
     {
         animator.SetTrigger("isDead");
-        rb.velocity = Vector2.zero;
-        Destroy(gameObject, 2f);
+        Destroy(gameObject, 2f); 
     }
 
-    private void OnCollisionEnter2D(Collision2D collision)
+    public void ReceiveEnemyAttack(float damage)
     {
-        // Avoid collision with player
-        if (collision.gameObject.CompareTag("Player"))
-        {
-            Physics2D.IgnoreCollision(collision.collider, GetComponent<Collider2D>());
-        }
+        TakeDamage(damage);
     }
 }

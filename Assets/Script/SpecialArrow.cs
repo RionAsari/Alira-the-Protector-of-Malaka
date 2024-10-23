@@ -20,14 +20,15 @@ public class SpecialArrow : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        // If collides with LightGrunt
-        if (other.CompareTag("LightGrunt"))
+        // If collides with anything tagged as "Enemy"
+        if (other.CompareTag("Enemy"))
         {
+            // Check if it has the LightGrunt component
             LightGrunt enemy = other.GetComponent<LightGrunt>();
 
             if (enemy != null)
             {
-                Debug.Log("Hit LightGrunt: " + enemy.name); // Debug log
+                Debug.Log("Hit enemy: " + enemy.name); // Debug log
                 // Disable the enemy immediately
                 StartCoroutine(DisableEnemy(enemy)); // Disable the enemy
             }
