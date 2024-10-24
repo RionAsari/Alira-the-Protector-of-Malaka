@@ -18,6 +18,7 @@ public class HackedLightGrunt : MonoBehaviour
     private Transform player; 
     private Transform currentTarget; 
     private float lastAttackTime; 
+    private Vector3 originalScale; // Tambahkan variabel untuk menyimpan skala asli
 
     private Collider2D playerCollider; 
     private Collider2D enemyCollider; 
@@ -42,6 +43,9 @@ public class HackedLightGrunt : MonoBehaviour
         }
 
         lastAttackTime = Time.time;
+
+        // Simpan skala asli sprite
+        originalScale = transform.localScale;
     }
 
     private void Update()
@@ -108,6 +112,17 @@ public class HackedLightGrunt : MonoBehaviour
             if (distance > followDistance)
             {
                 Vector3 direction = (player.position - transform.position).normalized;
+
+                // Flip sprite berdasarkan arah gerakan tanpa mengubah skala
+                if (direction.x > 0) // Jika player ada di kanan
+                {
+                    transform.localScale = new Vector3(-Mathf.Abs(originalScale.x), originalScale.y, originalScale.z);  // Balik ke kanan
+                }
+                else if (direction.x < 0) // Jika player ada di kiri
+                {
+                    transform.localScale = new Vector3(Mathf.Abs(originalScale.x), originalScale.y, originalScale.z);  // Tetap menghadap kiri
+                }
+
                 transform.position += direction * followSpeed * Time.deltaTime;
 
                 animator.SetBool("isWalking", true);
@@ -124,6 +139,17 @@ public class HackedLightGrunt : MonoBehaviour
         if (currentTarget != null)
         {
             Vector3 direction = (currentTarget.position - transform.position).normalized;
+
+            // Flip sprite berdasarkan arah gerakan tanpa mengubah skala
+            if (direction.x > 0) // Jika target ada di kanan
+            {
+                transform.localScale = new Vector3(-Mathf.Abs(originalScale.x), originalScale.y, originalScale.z);  // Balik ke kanan
+            }
+            else if (direction.x < 0) // Jika target ada di kiri
+            {
+                transform.localScale = new Vector3(Mathf.Abs(originalScale.x), originalScale.y, originalScale.z);  // Tetap menghadap kiri
+            }
+
             transform.position += direction * followSpeed * Time.deltaTime;
 
             animator.SetBool("isWalking", true);
@@ -135,6 +161,19 @@ public class HackedLightGrunt : MonoBehaviour
         if (Time.time >= lastAttackTime + attackCooldown)
         {
             animator.SetTrigger("isAttacking");
+
+            // Flip sprite berdasarkan posisi target tanpa mengubah skala
+            if (currentTarget != null)
+            {
+                if (currentTarget.position.x > transform.position.x)
+                {
+                    transform.localScale = new Vector3(-Mathf.Abs(originalScale.x), originalScale.y, originalScale.z);  // Balik ke kanan
+                }
+                else if (currentTarget.position.x < transform.position.x)
+                {
+                    transform.localScale = new Vector3(Mathf.Abs(originalScale.x), originalScale.y, originalScale.z);  // Tetap menghadap kiri
+                }
+            }
 
             // Hanya menyerang jika target bertag "Enemy"
             if (currentTarget != null && currentTarget.CompareTag("Enemy"))
@@ -169,7 +208,7 @@ public class HackedLightGrunt : MonoBehaviour
     private void Die()
     {
         animator.SetTrigger("isDead");
-        Destroy(gameObject, 2f); 
+        Destroy(gameObject, 0.2f); 
     }
 
     public void ReceiveEnemyAttack(float damage)

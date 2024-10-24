@@ -26,6 +26,8 @@ public class LightGrunt : MonoBehaviour
     public string allyTag = "Ally";
     public string playerTag = "Player"; // Tag player untuk deteksi
 
+    private Vector3 originalScale; // Simpan skala asli
+
     private void Start()
     {
         health = maxHealth;
@@ -35,6 +37,9 @@ public class LightGrunt : MonoBehaviour
         {
             healthbar.SetHealth(health, maxHealth);
         }
+
+        // Simpan skala asli sprite
+        originalScale = transform.localScale;
     }
 
     private void Update()
@@ -93,6 +98,10 @@ public class LightGrunt : MonoBehaviour
                 ChaseTarget();
             }
         }
+        else
+        {
+            animator.SetBool("isWalking", false);
+        }
     }
 
     private GameObject GetNearestTarget(GameObject[] allies, GameObject player)
@@ -134,6 +143,10 @@ public class LightGrunt : MonoBehaviour
         if (distanceToTarget > attackRange)
         {
             Vector3 direction = (currentTarget.position - transform.position).normalized;
+
+            // Flip sprite berdasarkan arah gerakan
+            FlipSprite(direction);
+
             transform.position += direction * followSpeed * Time.deltaTime;
             animator.SetBool("isWalking", true);
         }
@@ -147,8 +160,13 @@ public class LightGrunt : MonoBehaviour
     {
         if (Time.time >= lastAttackTime + attackCooldown)
         {
+            // Set walking ke false sebelum menyerang
+            animator.SetBool("isWalking", false);
             animator.SetTrigger("isAttacking");
             lastAttackTime = Time.time;
+
+            // Flip sprite berdasarkan posisi target
+            FlipSprite(currentTarget.position - transform.position);
 
             // Jika target bertag "Ally", serang ally
             if (currentTarget != null && currentTarget.CompareTag("Ally"))
@@ -160,7 +178,7 @@ public class LightGrunt : MonoBehaviour
                 }
             }
 
-            // Jika target bertag "Player", serang player tanpa class Player
+            // Jika target bertag "Player", serang player
             if (currentTarget != null && currentTarget.CompareTag("Player"))
             {
                 // Coba dapatkan komponen Health jika ada
@@ -170,6 +188,21 @@ public class LightGrunt : MonoBehaviour
                     playerHealth.TakeDamage(10);  // Berikan damage pada player
                 }
             }
+
+            // Kembali ke idle setelah menyerang
+            animator.SetBool("isWalking", false);
+        }
+    }
+
+    private void FlipSprite(Vector3 direction)
+    {
+        if (direction.x > 0) // Jika target ada di kanan
+        {
+            transform.localScale = new Vector3(-Mathf.Abs(originalScale.x), originalScale.y, originalScale.z);  // Balik ke kanan
+        }
+        else if (direction.x < 0) // Jika target ada di kiri
+        {
+            transform.localScale = new Vector3(Mathf.Abs(originalScale.x), originalScale.y, originalScale.z);  // Tetap menghadap kiri
         }
     }
 
@@ -193,7 +226,7 @@ public class LightGrunt : MonoBehaviour
     {
         animator.SetTrigger("isDead");
         isDisabled = true;
-        Destroy(gameObject, 2f);
+        Destroy(gameObject, 0.2f);
     }
 
     public IEnumerator DisableEnemy(float duration)

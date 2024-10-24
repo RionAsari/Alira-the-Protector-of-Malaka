@@ -480,6 +480,7 @@ MonoBehaviour:
   detectionRange: 10
   attackCooldown: 1
   allyTag: Ally
+  playerTag: Player
 --- !u!1 &4981578392317854617
 GameObject:
   m_ObjectHideFlags: 0

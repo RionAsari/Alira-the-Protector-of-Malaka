@@ -265,8 +265,8 @@ MonoBehaviour:
   followDistance: 3
   followSpeed: 3
   attackRange: 3
-  enemyDetectRange: 15
-  attackCooldown: 0.5
+  enemyDetectRange: 10
+  attackCooldown: 1
   damage: 10
 --- !u!1 &3017555926926991582
 GameObject:
