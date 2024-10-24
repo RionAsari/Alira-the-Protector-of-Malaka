@@ -264,7 +264,7 @@ MonoBehaviour:
   healthbar: {fileID: 7706115626358377499}
   followDistance: 3
   followSpeed: 3
-  attackRange: 3
+  attackRange: 2
   enemyDetectRange: 10
   attackCooldown: 1
   damage: 10

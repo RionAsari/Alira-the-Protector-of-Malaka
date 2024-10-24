@@ -475,7 +475,7 @@ MonoBehaviour:
   isHacked: 0
   healthbar: {fileID: 7930664363721713505}
   hackedLightGruntPrefab: {fileID: 2729952837380744392, guid: f25fa8800d3be404aa5c032209ca7253, type: 3}
-  attackRange: 3
+  attackRange: 2
   followSpeed: 3
   detectionRange: 10
   attackCooldown: 1
