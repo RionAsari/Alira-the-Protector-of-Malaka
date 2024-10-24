@@ -15,6 +15,21 @@ public class Volley : MonoBehaviour
     {
         Debug.Log("Collided with: " + other.gameObject.name); // Log the collided object name
 
+        // Ignore collisions with Arrow and SpecialArrow
+        if (other.CompareTag("Arrow") || other.CompareTag("SpecialArrow"))
+        {
+            Debug.Log("Ignored collision with: " + other.gameObject.name);
+            Physics2D.IgnoreCollision(GetComponent<Collider2D>(), other); // Ignore collision
+            return; // Exit the method
+        }
+
+        // Ignore collision with MiddleBot
+        if (other.CompareTag("MiddleBot"))
+        {
+            Debug.Log("Ignored collision with MiddleBot: " + other.gameObject.name);
+            return; // Ignore collision and do nothing
+        }
+
         if (other.CompareTag("Player"))
         {
             // Get the Health component of the player

@@ -11,6 +11,8 @@ TagManager:
   - Arrow
   - Hacked
   - SpecialArrow
+  - MiddleBot
+  - Volley
   layers:
   - Default
   - TransparentFX

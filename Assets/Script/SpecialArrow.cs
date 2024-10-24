@@ -20,21 +20,31 @@ public class SpecialArrow : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D other)
     {
+        // Ignore collision with Volley projectiles
+        if (other.CompareTag("Volley"))
+        {
+            Debug.Log("Ignored collision with Volley: " + other.gameObject.name);
+            Physics2D.IgnoreCollision(GetComponent<Collider2D>(), other); // Ignore collision
+            return; // Exit the method
+        }
+
         // If collides with anything tagged as "Enemy"
         if (other.CompareTag("Enemy"))
         {
-            // Check if it has the LightGrunt component
             LightGrunt enemy = other.GetComponent<LightGrunt>();
-
             if (enemy != null)
             {
-                Debug.Log("Hit enemy: " + enemy.name); // Debug log
-                // Disable the enemy immediately
+                Debug.Log("Hit LightGrunt enemy: " + enemy.name); // Debug log
                 StartCoroutine(DisableEnemy(enemy)); // Disable the enemy
             }
-            else
+        }
+        else if (other.CompareTag("MiddleBot"))
+        {
+            MiddleBot middleBot = other.GetComponent<MiddleBot>();
+            if (middleBot != null && middleBot.IncrementHitCount())
             {
-                Debug.Log("Enemy component is null.");
+                Debug.Log("Hit MiddleBot enemy: " + middleBot.name); // Debug log
+                StartCoroutine(DisableEnemy(middleBot)); // Disable the MiddleBot
             }
         }
         else if (other.CompareTag("Ally"))
@@ -48,19 +58,18 @@ public class SpecialArrow : MonoBehaviour
         TriggerHitAnimation();
     }
 
-    // Coroutine to disable the enemy
     private IEnumerator DisableEnemy(LightGrunt enemy)
     {
         enemy.isHackable = true; // Set the enemy to be hackable
-
-        // Call DisableEnemy with the specified duration
         yield return StartCoroutine(enemy.DisableEnemy(disableDuration)); // Wait for the disable duration
-
-        // After the disable duration, reset the hackable state
         enemy.isHackable = false; // Set to not hackable
     }
 
-    // Trigger hit animation and prepare for destruction
+    private IEnumerator DisableEnemy(MiddleBot middleBot)
+    {
+        yield return StartCoroutine(middleBot.DisableEnemy(disableDuration)); // Wait for the disable duration
+    }
+
     private void TriggerHitAnimation()
     {
         if (animator != null)
@@ -72,11 +81,9 @@ public class SpecialArrow : MonoBehaviour
         Destroy(GetComponent<Collider2D>()); // Remove collider
         Destroy(GetComponent<Rigidbody2D>()); // Remove rigidbody
 
-        // Call DestroyArrow after a delay that matches your hit animation length
         Invoke("DestroyArrow", 0.2f); // Example delay, adjust as needed
     }
 
-    // Call this function at the end of the Hit animation to destroy the arrow
     public void DestroyArrow()
     {
         Destroy(gameObject); // Destroy the arrow object

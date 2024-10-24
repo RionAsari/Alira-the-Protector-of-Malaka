@@ -27,6 +27,7 @@ public class MiddleBot : MonoBehaviour
     public string playerTag = "Player";
 
     private Vector3 originalScale;
+    private int hitCount = 0; // Counter for hits from SpecialArrow
 
     private void Start()
     {
@@ -215,9 +216,25 @@ public class MiddleBot : MonoBehaviour
         animator.SetTrigger("isReactivated");
     }
 
+    // Increment hit count from SpecialArrow
+    public bool IncrementHitCount()
+    {
+        hitCount++;
+        if (hitCount >= 2)
+        {
+            hitCount = 0; // Reset hit count
+            return true; // Indicate that MiddleBot can be disabled
+        }
+        return false; // Not yet disabled
+    }
+
     private void SwitchToHackedMiddleBot()
     {
-        GameObject hackedBot = Instantiate(hackedMiddleBotPrefab, transform.position, transform.rotation);
-        Destroy(gameObject);
+        // Instantiate the hacked MiddleBot prefab at the current position
+        if (hackedMiddleBotPrefab != null)
+        {
+            Instantiate(hackedMiddleBotPrefab, transform.position, Quaternion.identity);
+        }
+        Destroy(gameObject); // Destroy this MiddleBot
     }
 }
