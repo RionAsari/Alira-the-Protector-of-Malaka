@@ -10,6 +10,9 @@ TagManager:
   - LightGrunt
   - Arrow
   - Hacked
+  - SpecialArrow
+  - MiddleBot
+  - Volley
   layers:
   - Default
   - TransparentFX
@@ -20,7 +23,7 @@ TagManager:
   - Enemy
   - Arrow
   - Ally
-  - 
+  - SpecialArrow
   - 
   - 
   - 

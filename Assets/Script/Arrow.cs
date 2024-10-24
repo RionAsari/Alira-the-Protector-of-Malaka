@@ -27,26 +27,39 @@ public class Arrow : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        // Ignore player and HackedLightGrunt, handle LightGrunt
+        // Ignore collision with Volley projectiles
+        if (other.CompareTag("Volley"))
+        {
+            Debug.Log("Ignored collision with Volley: " + other.gameObject.name);
+            Physics2D.IgnoreCollision(GetComponent<Collider2D>(), other); // Ignore collision
+            return; // Exit the method
+        }
+
+        // Ignore player and allies, handle enemies
         if (other.CompareTag("Player"))
         {
-            // Do nothing if it hits the player
             Debug.Log("Arrow hit the player: " + other.gameObject.name);
-            return;
+            return; // Do nothing if it hits the player
         }
-        else if (other.CompareTag("Ally")) // Check for HackedLightGrunt
+        else if (other.CompareTag("Ally")) 
         {
-            // Do nothing if it hits HackedLightGrunt
             Debug.Log("Arrow hit an ally: " + other.gameObject.name);
-            return; // Prevent further processing for HackedLightGrunt
+            return; // Do nothing if it hits an ally
         }
-        else if (other.CompareTag("LightGrunt"))
+        else if (other.CompareTag("Enemy")) // Check for any enemy tagged as "Enemy"
         {
-            LightGrunt enemy = other.GetComponent<LightGrunt>();
-
+            LightGrunt enemy = other.GetComponent<LightGrunt>(); // Still using LightGrunt component
             if (enemy != null)
             {
-                HandleHit(enemy); // Handle the hit logic for LightGrunt
+                HandleHit(enemy); // Handle the hit logic for any "Enemy" tag
+            }
+        }
+        else if (other.CompareTag("MiddleBot")) // Check for MiddleBot tag
+        {
+            MiddleBot middleBot = other.GetComponent<MiddleBot>(); // Get MiddleBot component
+            if (middleBot != null)
+            {
+                HandleHitMiddleBot(middleBot); // Handle hit logic for MiddleBot
             }
         }
 
@@ -54,7 +67,6 @@ public class Arrow : MonoBehaviour
         Destroy(gameObject);
     }
 
-    // Method to handle the hit logic for LightGrunt
     private void HandleHit(LightGrunt enemy)
     {
         if (isSpecialArrow)
@@ -71,7 +83,21 @@ public class Arrow : MonoBehaviour
         }
     }
 
-    // Calculate damage based on charge level
+    private void HandleHitMiddleBot(MiddleBot middleBot)
+    {
+        if (isSpecialArrow)
+        {
+            // Disable the MiddleBot if it's a special arrow
+            StartCoroutine(middleBot.DisableEnemy(5f)); // Adjust method as needed
+        }
+        else
+        {
+            // Calculate damage based on charge level for regular arrows
+            int damageToDeal = CalculateDamage();
+            middleBot.TakeDamage(damageToDeal); // Call method to reduce health
+        }
+    }
+
     private int CalculateDamage()
     {
         if (chargeLevel >= 0.01f && chargeLevel < 0.5f) // 1%-49% charge
@@ -89,19 +115,16 @@ public class Arrow : MonoBehaviour
         return 0; // No damage if charge level is 0
     }
 
-    // Function to set the damage of the arrow
     public void SetDamage(float arrowDamage)
     {
         damage = arrowDamage; // Set damage value
     }
 
-    // Function to get the damage of the arrow
     public float GetDamage()
     {
         return damage; // Return the damage value
     }
 
-    // Function to set the charge level of the arrow
     public void SetChargeLevel(float level)
     {
         chargeLevel = level; // Set charge level
