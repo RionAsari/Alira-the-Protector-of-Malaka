@@ -245,7 +245,7 @@ MonoBehaviour:
   isHackable: 0
   isHacked: 0
   healthbar: {fileID: 4119774615026258098}
-  hackedMiddleBotPrefab: {fileID: 113965303177440809, guid: b84a7b12f1dd2f94abbf69cc543e6383, type: 3}
+  hackedMiddleBotPrefab: {fileID: 8974864471829462501, guid: b84a7b12f1dd2f94abbf69cc543e6383, type: 3}
   followSpeed: 3
   detectionRange: 15
   attackRange: 10

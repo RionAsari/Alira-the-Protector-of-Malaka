@@ -254,4 +254,21 @@ public class LightGrunt : MonoBehaviour
         GameObject hackedGrunt = Instantiate(hackedLightGruntPrefab, transform.position, transform.rotation);
         Destroy(gameObject);
     }
+
+    // Method to handle damage from HackedVolley
+    private void OnTriggerEnter2D(Collider2D other)
+    {
+        // Check if collided with a HackedVolley projectile
+        if (other.CompareTag("HackedVolley"))
+        {
+            HackedVolley hackedVolley = other.GetComponent<HackedVolley>();
+            if (hackedVolley != null)
+            {
+                TakeDamage(hackedVolley.damage); // Take damage from the HackedVolley
+                Debug.Log($"LightGrunt hit by HackedVolley. Damage taken: {hackedVolley.damage}");
+            }
+
+            Destroy(other.gameObject); // Destroy the HackedVolley projectile after hitting
+        }
+    }
 }
