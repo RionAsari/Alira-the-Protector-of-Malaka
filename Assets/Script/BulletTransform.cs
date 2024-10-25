@@ -2,57 +2,48 @@ using UnityEngine;
 
 public class BulletTransform : MonoBehaviour
 {
-    public Transform player;
+    public Transform target;  // target untuk Player dan Ally
     public GameObject volleyPrefab;
     public float projectileSpeed = 10f;
     public float attackCooldown = 2f;
 
     private float lastAttackTime = 0f;
-    private Animator animator; // Reference to Animator
+    private Animator animator;
 
     private void Start()
     {
-        // Get the Animator component
-        animator = GetComponentInParent<Animator>(); // Assuming BulletTransform is a child of MiddleBot
+        // Mendapatkan komponen Animator
+        animator = GetComponentInParent<Animator>(); // Mengasumsikan BulletTransform adalah anak dari MiddleBot
+    }
+
+    // Metode untuk menetapkan target dari MiddleBot
+    public void SetTarget(Transform newTarget) 
+    {
+        target = newTarget;
     }
 
     private void Update()
     {
-        if (player == null)
+        if (target != null)
         {
-            FindPlayer();
-        }
-        else
-        {
-            AimAtPlayer();
-            // No need to call ShootAtPlayer here. It will be called from the MiddleBot's Attack method.
+            AimAtTarget();
         }
     }
 
-    private void FindPlayer()
+    private void AimAtTarget()
     {
-        GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
-        if (playerObj != null)
+        if (target != null)
         {
-            player = playerObj.transform;
-        }
-    }
-
-    private void AimAtPlayer()
-    {
-        if (player != null)
-        {
-            Vector2 direction = (player.position - transform.position).normalized;
+            Vector2 direction = (target.position - transform.position).normalized;
             float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
             transform.rotation = Quaternion.Euler(new Vector3(0, 0, angle));
         }
     }
 
-    public void ShootAtPlayer()
+    public void ShootAtTarget()
     {
-        if (Time.time >= lastAttackTime + attackCooldown)
+        if (Time.time >= lastAttackTime + attackCooldown && target != null)
         {
-            // Set the attack trigger
             if (animator != null)
             {
                 animator.SetTrigger("Attack");
@@ -63,7 +54,7 @@ public class BulletTransform : MonoBehaviour
 
             if (rb != null)
             {
-                Vector2 direction = (player.position - transform.position).normalized;
+                Vector2 direction = (target.position - transform.position).normalized;
                 rb.velocity = direction * projectileSpeed;
             }
 

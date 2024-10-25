@@ -1,13 +1,13 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-public class HealthbarBehaviour : MonoBehaviour
+public class HealthBarMiddleBot : MonoBehaviour
 {
     public Slider Slider;          // Reference to the health slider
-    public Color Low;             // Color for low health
-    public Color Medium;          // Color for medium health
-    public Color High;            // Color for high health
-    public Vector3 Offset = new Vector3(0, 2f, 0); // Sesuaikan nilai Y sesuai kebutuhan
+    public Color Low;             // Color for low health (optional)
+    public Color Medium;          // Color for medium health (optional)
+    public Color High;            // Color for high health (optional)
+    public Vector3 Offset = new Vector3(0, 2f, 0); // Adjust Y value as needed
 
     private void Start()
     {
@@ -26,17 +26,16 @@ public class HealthbarBehaviour : MonoBehaviour
 
         Debug.Log($"Health set to: {health}, Max Health: {maxHealth}"); // Debug log
 
-        // Change color based on the health percentage
-        float healthPercentage = health / maxHealth;
-        if (health == maxHealth) // Full health (100%)
+        // Change color based on the health value ranges
+        if (health >= 350f) // 500f - 350f
         {
             Slider.fillRect.GetComponentInChildren<Image>().color = Color.green; // Set to green
         }
-        else if (healthPercentage <= 0.8f && healthPercentage > 0.4f) // 80%-40%
+        else if (health >= 150f) // 349f - 150f
         {
             Slider.fillRect.GetComponentInChildren<Image>().color = Color.yellow; // Set to yellow
         }
-        else if (health > 0) // 39%-1%
+        else if (health > 0) // 149f - 0f
         {
             Slider.fillRect.GetComponentInChildren<Image>().color = Color.red; // Set to red
         }

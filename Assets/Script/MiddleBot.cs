@@ -3,13 +3,13 @@ using UnityEngine;
 
 public class MiddleBot : MonoBehaviour
 {
-    public float health = 100f;
-    public float maxHealth = 100f;
+    public float health = 500f;
+    public float maxHealth = 500f;
 
     public bool isDisabled = false;
     public bool isHackable = false;
     public bool isHacked = false;
-    public HealthbarBehaviour healthbar;
+    public HealthBarMiddleBot healthbar;
     public GameObject hackedMiddleBotPrefab;
 
     private Animator animator;
@@ -18,10 +18,10 @@ public class MiddleBot : MonoBehaviour
     public float followSpeed = 3f;
     private Transform currentTarget;
 
-    public float detectionRange = 15f;  // Detection range for finding targets
-    public float attackRange = 10f;     // Attack range for the MiddleBot
-    public float attackCooldown = 1f;   // Time between attacks
-    private float lastAttackTime = 0f;  // Tracks the last attack time
+    public float detectionRange = 15f;  // Detection range
+    public float attackRange = 10f;     // Attack range for MiddleBot
+    public float attackCooldown = 1f;   // Attack cooldown
+    private float lastAttackTime = 0f;
 
     public string allyTag = "Ally";
     public string playerTag = "Player";
@@ -70,14 +70,11 @@ public class MiddleBot : MonoBehaviour
     {
         if (isDisabled) return;
 
-        GameObject[] allies = GameObject.FindGameObjectsWithTag(allyTag);
-        GameObject player = GameObject.FindGameObjectWithTag(playerTag);
-
-        GameObject nearestTarget = GetNearestTarget(allies, player);
-
+        GameObject nearestTarget = GetNearestTargetWithTags(allyTag, playerTag);
         if (nearestTarget != null && Vector3.Distance(transform.position, nearestTarget.transform.position) < detectionRange)
         {
             currentTarget = nearestTarget.transform;
+            bulletTransform.SetTarget(currentTarget);  // Set target for BulletTransform
         }
         else
         {
@@ -93,41 +90,34 @@ public class MiddleBot : MonoBehaviour
             }
             else
             {
-                ChaseTarget(); // Chase if outside of attack range
+                ChaseTarget(); // Chase if out of attack range
             }
         }
         else
         {
-            // No target, stop walking
-            animator.SetBool("isWalking", false);
+            animator.SetBool("isWalking", false); // Stop walking if no target
         }
     }
 
-    private GameObject GetNearestTarget(GameObject[] allies, GameObject player)
+    // Find the nearest target from MiddleBot based on given tags
+    private GameObject GetNearestTargetWithTags(params string[] tags)
     {
         GameObject nearestTarget = null;
         float shortestDistance = Mathf.Infinity;
 
-        foreach (GameObject ally in allies)
+        foreach (string tag in tags)
         {
-            float distanceToTarget = Vector3.Distance(transform.position, ally.transform.position);
-            if (distanceToTarget < shortestDistance)
+            GameObject[] targets = GameObject.FindGameObjectsWithTag(tag);
+            foreach (GameObject target in targets)
             {
-                shortestDistance = distanceToTarget;
-                nearestTarget = ally;
+                float distance = Vector3.Distance(transform.position, target.transform.position);
+                if (distance < shortestDistance)
+                {
+                    shortestDistance = distance;
+                    nearestTarget = target;
+                }
             }
         }
-
-        if (player != null)
-        {
-            float distanceToPlayer = Vector3.Distance(transform.position, player.transform.position);
-            if (distanceToPlayer < shortestDistance)
-            {
-                shortestDistance = distanceToPlayer;
-                nearestTarget = player;
-            }
-        }
-
         return nearestTarget;
     }
 
@@ -136,26 +126,31 @@ public class MiddleBot : MonoBehaviour
         if (currentTarget == null || isDisabled) return;
 
         float distanceToTarget = Vector3.Distance(transform.position, currentTarget.position);
-
         Vector3 direction = (currentTarget.position - transform.position).normalized;
 
         FlipSprite(direction);
 
         transform.position += direction * followSpeed * Time.deltaTime;
-        animator.SetBool("isWalking", true); // Set walking animation only when moving
+        animator.SetBool("isWalking", true); // Show walking animation only while moving
     }
 
     private void Attack()
     {
         if (Time.time >= lastAttackTime + attackCooldown)
         {
-            // Call the ShootAtPlayer method from BulletTransform
             if (bulletTransform != null)
             {
-                bulletTransform.ShootAtPlayer();
+                bulletTransform.ShootAtTarget(); // Attack the target
             }
 
-            lastAttackTime = Time.time; // Update the last attack time
+            lastAttackTime = Time.time; // Update last attack time
+        }
+
+        if (currentTarget != null)
+        {
+            // Ensure sprite faces target while attacking
+            Vector3 direction = (currentTarget.position - transform.position).normalized;
+            FlipSprite(direction);
         }
 
         animator.SetBool("isWalking", false); // Stop walking animation
@@ -163,11 +158,11 @@ public class MiddleBot : MonoBehaviour
 
     private void FlipSprite(Vector3 direction)
     {
-        if (direction.x < 0) // If the target is to the left
+        if (direction.x < 0) // If target is on the left
         {
             transform.localScale = new Vector3(-Mathf.Abs(originalScale.x), originalScale.y, originalScale.z);
         }
-        else if (direction.x > 0) // If the target is to the right
+        else if (direction.x > 0) // If target is on the right
         {
             transform.localScale = new Vector3(Mathf.Abs(originalScale.x), originalScale.y, originalScale.z);
         }
@@ -216,7 +211,6 @@ public class MiddleBot : MonoBehaviour
         animator.SetTrigger("isReactivated");
     }
 
-    // Increment hit count from SpecialArrow
     public bool IncrementHitCount()
     {
         hitCount++;
@@ -225,16 +219,28 @@ public class MiddleBot : MonoBehaviour
             hitCount = 0; // Reset hit count
             return true; // Indicate that MiddleBot can be disabled
         }
-        return false; // Not yet disabled
+        return false;
     }
 
     private void SwitchToHackedMiddleBot()
     {
-        // Instantiate the hacked MiddleBot prefab at the current position
         if (hackedMiddleBotPrefab != null)
         {
             Instantiate(hackedMiddleBotPrefab, transform.position, Quaternion.identity);
         }
-        Destroy(gameObject); // Destroy this MiddleBot
+        Destroy(gameObject);
+    }
+
+    private void OnTriggerEnter2D(Collider2D other)
+    {
+        if (other.CompareTag("HackedVolley"))
+        {
+            HackedVolley hackedVolley = other.GetComponent<HackedVolley>();
+            if (hackedVolley != null)
+            {
+                TakeDamage(hackedVolley.damage);
+                Destroy(other.gameObject); // Destroy the projectile after dealing damage
+            }
+        }
     }
 }

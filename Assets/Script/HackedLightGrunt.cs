@@ -70,17 +70,29 @@ public class HackedLightGrunt : MonoBehaviour
 
     private void DetectEnemyOrFollowPlayer()
     {
-        GameObject[] enemies = GameObject.FindGameObjectsWithTag("Enemy");
+        GameObject[] targets = GameObject.FindGameObjectsWithTag("Enemy");
+        GameObject[] middleBots = GameObject.FindGameObjectsWithTag("MiddleBot");
+        
         float nearestDistance = Mathf.Infinity;
         currentTarget = null;
 
-        foreach (GameObject enemy in enemies)
+        foreach (GameObject target in targets)
         {
-            float distanceToEnemy = Vector3.Distance(transform.position, enemy.transform.position);
-            if (distanceToEnemy < nearestDistance && distanceToEnemy <= enemyDetectRange)
+            float distanceToTarget = Vector3.Distance(transform.position, target.transform.position);
+            if (distanceToTarget < nearestDistance && distanceToTarget <= enemyDetectRange)
             {
-                nearestDistance = distanceToEnemy;
-                currentTarget = enemy.transform;
+                nearestDistance = distanceToTarget;
+                currentTarget = target.transform;
+            }
+        }
+
+        foreach (GameObject middleBot in middleBots)
+        {
+            float distanceToMiddleBot = Vector3.Distance(transform.position, middleBot.transform.position);
+            if (distanceToMiddleBot < nearestDistance && distanceToMiddleBot <= enemyDetectRange)
+            {
+                nearestDistance = distanceToMiddleBot;
+                currentTarget = middleBot.transform;
             }
         }
 
@@ -90,11 +102,11 @@ public class HackedLightGrunt : MonoBehaviour
 
             if (distance <= attackRange)
             {
-                AttackEnemy();
+                AttackTarget();
             }
             else
             {
-                ChaseEnemy();
+                ChaseTarget();
             }
         }
         else
@@ -134,7 +146,7 @@ public class HackedLightGrunt : MonoBehaviour
         }
     }
 
-    private void ChaseEnemy()
+    private void ChaseTarget()
     {
         if (currentTarget != null)
         {
@@ -156,7 +168,7 @@ public class HackedLightGrunt : MonoBehaviour
         }
     }
 
-    private void AttackEnemy()
+    private void AttackTarget()
     {
         if (Time.time >= lastAttackTime + attackCooldown)
         {
@@ -175,13 +187,24 @@ public class HackedLightGrunt : MonoBehaviour
                 }
             }
 
-            // Hanya menyerang jika target bertag "Enemy"
-            if (currentTarget != null && currentTarget.CompareTag("Enemy"))
+            // Hanya menyerang jika target bertag "Enemy" atau "MiddleBot"
+            if (currentTarget != null)
             {
-                LightGrunt enemyScript = currentTarget.GetComponent<LightGrunt>();
-                if (enemyScript != null)
+                if (currentTarget.CompareTag("Enemy"))
                 {
-                    enemyScript.TakeDamage(damage); 
+                    LightGrunt enemyScript = currentTarget.GetComponent<LightGrunt>();
+                    if (enemyScript != null)
+                    {
+                        enemyScript.TakeDamage(damage); 
+                    }
+                }
+                else if (currentTarget.CompareTag("MiddleBot"))
+                {
+                    MiddleBot middleBotScript = currentTarget.GetComponent<MiddleBot>();
+                    if (middleBotScript != null)
+                    {
+                        middleBotScript.TakeDamage(damage);
+                    }
                 }
             }
 
