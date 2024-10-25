@@ -13,6 +13,7 @@ TagManager:
   - SpecialArrow
   - MiddleBot
   - Volley
+  - HackedVolley
   layers:
   - Default
   - TransparentFX
@@ -24,8 +25,8 @@ TagManager:
   - Arrow
   - Ally
   - SpecialArrow
-  - 
-  - 
+  - Volley
+  - HackedVolley
   - 
   - 
   - 

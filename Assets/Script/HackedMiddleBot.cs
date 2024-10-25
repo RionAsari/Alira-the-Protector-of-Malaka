@@ -3,9 +3,9 @@ using UnityEngine;
 
 public class HackedMiddleBot : MonoBehaviour
 {
-    public float health = 100f;
-    public float maxHealth = 100f;
-    public HealthbarBehaviour healthbar;
+    public float health = 500f;
+    public float maxHealth = 500f;
+    public HealthBarMiddleBot healthbar;
 
     public float followSpeed = 3f;
     public float detectionRange = 15f;
@@ -27,6 +27,7 @@ public class HackedMiddleBot : MonoBehaviour
         animator = GetComponent<Animator>();
         bulletTransform = GetComponentInChildren<HackedMiddlebotBulletTransform>();
 
+        // Set the health bar's initial value
         if (healthbar != null)
         {
             healthbar.SetHealth(health, maxHealth);
@@ -40,7 +41,7 @@ public class HackedMiddleBot : MonoBehaviour
     {
         if (health <= 0) return;
 
-        UpdateHealthBar();
+        UpdateHealthBar();  // Update health bar position and value
         HandleTargeting();
     }
 
@@ -48,7 +49,8 @@ public class HackedMiddleBot : MonoBehaviour
     {
         if (healthbar != null)
         {
-            healthbar.UpdatePosition(transform.position);
+            healthbar.UpdatePosition(transform.position);  // Update health bar position to follow the bot
+            healthbar.SetHealth(health, maxHealth);  // Update health bar's displayed health
         }
     }
 
@@ -151,10 +153,7 @@ public class HackedMiddleBot : MonoBehaviour
         health -= damage;
         if (health < 0) health = 0;
 
-        if (healthbar != null)
-        {
-            healthbar.SetHealth(health, maxHealth);
-        }
+        UpdateHealthBar();  // Call to update health bar after taking damage
 
         if (health <= 0)
         {

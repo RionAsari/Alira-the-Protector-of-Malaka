@@ -9,25 +9,25 @@ public class MiddleBot : MonoBehaviour
     public bool isDisabled = false;
     public bool isHackable = false;
     public bool isHacked = false;
-    public HealthbarBehaviour healthbar;
+    public HealthBarMiddleBot healthbar;
     public GameObject hackedMiddleBotPrefab;
 
     private Animator animator;
-    private BulletTransform bulletTransform; // Referensi ke BulletTransform
+    private BulletTransform bulletTransform; // Reference to BulletTransform
 
     public float followSpeed = 3f;
     private Transform currentTarget;
 
-    public float detectionRange = 15f;  // Jarak deteksi target
-    public float attackRange = 10f;     // Jarak serangan MiddleBot
-    public float attackCooldown = 1f;   // Waktu jeda antar serangan
+    public float detectionRange = 15f;  // Detection range
+    public float attackRange = 10f;     // Attack range for MiddleBot
+    public float attackCooldown = 1f;   // Attack cooldown
     private float lastAttackTime = 0f;
 
     public string allyTag = "Ally";
     public string playerTag = "Player";
 
     private Vector3 originalScale;
-    private int hitCount = 0; // Penghitung hit dari SpecialArrow
+    private int hitCount = 0; // Counter for hits from SpecialArrow
 
     private void Start()
     {
@@ -39,7 +39,7 @@ public class MiddleBot : MonoBehaviour
             healthbar.SetHealth(health, maxHealth);
         }
 
-        // Mendapatkan komponen BulletTransform dari objek anak
+        // Get the BulletTransform component from the child object
         bulletTransform = GetComponentInChildren<BulletTransform>();
         
         originalScale = transform.localScale;
@@ -74,11 +74,11 @@ public class MiddleBot : MonoBehaviour
         if (nearestTarget != null && Vector3.Distance(transform.position, nearestTarget.transform.position) < detectionRange)
         {
             currentTarget = nearestTarget.transform;
-            bulletTransform.SetTarget(currentTarget);  // Menetapkan target untuk BulletTransform
+            bulletTransform.SetTarget(currentTarget);  // Set target for BulletTransform
         }
         else
         {
-            currentTarget = null; // Tidak ada target ditemukan
+            currentTarget = null; // No target found
         }
 
         if (currentTarget != null)
@@ -86,20 +86,20 @@ public class MiddleBot : MonoBehaviour
             float distanceToTarget = Vector3.Distance(transform.position, currentTarget.position);
             if (distanceToTarget <= attackRange)
             {
-                Attack(); // Serang jika berada dalam jarak
+                Attack(); // Attack if within range
             }
             else
             {
-                ChaseTarget(); // Mengejar jika di luar jarak serangan
+                ChaseTarget(); // Chase if out of attack range
             }
         }
         else
         {
-            animator.SetBool("isWalking", false); // Berhenti berjalan jika tidak ada target
+            animator.SetBool("isWalking", false); // Stop walking if no target
         }
     }
 
-    // Menemukan target terdekat dari MiddleBot berdasarkan tag yang diberikan
+    // Find the nearest target from MiddleBot based on given tags
     private GameObject GetNearestTargetWithTags(params string[] tags)
     {
         GameObject nearestTarget = null;
@@ -126,13 +126,12 @@ public class MiddleBot : MonoBehaviour
         if (currentTarget == null || isDisabled) return;
 
         float distanceToTarget = Vector3.Distance(transform.position, currentTarget.position);
-
         Vector3 direction = (currentTarget.position - transform.position).normalized;
 
         FlipSprite(direction);
 
         transform.position += direction * followSpeed * Time.deltaTime;
-        animator.SetBool("isWalking", true); // Menampilkan animasi berjalan hanya saat bergerak
+        animator.SetBool("isWalking", true); // Show walking animation only while moving
     }
 
     private void Attack()
@@ -141,29 +140,29 @@ public class MiddleBot : MonoBehaviour
         {
             if (bulletTransform != null)
             {
-                bulletTransform.ShootAtTarget();
+                bulletTransform.ShootAtTarget(); // Attack the target
             }
 
-            lastAttackTime = Time.time; // Memperbarui waktu serangan terakhir
+            lastAttackTime = Time.time; // Update last attack time
         }
 
         if (currentTarget != null)
         {
-            // Tambahkan ini untuk memastikan sprite menghadap target saat menyerang
+            // Ensure sprite faces target while attacking
             Vector3 direction = (currentTarget.position - transform.position).normalized;
             FlipSprite(direction);
         }
 
-        animator.SetBool("isWalking", false); // Menghentikan animasi berjalan
+        animator.SetBool("isWalking", false); // Stop walking animation
     }
 
     private void FlipSprite(Vector3 direction)
     {
-        if (direction.x < 0) // Jika target berada di kiri
+        if (direction.x < 0) // If target is on the left
         {
             transform.localScale = new Vector3(-Mathf.Abs(originalScale.x), originalScale.y, originalScale.z);
         }
-        else if (direction.x > 0) // Jika target berada di kanan
+        else if (direction.x > 0) // If target is on the right
         {
             transform.localScale = new Vector3(Mathf.Abs(originalScale.x), originalScale.y, originalScale.z);
         }
@@ -218,7 +217,7 @@ public class MiddleBot : MonoBehaviour
         if (hitCount >= 2)
         {
             hitCount = 0; // Reset hit count
-            return true; // Menandakan bahwa MiddleBot dapat dinonaktifkan
+            return true; // Indicate that MiddleBot can be disabled
         }
         return false;
     }
