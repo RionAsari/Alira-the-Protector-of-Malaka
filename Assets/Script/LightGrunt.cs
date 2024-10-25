@@ -156,43 +156,48 @@ public class LightGrunt : MonoBehaviour
         }
     }
 
-    private void AttackTarget()
+private void AttackTarget()
+{
+    if (Time.time >= lastAttackTime + attackCooldown)
     {
-        if (Time.time >= lastAttackTime + attackCooldown)
+        animator.SetBool("isWalking", false);
+        animator.SetTrigger("isAttacking");
+        lastAttackTime = Time.time;
+
+        FlipSprite(currentTarget.position - transform.position);
+
+        if (currentTarget != null && currentTarget.CompareTag("Ally"))
         {
-            // Set walking ke false sebelum menyerang
-            animator.SetBool("isWalking", false);
-            animator.SetTrigger("isAttacking");
-            lastAttackTime = Time.time;
-
-            // Flip sprite berdasarkan posisi target
-            FlipSprite(currentTarget.position - transform.position);
-
-            // Jika target bertag "Ally", serang ally
-            if (currentTarget != null && currentTarget.CompareTag("Ally"))
+            // Coba dapatkan komponen HackedLightGrunt pada target
+            HackedLightGrunt hackedLightGrunt = currentTarget.GetComponent<HackedLightGrunt>();
+            if (hackedLightGrunt != null)
             {
-                HackedLightGrunt allyScript = currentTarget.GetComponent<HackedLightGrunt>();
-                if (allyScript != null)
+                hackedLightGrunt.TakeDamage(10);
+            }
+            else
+            {
+                // Jika tidak menemukan HackedLightGrunt, cek jika target adalah HackedMiddleBot
+                HackedMiddleBot hackedMiddleBot = currentTarget.GetComponent<HackedMiddleBot>();
+                if (hackedMiddleBot != null)
                 {
-                    allyScript.TakeDamage(10);  // Berikan damage pada HackedLightGrunt
+                    hackedMiddleBot.TakeDamage(10); // Berikan damage pada HackedMiddleBot
                 }
             }
-
-            // Jika target bertag "Player", serang player
-            if (currentTarget != null && currentTarget.CompareTag("Player"))
-            {
-                // Coba dapatkan komponen Health jika ada
-                var playerHealth = currentTarget.GetComponent<Health>();  // Asumsi player memiliki komponen Health
-                if (playerHealth != null)
-                {
-                    playerHealth.TakeDamage(10);  // Berikan damage pada player
-                }
-            }
-
-            // Kembali ke idle setelah menyerang
-            animator.SetBool("isWalking", false);
         }
+
+        if (currentTarget != null && currentTarget.CompareTag("Player"))
+        {
+            var playerHealth = currentTarget.GetComponent<Health>();
+            if (playerHealth != null)
+            {
+                playerHealth.TakeDamage(10);
+            }
+        }
+
+        animator.SetBool("isWalking", false);
     }
+}
+
 
     private void FlipSprite(Vector3 direction)
     {

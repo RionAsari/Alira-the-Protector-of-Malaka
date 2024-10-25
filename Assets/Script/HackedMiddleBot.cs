@@ -15,18 +15,17 @@ public class HackedMiddleBot : MonoBehaviour
 
     private Transform currentTarget;
     private Animator animator;
-    private HackedMiddlebotBulletTransform bulletTransform; // Reference to HackedMiddlebotBulletTransform
+    private HackedMiddlebotBulletTransform bulletTransform;
     private Vector3 originalScale;
-    private Transform playerTransform; // Reference to the player
+    private Transform playerTransform;
 
-    // New variable for stopping distance
     public float stopDistance = 2f;
 
     private void Start()
     {
         health = maxHealth;
         animator = GetComponent<Animator>();
-        bulletTransform = GetComponentInChildren<HackedMiddlebotBulletTransform>(); // Obtain HackedMiddlebotBulletTransform component
+        bulletTransform = GetComponentInChildren<HackedMiddlebotBulletTransform>();
 
         if (healthbar != null)
         {
@@ -34,8 +33,6 @@ public class HackedMiddleBot : MonoBehaviour
         }
 
         originalScale = transform.localScale;
-
-        // Find the player transform (assumes the player has a tag "Player")
         playerTransform = GameObject.FindGameObjectWithTag("Player").transform;
     }
 
@@ -44,7 +41,7 @@ public class HackedMiddleBot : MonoBehaviour
         if (health <= 0) return;
 
         UpdateHealthBar();
-        HandleTargeting(); // Detect and handle target behavior
+        HandleTargeting();
     }
 
     private void UpdateHealthBar()
@@ -60,10 +57,8 @@ public class HackedMiddleBot : MonoBehaviour
         GameObject[] enemies = GameObject.FindGameObjectsWithTag("Enemy");
         GameObject[] middleBots = GameObject.FindGameObjectsWithTag("MiddleBot");
 
-        // Check for enemies or MiddleBots within attack range
         GameObject nearestTarget = GetNearestTarget(enemies, middleBots);
 
-        // If there's a target within attack range, attack it
         if (nearestTarget != null && Vector3.Distance(transform.position, nearestTarget.transform.position) <= attackRange)
         {
             currentTarget = nearestTarget.transform;
@@ -71,8 +66,7 @@ public class HackedMiddleBot : MonoBehaviour
         }
         else
         {
-            // If no target, follow the player
-            currentTarget = playerTransform; // Set current target to player
+            currentTarget = playerTransform;
             ChaseTarget();
         }
     }
@@ -82,7 +76,6 @@ public class HackedMiddleBot : MonoBehaviour
         GameObject nearestTarget = null;
         float shortestDistance = Mathf.Infinity;
 
-        // Check all enemies
         foreach (GameObject enemy in enemies)
         {
             float distanceToEnemy = Vector3.Distance(transform.position, enemy.transform.position);
@@ -93,7 +86,6 @@ public class HackedMiddleBot : MonoBehaviour
             }
         }
 
-        // Check all MiddleBots
         foreach (GameObject middleBot in middleBots)
         {
             float distanceToMiddleBot = Vector3.Distance(transform.position, middleBot.transform.position);
@@ -111,21 +103,19 @@ public class HackedMiddleBot : MonoBehaviour
     {
         if (currentTarget == null) return;
 
-        // Calculate distance to the player
         float distanceToPlayer = Vector3.Distance(transform.position, currentTarget.position);
 
-        // Check if within stop distance
         if (distanceToPlayer > stopDistance)
         {
             Vector3 direction = (currentTarget.position - transform.position).normalized;
             FlipSprite(direction);
 
             transform.position += direction * followSpeed * Time.deltaTime;
-            animator.SetBool("isWalking", true); // Set walking animation when moving
+            animator.SetBool("isWalking", true);
         }
         else
         {
-            animator.SetBool("isWalking", false); // Stop walking animation if close to the player
+            animator.SetBool("isWalking", false);
         }
     }
 
@@ -133,16 +123,15 @@ public class HackedMiddleBot : MonoBehaviour
     {
         if (Time.time >= lastAttackTime + attackCooldown)
         {
-            // Call the shooting method from HackedMiddlebotBulletTransform
             if (bulletTransform != null)
             {
-                bulletTransform.ShootAtTarget(currentTarget.position); // Shoot at target position
+                bulletTransform.ShootAtTarget(currentTarget.position);
             }
 
-            lastAttackTime = Time.time; // Update last attack time
+            lastAttackTime = Time.time;
         }
 
-        animator.SetBool("isWalking", false); // Stop walking animation during attack
+        animator.SetBool("isWalking", false);
     }
 
     private void FlipSprite(Vector3 direction)
@@ -179,12 +168,18 @@ public class HackedMiddleBot : MonoBehaviour
         Destroy(gameObject, 0.2f);
     }
 
-    // Optional: Ignore collision with player
-    private void OnCollisionEnter(Collision collision)
+    // Only take damage when attacked by an enemy projectile or specific damage-dealing effect
+    private void OnTriggerEnter(Collider other)
     {
-        if (collision.gameObject.CompareTag("Player"))
+        // Check if collided with an attack from "Enemy" or "MiddleBot"
+        if (other.CompareTag("EnemyAttack") || other.CompareTag("MiddleBotAttack"))
         {
-            Physics.IgnoreCollision(collision.collider, GetComponent<Collider>());
+            float damage = 10f; // Example damage amount, adjust as needed
+
+            TakeDamage(damage);
+            Debug.Log($"HackedMiddleBot took {damage} damage from {other.gameObject.tag}");
+
+            Destroy(other.gameObject); // Destroy the attack object after dealing damage
         }
     }
 }
