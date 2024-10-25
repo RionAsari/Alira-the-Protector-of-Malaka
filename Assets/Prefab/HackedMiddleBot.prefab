@@ -635,4 +635,4 @@ MonoBehaviour:
   detectionRange: 15
   attackRange: 10
   attackCooldown: 2
-  stopDistance: 3
+  stopDistance: 4

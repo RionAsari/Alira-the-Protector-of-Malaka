@@ -17,8 +17,10 @@ public class HealthbarBehaviour : MonoBehaviour
 
     public void SetHealth(float health, float maxHealth)
     {
+        // Always show the slider if health is not full
+        Slider.gameObject.SetActive(true); 
+
         Debug.Log($"Health set to: {health}, Max Health: {maxHealth}"); // Debug log
-        Slider.gameObject.SetActive(health < maxHealth); // Show the slider if health is less than max
         Slider.value = health;                             // Set current health
         Slider.maxValue = maxHealth;                       // Set max health
 

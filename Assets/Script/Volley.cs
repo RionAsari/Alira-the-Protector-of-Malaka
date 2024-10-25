@@ -43,6 +43,22 @@ public class Volley : MonoBehaviour
             // Destroy the projectile upon collision with the player
             Destroy(gameObject);
         }
+        else if (other.CompareTag("Ally"))
+        {
+            // Handle collision with an Ally (such as HackedMiddleBot or HackedLightGrunt)
+            var allyHealth = other.GetComponent<HackedMiddleBot>() ?? (MonoBehaviour)other.GetComponent<HackedLightGrunt>();
+            if (allyHealth != null)
+            {
+                if (allyHealth is HackedMiddleBot)
+                    ((HackedMiddleBot)allyHealth).TakeDamage(damage); // Deal damage to HackedMiddleBot
+                else if (allyHealth is HackedLightGrunt)
+                    ((HackedLightGrunt)allyHealth).TakeDamage(damage); // Deal damage to HackedLightGrunt
+
+                Debug.Log($"Damage dealt to ally: {damage}"); // Log damage dealt
+            }
+
+            Destroy(gameObject); // Destroy projectile after hitting Ally
+        }
         else if (other.CompareTag("Enemy"))
         {
             // Ignore collisions with enemies

@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class HackedMiddlebotBulletTransform : MonoBehaviour
 {
-    public Transform target; // Target for hacked MiddleBot (Enemy or MiddleBot)
+    public Transform target;
     public GameObject volleyPrefab;
     public float projectileSpeed = 10f;
     public float attackCooldown = 2f;
@@ -30,7 +30,6 @@ public class HackedMiddlebotBulletTransform : MonoBehaviour
 
     private void FindTarget()
     {
-        // Find the nearest target with tag "Enemy" or "MiddleBot"
         GameObject[] potentialTargets = GameObject.FindGameObjectsWithTag("Enemy");
         float shortestDistance = Mathf.Infinity;
         Transform nearestTarget = null;
@@ -45,18 +44,14 @@ public class HackedMiddlebotBulletTransform : MonoBehaviour
             }
         }
 
-        // If no "Enemy" is found, look for "MiddleBot" targets
-        if (nearestTarget == null)
+        GameObject[] middleBots = GameObject.FindGameObjectsWithTag("MiddleBot");
+        foreach (GameObject bot in middleBots)
         {
-            GameObject[] middleBots = GameObject.FindGameObjectsWithTag("MiddleBot");
-            foreach (GameObject bot in middleBots)
+            float distanceToBot = Vector3.Distance(transform.position, bot.transform.position);
+            if (distanceToBot < shortestDistance)
             {
-                float distanceToBot = Vector3.Distance(transform.position, bot.transform.position);
-                if (distanceToBot < shortestDistance)
-                {
-                    shortestDistance = distanceToBot;
-                    nearestTarget = bot.transform;
-                }
+                shortestDistance = distanceToBot;
+                nearestTarget = bot.transform;
             }
         }
 
@@ -73,7 +68,6 @@ public class HackedMiddlebotBulletTransform : MonoBehaviour
         }
     }
 
-    // Change this method to take a Vector3 position parameter
     public void ShootAtTarget(Vector3 targetPosition)
     {
         if (Time.time >= lastAttackTime + attackCooldown)
@@ -88,7 +82,7 @@ public class HackedMiddlebotBulletTransform : MonoBehaviour
 
             if (rb != null)
             {
-                Vector2 direction = (targetPosition - transform.position).normalized; // Use targetPosition instead of target.position
+                Vector2 direction = (targetPosition - transform.position).normalized;
                 rb.velocity = direction * projectileSpeed;
             }
 

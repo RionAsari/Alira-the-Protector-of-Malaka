@@ -86,13 +86,13 @@ public class HackedMiddleBot : MonoBehaviour
             }
         }
 
-        foreach (GameObject middleBot in middleBots)
+        foreach (GameObject bot in middleBots)
         {
-            float distanceToMiddleBot = Vector3.Distance(transform.position, middleBot.transform.position);
-            if (distanceToMiddleBot < shortestDistance)
+            float distanceToBot = Vector3.Distance(transform.position, bot.transform.position);
+            if (distanceToBot < shortestDistance)
             {
-                shortestDistance = distanceToMiddleBot;
-                nearestTarget = middleBot;
+                shortestDistance = distanceToBot;
+                nearestTarget = bot;
             }
         }
 
@@ -168,18 +168,16 @@ public class HackedMiddleBot : MonoBehaviour
         Destroy(gameObject, 0.2f);
     }
 
-    // Only take damage when attacked by an enemy projectile or specific damage-dealing effect
     private void OnTriggerEnter(Collider other)
     {
-        // Check if collided with an attack from "Enemy" or "MiddleBot"
-        if (other.CompareTag("EnemyAttack") || other.CompareTag("MiddleBotAttack"))
+        if (other.CompareTag("EnemyAttack") || other.CompareTag("Volley"))
         {
-            float damage = 10f; // Example damage amount, adjust as needed
+            float damage = 10f;
 
             TakeDamage(damage);
             Debug.Log($"HackedMiddleBot took {damage} damage from {other.gameObject.tag}");
 
-            Destroy(other.gameObject); // Destroy the attack object after dealing damage
+            Destroy(other.gameObject);
         }
     }
 }
