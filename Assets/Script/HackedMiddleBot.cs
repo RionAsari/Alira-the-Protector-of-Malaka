@@ -43,6 +43,13 @@ public class HackedMiddleBot : MonoBehaviour
 
         UpdateHealthBar();  // Update health bar position and value
         HandleTargeting();
+
+        // Ensure sprite faces target every frame if there's a target
+        if (currentTarget != null)
+        {
+            Vector3 direction = (currentTarget.position - transform.position).normalized;
+            FlipSprite(direction);
+        }
     }
 
     private void UpdateHealthBar()
