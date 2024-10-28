@@ -132,7 +132,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 3337789409381526805, guid: d311c82680319ca4eafe43cedc7900ed, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 7.780347
+      value: -11.81
       objectReference: {fileID: 0}
     - target: {fileID: 3337789409381526805, guid: d311c82680319ca4eafe43cedc7900ed, type: 3}
       propertyPath: m_LocalPosition.y
@@ -1205,6 +1205,10 @@ MonoBehaviour:
   moveSpeed: 5
   jumpForce: 10
   fallMultiplier: 1
+  KBForce: 4
+  KBCounter: 0
+  KBTotalTime: 0.2
+  KnockFromRight: 0
   maxJumpCount: 2
   dashSpeed: 20
   dashDuration: 0.2
@@ -1431,7 +1435,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7307951452562594904, guid: f15794e1b0f7b5d4290f038f73d0e9a0, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -7.27
+      value: 8.44
       objectReference: {fileID: 0}
     - target: {fileID: 7307951452562594904, guid: f15794e1b0f7b5d4290f038f73d0e9a0, type: 3}
       propertyPath: m_LocalPosition.y
@@ -2526,7 +2530,7 @@ MonoBehaviour:
   arrowPrefab: {fileID: 4202928060292712031, guid: e1d112512c32bab4a87dc58b8e88c301, type: 3}
   specialArrowPrefab: {fileID: 1629300785913835111, guid: 06d7f26cdf76d9646bb2e3ed1e5ea7c4, type: 3}
   bowTransform: {fileID: 986643906}
-  maxArrowSpeed: 30
+  maxArrowSpeed: 17
   chargeSpeed: 5
   timeBetweenFiring: 0.5
   chargeSlider: {fileID: 824808537}

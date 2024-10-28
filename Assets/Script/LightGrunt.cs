@@ -13,6 +13,7 @@ public class LightGrunt : MonoBehaviour
     public GameObject hackedLightGruntPrefab;
 
     private Animator animator;
+    private bool isAttacking = false;
 
     public float attackRange = 1.5f;
     public float followSpeed = 3f;
@@ -60,7 +61,11 @@ public class LightGrunt : MonoBehaviour
             return;
         }
 
-        HandleTargeting();
+        // Pastikan tidak mengejar target saat menyerang
+        if (!isAttacking)
+        {
+            HandleTargeting();
+        }
     }
 
     private void HandleTargeting()
@@ -136,7 +141,7 @@ public class LightGrunt : MonoBehaviour
 
     private void ChaseTarget()
     {
-        if (currentTarget == null || isDisabled) return;
+        if (currentTarget == null || isDisabled || isAttacking) return;
 
         float distanceToTarget = Vector3.Distance(transform.position, currentTarget.position);
 
@@ -156,58 +161,71 @@ public class LightGrunt : MonoBehaviour
         }
     }
 
-private void AttackTarget()
-{
-    if (Time.time >= lastAttackTime + attackCooldown)
+    private void AttackTarget()
     {
-        animator.SetBool("isWalking", false);
-        animator.SetTrigger("isAttacking");
-        lastAttackTime = Time.time;
-
-        FlipSprite(currentTarget.position - transform.position);
-
-        if (currentTarget != null && currentTarget.CompareTag("Ally"))
+        if (Time.time >= lastAttackTime + attackCooldown)
         {
-            // Coba dapatkan komponen HackedLightGrunt pada target
-            HackedLightGrunt hackedLightGrunt = currentTarget.GetComponent<HackedLightGrunt>();
-            if (hackedLightGrunt != null)
+            isAttacking = true;
+            animator.SetBool("isWalking", false);
+            animator.SetTrigger("isAttacking");
+            lastAttackTime = Time.time;
+
+            FlipSprite(currentTarget.position - transform.position);
+
+            if (currentTarget != null && currentTarget.CompareTag("Ally"))
             {
-                hackedLightGrunt.TakeDamage(10);
-            }
-            else
-            {
-                // Jika tidak menemukan HackedLightGrunt, cek jika target adalah HackedMiddleBot
-                HackedMiddleBot hackedMiddleBot = currentTarget.GetComponent<HackedMiddleBot>();
-                if (hackedMiddleBot != null)
+                HackedLightGrunt hackedLightGrunt = currentTarget.GetComponent<HackedLightGrunt>();
+                if (hackedLightGrunt != null)
                 {
-                    hackedMiddleBot.TakeDamage(10); // Berikan damage pada HackedMiddleBot
+                    hackedLightGrunt.TakeDamage(10);
+                }
+                else
+                {
+                    HackedMiddleBot hackedMiddleBot = currentTarget.GetComponent<HackedMiddleBot>();
+                    if (hackedMiddleBot != null)
+                    {
+                        hackedMiddleBot.TakeDamage(10);
+                    }
                 }
             }
-        }
 
-        if (currentTarget != null && currentTarget.CompareTag("Player"))
-        {
-            var playerHealth = currentTarget.GetComponent<Health>();
-            if (playerHealth != null)
+            if (currentTarget != null && currentTarget.CompareTag("Player"))
             {
-                playerHealth.TakeDamage(10);
+                var playerHealth = currentTarget.GetComponent<Health>();
+                var playerController = currentTarget.GetComponent<PlayerController>();
+
+                if (playerHealth != null)
+                {
+                    playerHealth.TakeDamage(10);
+                }
+
+                if (playerController != null)
+                {
+                    // Apply knockback to the player
+                    playerController.KBCounter = playerController.KBTotalTime;
+                    playerController.KnockFromRight = currentTarget.position.x < transform.position.x;
+                }
             }
+
+            StartCoroutine(ResetAttack());
         }
-
-        animator.SetBool("isWalking", false);
     }
-}
 
+    private IEnumerator ResetAttack()
+    {
+        yield return new WaitForSeconds(attackCooldown);
+        isAttacking = false;
+    }
 
     private void FlipSprite(Vector3 direction)
     {
-        if (direction.x > 0) // Jika target ada di kanan
+        if (direction.x > 0)
         {
-            transform.localScale = new Vector3(-Mathf.Abs(originalScale.x), originalScale.y, originalScale.z);  // Balik ke kanan
+            transform.localScale = new Vector3(-Mathf.Abs(originalScale.x), originalScale.y, originalScale.z);
         }
-        else if (direction.x < 0) // Jika target ada di kiri
+        else if (direction.x < 0)
         {
-            transform.localScale = new Vector3(Mathf.Abs(originalScale.x), originalScale.y, originalScale.z);  // Tetap menghadap kiri
+            transform.localScale = new Vector3(Mathf.Abs(originalScale.x), originalScale.y, originalScale.z);
         }
     }
 
@@ -260,20 +278,18 @@ private void AttackTarget()
         Destroy(gameObject);
     }
 
-    // Method to handle damage from HackedVolley
     private void OnTriggerEnter2D(Collider2D other)
     {
-        // Check if collided with a HackedVolley projectile
         if (other.CompareTag("HackedVolley"))
         {
             HackedVolley hackedVolley = other.GetComponent<HackedVolley>();
             if (hackedVolley != null)
             {
-                TakeDamage(hackedVolley.damage); // Take damage from the HackedVolley
+                TakeDamage(hackedVolley.damage);
                 Debug.Log($"LightGrunt hit by HackedVolley. Damage taken: {hackedVolley.damage}");
             }
 
-            Destroy(other.gameObject); // Destroy the HackedVolley projectile after hitting
+            Destroy(other.gameObject);
         }
     }
 }

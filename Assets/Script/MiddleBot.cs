@@ -13,21 +13,21 @@ public class MiddleBot : MonoBehaviour
     public GameObject hackedMiddleBotPrefab;
 
     private Animator animator;
-    private BulletTransform bulletTransform; // Reference to BulletTransform
+    private BulletTransform bulletTransform;
 
     public float followSpeed = 3f;
     private Transform currentTarget;
 
-    public float detectionRange = 15f;  // Detection range
-    public float attackRange = 10f;     // Attack range for MiddleBot
-    public float attackCooldown = 1f;   // Attack cooldown
+    public float detectionRange = 15f;
+    public float attackRange = 10f;
+    public float attackCooldown = 1f;
     private float lastAttackTime = 0f;
 
     public string allyTag = "Ally";
     public string playerTag = "Player";
 
     private Vector3 originalScale;
-    private int hitCount = 0; // Counter for hits from SpecialArrow
+    private int hitCount = 0;
 
     private void Start()
     {
@@ -39,9 +39,7 @@ public class MiddleBot : MonoBehaviour
             healthbar.SetHealth(health, maxHealth);
         }
 
-        // Get the BulletTransform component from the child object
         bulletTransform = GetComponentInChildren<BulletTransform>();
-        
         originalScale = transform.localScale;
     }
 
@@ -64,6 +62,13 @@ public class MiddleBot : MonoBehaviour
         }
 
         HandleTargeting();
+
+        // Ensure sprite faces target every frame if there's a target
+        if (currentTarget != null)
+        {
+            Vector3 direction = (currentTarget.position - transform.position).normalized;
+            FlipSprite(direction);
+        }
     }
 
     private void HandleTargeting()
@@ -74,11 +79,11 @@ public class MiddleBot : MonoBehaviour
         if (nearestTarget != null && Vector3.Distance(transform.position, nearestTarget.transform.position) < detectionRange)
         {
             currentTarget = nearestTarget.transform;
-            bulletTransform.SetTarget(currentTarget);  // Set target for BulletTransform
+            bulletTransform.SetTarget(currentTarget);
         }
         else
         {
-            currentTarget = null; // No target found
+            currentTarget = null;
         }
 
         if (currentTarget != null)
@@ -86,20 +91,19 @@ public class MiddleBot : MonoBehaviour
             float distanceToTarget = Vector3.Distance(transform.position, currentTarget.position);
             if (distanceToTarget <= attackRange)
             {
-                Attack(); // Attack if within range
+                Attack();
             }
             else
             {
-                ChaseTarget(); // Chase if out of attack range
+                ChaseTarget();
             }
         }
         else
         {
-            animator.SetBool("isWalking", false); // Stop walking if no target
+            animator.SetBool("isWalking", false);
         }
     }
 
-    // Find the nearest target from MiddleBot based on given tags
     private GameObject GetNearestTargetWithTags(params string[] tags)
     {
         GameObject nearestTarget = null;
@@ -131,7 +135,7 @@ public class MiddleBot : MonoBehaviour
         FlipSprite(direction);
 
         transform.position += direction * followSpeed * Time.deltaTime;
-        animator.SetBool("isWalking", true); // Show walking animation only while moving
+        animator.SetBool("isWalking", true);
     }
 
     private void Attack()
@@ -140,10 +144,10 @@ public class MiddleBot : MonoBehaviour
         {
             if (bulletTransform != null)
             {
-                bulletTransform.ShootAtTarget(); // Attack the target
+                bulletTransform.ShootAtTarget();
             }
 
-            lastAttackTime = Time.time; // Update last attack time
+            lastAttackTime = Time.time;
         }
 
         if (currentTarget != null)
@@ -153,16 +157,16 @@ public class MiddleBot : MonoBehaviour
             FlipSprite(direction);
         }
 
-        animator.SetBool("isWalking", false); // Stop walking animation
+        animator.SetBool("isWalking", false);
     }
 
     private void FlipSprite(Vector3 direction)
     {
-        if (direction.x < 0) // If target is on the left
+        if (direction.x < 0)
         {
             transform.localScale = new Vector3(-Mathf.Abs(originalScale.x), originalScale.y, originalScale.z);
         }
-        else if (direction.x > 0) // If target is on the right
+        else if (direction.x > 0)
         {
             transform.localScale = new Vector3(Mathf.Abs(originalScale.x), originalScale.y, originalScale.z);
         }
@@ -216,8 +220,8 @@ public class MiddleBot : MonoBehaviour
         hitCount++;
         if (hitCount >= 2)
         {
-            hitCount = 0; // Reset hit count
-            return true; // Indicate that MiddleBot can be disabled
+            hitCount = 0;
+            return true;
         }
         return false;
     }
@@ -239,7 +243,7 @@ public class MiddleBot : MonoBehaviour
             if (hackedVolley != null)
             {
                 TakeDamage(hackedVolley.damage);
-                Destroy(other.gameObject); // Destroy the projectile after dealing damage
+                Destroy(other.gameObject);
             }
         }
     }
