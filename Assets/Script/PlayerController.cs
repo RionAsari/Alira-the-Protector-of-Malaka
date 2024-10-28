@@ -254,6 +254,8 @@ public class PlayerController : MonoBehaviour
         dashDirection = direction;
         isDashing = true;
         isInvincible = true;
+        // Change the player's layer to PlayerDash
+        gameObject.layer = LayerMask.NameToLayer("PlayerDash");
         animator.SetTrigger("StartDash"); // Trigger the dash animation
         StartCoroutine(DashCoroutine());
     }
@@ -271,6 +273,9 @@ public class PlayerController : MonoBehaviour
         isDashing = false;
         isInvincible = false;
         lastDashTime = Time.time;
+
+        // Revert the player's layer back to Player
+        gameObject.layer = LayerMask.NameToLayer("Player");
     }
 
     // Function to make the player invincible during the dash
