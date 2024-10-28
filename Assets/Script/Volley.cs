@@ -32,12 +32,21 @@ public class Volley : MonoBehaviour
 
         if (other.CompareTag("Player"))
         {
-            // Get the Health component of the player
+            // Get the Health and PlayerMovement components of the player
             Health playerHealth = other.GetComponent<Health>();
+            PlayerController playerController = other.GetComponent<PlayerController>();
+            
             if (playerHealth != null)
             {
                 playerHealth.TakeDamage(damage); // Deal damage to the player
                 Debug.Log("Damage dealt to player: " + damage); // Log damage dealt
+            }
+
+            if (playerController != null)
+            {
+                // Apply knockback
+                playerController.KBCounter = playerController.KBTotalTime;
+                playerController.KnockFromRight = other.transform.position.x < transform.position.x;
             }
 
             // Destroy the projectile upon collision with the player

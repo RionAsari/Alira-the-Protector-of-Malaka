@@ -13,6 +13,12 @@ public class PlayerController : MonoBehaviour
     private Camera mainCamera;
     private bool usingSpecialArrow = false;
 
+    // Knockback variables
+    public float KBForce;
+    public float KBCounter;
+    public float KBTotalTime;
+    public bool KnockFromRight;
+
     // Jump variables
     private int jumpCount = 0;
     public int maxJumpCount = 2; // Maximum jumps (1 for single jump, 2 for double jump)
@@ -53,18 +59,33 @@ public class PlayerController : MonoBehaviour
             usingSpecialArrow = !usingSpecialArrow; // Toggle between regular and special arrows
             Debug.Log("Using Special Arrow: " + usingSpecialArrow);
         }
-        if (!isDashing)
+        if (KBCounter <= 0)
         {
-            Move();
-            HandleJump();
-            AimAtMouse();
-            UpdateAnimation(); // Update animation
-            CheckDash(); // Check for double tap input for dashing
+            if (!isDashing)
+            {
+                Move();
+                HandleJump();
+                AimAtMouse();
+                UpdateAnimation(); // Update animation
+                CheckDash(); // Check for double tap input for dashing
+            }
+            else
+            {
+                // Stop any movement while dashing
+                rb.velocity = new Vector2(dashDirection * dashSpeed, rb.velocity.y);
+            }
         }
         else
         {
-            // Stop any movement while dashing
-            rb.velocity = new Vector2(dashDirection * dashSpeed, rb.velocity.y);
+            if (KnockFromRight)
+            {
+                rb.velocity = new Vector2(-KBForce, KBForce);
+            }
+            else
+            {
+                rb.velocity = new Vector2(KBForce, KBForce);
+            }
+            KBCounter -= Time.deltaTime;
         }
 
         // Apply fall multiplier
@@ -282,5 +303,15 @@ public class PlayerController : MonoBehaviour
     public bool IsInvincible()
     {
         return isInvincible;
+    }
+
+    // Trigger knockback on collision with enemy
+    private void OnTriggerEnter2D(Collider2D other)
+    {
+        if (other.gameObject.CompareTag("Enemy"))
+        {
+            KBCounter = KBTotalTime;
+            KnockFromRight = other.transform.position.x >= transform.position.x;
+        }
     }
 }
