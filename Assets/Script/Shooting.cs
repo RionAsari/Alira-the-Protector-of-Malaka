@@ -59,6 +59,8 @@ public class Shooting : MonoBehaviour
     {
         // Get mouse position in world coordinates
         mousePos = mainCam.ScreenToWorldPoint(Input.mousePosition);
+        mousePos.z = 0; // Set z to 0 since we're in 2D
+
         Vector3 rotation = mousePos - transform.position;
 
         float rotZ = Mathf.Atan2(rotation.y, rotation.x) * Mathf.Rad2Deg;
@@ -177,7 +179,7 @@ public class Shooting : MonoBehaviour
         // Get Rigidbody2D component to apply velocity
         Rigidbody2D rb = arrow.GetComponent<Rigidbody2D>();
 
-        // Calculate arrow direction based on bow direction
+        // Calculate arrow direction based on mouse position
         Vector2 shootDirection = (mousePos - bowTransform.position).normalized;
 
         // Set arrow velocity (constant speed)
