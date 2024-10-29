@@ -20,14 +20,17 @@ public class LightGrunt : MonoBehaviour
     private Transform currentTarget;
 
     public float detectionRange = 5f;
-
     public float attackCooldown = 1f;
     private float lastAttackTime = 0f;
 
     public string allyTag = "Ally";
-    public string playerTag = "Player"; // Tag player untuk deteksi
+    public string playerTag = "Player";
 
-    private Vector3 originalScale; // Simpan skala asli
+    private Vector3 originalScale;
+
+    // Prefab untuk healing items
+    public GameObject healingItem20Prefab;
+    public GameObject healingItem50Prefab;
 
     private void Start()
     {
@@ -39,7 +42,6 @@ public class LightGrunt : MonoBehaviour
             healthbar.SetHealth(health, maxHealth);
         }
 
-        // Simpan skala asli sprite
         originalScale = transform.localScale;
     }
 
@@ -61,7 +63,6 @@ public class LightGrunt : MonoBehaviour
             return;
         }
 
-        // Pastikan tidak mengejar target saat menyerang
         if (!isAttacking)
         {
             HandleTargeting();
@@ -72,11 +73,9 @@ public class LightGrunt : MonoBehaviour
     {
         if (isDisabled) return;
 
-        // Cari semua ally dan player
         GameObject[] allies = GameObject.FindGameObjectsWithTag(allyTag);
-        GameObject player = GameObject.FindGameObjectWithTag(playerTag); // Temukan player berdasarkan tag
+        GameObject player = GameObject.FindGameObjectWithTag(playerTag);
 
-        // Temukan target terdekat antara ally dan player
         GameObject nearestTarget = GetNearestTarget(allies, player);
 
         if (nearestTarget != null && Vector3.Distance(transform.position, nearestTarget.transform.position) < detectionRange)
@@ -92,14 +91,12 @@ public class LightGrunt : MonoBehaviour
         {
             float distanceToTarget = Vector3.Distance(transform.position, currentTarget.position);
 
-            // Jika dalam jarak serang, serang target
             if (distanceToTarget <= attackRange)
             {
                 AttackTarget();
             }
             else
             {
-                // Kejar target jika tidak dalam jarak serang
                 ChaseTarget();
             }
         }
@@ -114,7 +111,6 @@ public class LightGrunt : MonoBehaviour
         GameObject nearestTarget = null;
         float shortestDistance = Mathf.Infinity;
 
-        // Cari ally terdekat
         foreach (GameObject ally in allies)
         {
             float distanceToTarget = Vector3.Distance(transform.position, ally.transform.position);
@@ -125,7 +121,6 @@ public class LightGrunt : MonoBehaviour
             }
         }
 
-        // Periksa apakah player lebih dekat daripada ally
         if (player != null)
         {
             float distanceToPlayer = Vector3.Distance(transform.position, player.transform.position);
@@ -149,7 +144,6 @@ public class LightGrunt : MonoBehaviour
         {
             Vector3 direction = (currentTarget.position - transform.position).normalized;
 
-            // Flip sprite berdasarkan arah gerakan
             FlipSprite(direction);
 
             transform.position += direction * followSpeed * Time.deltaTime;
@@ -201,7 +195,6 @@ public class LightGrunt : MonoBehaviour
 
                 if (playerController != null)
                 {
-                    // Apply knockback to the player
                     playerController.KBCounter = playerController.KBTotalTime;
                     playerController.KnockFromRight = currentTarget.position.x < transform.position.x;
                 }
@@ -249,8 +242,30 @@ public class LightGrunt : MonoBehaviour
     {
         animator.SetTrigger("isDead");
         isDisabled = true;
+
+        // Drop healing item
+        DropHealingItem();
+
         Destroy(gameObject, 0.2f);
     }
+
+private void DropHealingItem()
+{
+    float dropChance = Random.Range(0f, 1f);
+
+    if (dropChance <= 0.5f)
+    {
+        // 50% untuk drop healing item 20 poin
+        Instantiate(healingItem20Prefab, transform.position, Quaternion.identity);
+    }
+    else if (dropChance <= 0.7f)
+    {
+        // 20% untuk drop healing item 50 poin
+        Instantiate(healingItem50Prefab, transform.position, Quaternion.identity);
+    }
+    // 30% tidak melakukan apa-apa (tidak ada drop)
+}
+
 
     public IEnumerator DisableEnemy(float duration)
     {

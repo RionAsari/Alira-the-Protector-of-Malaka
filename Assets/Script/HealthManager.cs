@@ -4,24 +4,24 @@ public class Health : MonoBehaviour
 {
     public float health = 100f;
     public float maxHealth = 100f;
-    public HealthbarBehaviour healthbar; // Reference to HealthbarBehaviour
+    public HealthbarBehaviour healthbar;
 
     private void Start()
     {
         if (healthbar != null)
         {
-            healthbar.SetHealth(health, maxHealth); // Initialize health bar
+            healthbar.SetHealth(health, maxHealth);
         }
     }
 
     public void TakeDamage(float damage)
     {
         health -= damage;
-        if (health < 0) health = 0;
+        health = Mathf.Max(0, health); // Pastikan health tidak di bawah 0
 
         if (healthbar != null)
         {
-            healthbar.SetHealth(health, maxHealth); // Update health bar
+            healthbar.SetHealth(health, maxHealth);
         }
 
         if (health <= 0)
@@ -30,10 +30,22 @@ public class Health : MonoBehaviour
         }
     }
 
+    public void Heal(float healAmount)
+    {
+        health += healAmount;
+        health = Mathf.Min(health, maxHealth); // Pastikan health tidak melebihi maxHealth
+
+        if (healthbar != null)
+        {
+            healthbar.SetHealth(health, maxHealth);
+        }
+        
+        Debug.Log($"Player healed by {healAmount} points. Current health: {health}");
+    }
+
     private void Die()
     {
-        // Handle death (e.g., play animation, destroy object, etc.)
         Debug.Log("Player has died");
-        // Add additional death logic here
+        // Tambahkan logika kematian di sini
     }
 }

@@ -132,35 +132,45 @@ public class PlayerController : MonoBehaviour
     }
 
     // Update the animator parameters
-    private void UpdateAnimation()
-    {
-        // Update movement and grounded animations
-        animator.SetBool("isMoving", moveInput != 0);
-        animator.SetBool("isGrounded", isGrounded); // Update grounded state
+private void UpdateAnimation()
+{
+    // Update grounded state
+    animator.SetBool("isGrounded", isGrounded);
 
-        // Set jumping and falling states
-        if (!isGrounded)
+    // Set jumping and falling states
+    if (!isGrounded)
+    {
+        if (rb.velocity.y > 0)
         {
-            if (rb.velocity.y > 0)
-            {
-                animator.SetBool("isJumping", true);
-                animator.SetBool("isFalling", false);
-            }
-            else
-            {
-                animator.SetBool("isJumping", false);
-                animator.SetBool("isFalling", true);
-            }
+            animator.SetBool("isJumping", true);
+            animator.SetBool("isFalling", false);
         }
         else
         {
             animator.SetBool("isJumping", false);
-            animator.SetBool("isFalling", false);
+            animator.SetBool("isFalling", true);
         }
-
-        // Update dash animation
-        animator.SetBool("isDashing", isDashing);
     }
+    else
+    {
+        animator.SetBool("isJumping", false);
+        animator.SetBool("isFalling", false);
+    }
+
+    // Update movement animation only if grounded
+    if (isGrounded)
+    {
+        animator.SetBool("isMoving", moveInput != 0);
+    }
+    else
+    {
+        animator.SetBool("isMoving", false); // Stop moving animation if not grounded
+    }
+
+    // Update dash animation
+    animator.SetBool("isDashing", isDashing);
+}
+
 
     // Aim at the mouse position
     private void AimAtMouse()
