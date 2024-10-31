@@ -13,6 +13,8 @@ public class Shooting : MonoBehaviour
     public GameObject arrowPrefab; // Prefab for the normal arrow
     public GameObject specialArrowPrefab; // Prefab for the special arrow
     public Transform bowTransform; // Position where arrows are spawned
+    public Transform rotatePoint; // GameObject yang menjadi titik rotasi
+    public float rotationDistance = 1.5f; // Jarak offset dari rotatePoint
     public float maxArrowSpeed = 15f; // Maximum arrow speed (constant)
     public float chargeSpeed = 5f; // Speed of charging (how fast charge builds)
     
@@ -61,18 +63,21 @@ public class Shooting : MonoBehaviour
         mousePos = mainCam.ScreenToWorldPoint(Input.mousePosition);
         mousePos.z = 0; // Set z to 0 since we're in 2D
 
-        Vector3 rotation = mousePos - transform.position;
-
-        float rotZ = Mathf.Atan2(rotation.y, rotation.x) * Mathf.Rad2Deg;
+        Vector3 direction = mousePos - rotatePoint.position; // Hitung arah dari rotatePoint
+        float rotationZ = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg; // Hitung rotasi
 
         // Flip rotation if player is facing left
         if (playerTransform.localScale.x < 0)
         {
-            rotZ += 180;
+            rotationZ += 180;
         }
 
-        // Rotate the bow
-        transform.rotation = Quaternion.Euler(0, 0, rotZ);
+        // Hitung posisi baru untuk bow berdasarkan rotasi dan jarak offset
+        Vector3 bowPosition = rotatePoint.position + direction.normalized * rotationDistance;
+
+        // Atur posisi dan rotasi bow
+        bowTransform.position = bowPosition; // Atur posisi bow
+        bowTransform.rotation = Quaternion.Euler(0, 0, rotationZ); // Atur rotasi bow
 
         // Update the slider position to follow the player
         if (chargeSlider != null)
