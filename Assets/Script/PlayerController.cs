@@ -52,6 +52,12 @@ public class PlayerController : MonoBehaviour
         animator = GetComponent<Animator>();
     }
 
+    private void Start()
+    {
+        // Always show the bow when the game starts
+        ShowBow(true);
+    }
+
     private void Update()
     {
         if (Input.GetKeyDown(KeyCode.X))
@@ -111,11 +117,9 @@ public class PlayerController : MonoBehaviour
                 Flip();
             }
 
-            // Show or hide the bow based on movement
-            if (!Input.GetMouseButton(0)) // Only hide when not charging
-            {
-                ShowBow(moveInput != 0); // Hide if not moving
-            }
+            // **Hapus logika untuk menyembunyikan bow** 
+            // Sekarang bow akan selalu ditampilkan
+            ShowBow(true); // Always show the bow
         }
     }
 
@@ -132,45 +136,17 @@ public class PlayerController : MonoBehaviour
     }
 
     // Update the animator parameters
-private void UpdateAnimation()
-{
-    // Update grounded state
-    animator.SetBool("isGrounded", isGrounded);
-
-    // Set jumping and falling states
-    if (!isGrounded)
+    private void UpdateAnimation()
     {
-        if (rb.velocity.y > 0)
-        {
-            animator.SetBool("isJumping", true);
-            animator.SetBool("isFalling", false);
-        }
-        else
-        {
-            animator.SetBool("isJumping", false);
-            animator.SetBool("isFalling", true);
-        }
-    }
-    else
-    {
-        animator.SetBool("isJumping", false);
-        animator.SetBool("isFalling", false);
-    }
+        bool isCharging = Input.GetMouseButton(0); // Assumes charging starts with left mouse button
 
-    // Update movement animation only if grounded
-    if (isGrounded)
-    {
-        animator.SetBool("isMoving", moveInput != 0);
+        // Set animator parameters based on current state
+        animator.SetBool("isCharging", isCharging);
+        animator.SetBool("isGrounded", isGrounded);
+        animator.SetBool("isMoving", isGrounded && moveInput != 0);
+        animator.SetBool("isFalling", !isGrounded && rb.velocity.y < 0);
+        animator.SetBool("isDashing", isDashing);
     }
-    else
-    {
-        animator.SetBool("isMoving", false); // Stop moving animation if not grounded
-    }
-
-    // Update dash animation
-    animator.SetBool("isDashing", isDashing);
-}
-
 
     // Aim at the mouse position
     private void AimAtMouse()
