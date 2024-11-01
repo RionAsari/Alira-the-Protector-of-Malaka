@@ -41,6 +41,8 @@ public class PlayerController : MonoBehaviour
     public GameObject bowTransform; // Drag your bowTransform GameObject here in the inspector
 
     private float moveInput;
+    private float chargeWeight = 0f; // Blending weight for Charge animation
+private float chargeSpeed = 3f;  // Speed to blend into the Charge animation
 
     private void Awake()
     {
@@ -136,17 +138,29 @@ public class PlayerController : MonoBehaviour
     }
 
     // Update the animator parameters
-    private void UpdateAnimation()
+private void UpdateAnimation()
+{
+    bool isCharging = Input.GetMouseButton(0); // Menekan tombol kiri mouse
+    
+    // Jika menekan tombol kiri mouse, naikkan chargeWeight secara bertahap
+    if (isCharging)
     {
-        bool isCharging = Input.GetMouseButton(0); // Assumes charging starts with left mouse button
-
-        // Set animator parameters based on current state
-        animator.SetBool("isCharging", isCharging);
-        animator.SetBool("isGrounded", isGrounded);
-        animator.SetBool("isMoving", isGrounded && moveInput != 0);
-        animator.SetBool("isFalling", !isGrounded && rb.velocity.y < 0);
-        animator.SetBool("isDashing", isDashing);
+        chargeWeight = Mathf.MoveTowards(chargeWeight, 1f, chargeSpeed * Time.deltaTime);
     }
+    else
+    {
+        chargeWeight = Mathf.MoveTowards(chargeWeight, 0f, chargeSpeed * Time.deltaTime);
+    }
+
+    // Set parameter untuk blending di Animator
+    animator.SetLayerWeight(animator.GetLayerIndex("ChargeLayer"), chargeWeight);
+
+    // Update animator parameters lainnya
+    animator.SetBool("isGrounded", isGrounded);
+    animator.SetBool("isMoving", isGrounded && moveInput != 0);
+    animator.SetBool("isFalling", !isGrounded && rb.velocity.y < 0);
+    animator.SetBool("isDashing", isDashing);
+}
 
     // Aim at the mouse position
     private void AimAtMouse()
