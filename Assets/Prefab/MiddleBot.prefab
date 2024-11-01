@@ -177,6 +177,8 @@ MonoBehaviour:
   attackCooldown: 1
   allyTag: Ally
   playerTag: Player
+  healingItem20Prefab: {fileID: 4057959535107082469, guid: 334cfbdbb4a945849bb664932d38bc3e, type: 3}
+  healingItem50Prefab: {fileID: 9183114473502045381, guid: 7d883c08aecd9f248a3835f89ae3a95f, type: 3}
 --- !u!95 &2302442087100881660
 Animator:
   serializedVersion: 5

@@ -29,6 +29,10 @@ public class MiddleBot : MonoBehaviour
     private Vector3 originalScale;
     private int hitCount = 0;
 
+    // Prefab untuk healing items
+    public GameObject healingItem20Prefab;
+    public GameObject healingItem50Prefab;
+
     private void Start()
     {
         health = maxHealth;
@@ -192,7 +196,28 @@ public class MiddleBot : MonoBehaviour
     {
         animator.SetTrigger("isDead");
         isDisabled = true;
+
+        // Drop healing item
+        DropHealingItem();
+
         Destroy(gameObject, 0.2f);
+    }
+
+    private void DropHealingItem()
+    {
+        float dropChance = Random.Range(0f, 1f);
+
+        if (dropChance <= 0.5f)
+        {
+            // 50% chance to drop 20 healing points item
+            Instantiate(healingItem20Prefab, transform.position, Quaternion.identity);
+        }
+        else if (dropChance <= 0.7f)
+        {
+            // 20% chance to drop 50 healing points item
+            Instantiate(healingItem50Prefab, transform.position, Quaternion.identity);
+        }
+        // 30% chance to drop nothing
     }
 
     public IEnumerator DisableEnemy(float duration)
