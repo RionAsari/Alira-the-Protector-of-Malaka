@@ -14,9 +14,9 @@ GameObject:
   - component: {fileID: 6957889021033013721}
   - component: {fileID: 6296398527107409454}
   - component: {fileID: 1549898767629704787}
-  m_Layer: 0
+  m_Layer: 13
   m_Name: HealingItem20
-  m_TagString: Untagged
+  m_TagString: LowHealing
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -175,3 +175,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 31ccf71cdae39004ea7ed0bfc32617ae, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  floatAmplitude: 0.5
+  floatSpeed: 1
