@@ -10,9 +10,6 @@ public class HackedMiddleBot : MonoBehaviour
     public float followSpeed = 3f;
     public float detectionRange = 15f;
     public float attackRange = 10f;
-    public float attackCooldown = 1f;
-    private float lastAttackTime = 0f;
-
     private Transform currentTarget;
     private Animator animator;
     private HackedMiddlebotBulletTransform bulletTransform;
@@ -130,14 +127,9 @@ public class HackedMiddleBot : MonoBehaviour
 
     private void Attack()
     {
-        if (Time.time >= lastAttackTime + attackCooldown)
+        if (bulletTransform != null)
         {
-            if (bulletTransform != null)
-            {
-                bulletTransform.ShootAtTarget(currentTarget.position);
-            }
-
-            lastAttackTime = Time.time;
+            bulletTransform.ShootAtTarget(); // Mengubah untuk memanggil ShootAtTarget tanpa parameter
         }
 
         animator.SetBool("isWalking", false);

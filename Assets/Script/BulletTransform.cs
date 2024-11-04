@@ -1,14 +1,18 @@
 using UnityEngine;
+using System.Collections;
 
 public class BulletTransform : MonoBehaviour
 {
-    public Transform target;  // target untuk Player dan Ally
+    public Transform target;  // Target untuk Player dan Ally
     public GameObject volleyPrefab;
     public float projectileSpeed = 10f;
-    public float attackCooldown = 2f;
+    public float attackCooldown = 3f; // Cooldown setelah semua proyektil ditembakkan
+    public float volleyInterval = 0.2f; // Interval antar proyektil
+    public int volleyCount = 4; // Jumlah proyektil yang akan ditembakkan
 
     private float lastAttackTime = 0f;
     private Animator animator;
+    private bool isShooting = false;
 
     private void Start()
     {
@@ -42,13 +46,24 @@ public class BulletTransform : MonoBehaviour
 
     public void ShootAtTarget()
     {
-        if (Time.time >= lastAttackTime + attackCooldown && target != null)
+        if (Time.time >= lastAttackTime + attackCooldown && target != null && !isShooting)
         {
-            if (animator != null)
-            {
-                animator.SetTrigger("Attack");
-            }
+            StartCoroutine(ShootVolley());
+        }
+    }
 
+    private IEnumerator ShootVolley()
+    {
+        isShooting = true; // Mencegah serangan berulang selama coroutine berjalan
+
+        if (animator != null)
+        {
+            animator.SetTrigger("Attack");
+        }
+
+        // Loop untuk menembakkan beberapa proyektil dalam satu volley
+        for (int i = 0; i < volleyCount; i++)
+        {
             GameObject projectile = Instantiate(volleyPrefab, transform.position, transform.rotation);
             Rigidbody2D rb = projectile.GetComponent<Rigidbody2D>();
 
@@ -58,7 +73,10 @@ public class BulletTransform : MonoBehaviour
                 rb.velocity = direction * projectileSpeed;
             }
 
-            lastAttackTime = Time.time;
+            yield return new WaitForSeconds(volleyInterval); // Jeda antara setiap tembakan
         }
+
+        lastAttackTime = Time.time; // Menyimpan waktu serangan terakhir
+        isShooting = false; // Mengizinkan serangan setelah cooldown selesai
     }
 }

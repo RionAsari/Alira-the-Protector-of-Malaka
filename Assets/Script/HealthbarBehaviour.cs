@@ -15,36 +15,36 @@ public class HealthbarBehaviour : MonoBehaviour
         // Slider.gameObject.SetActive(false); 
     }
 
-    public void SetHealth(float health, float maxHealth)
+public void SetHealth(float health, float maxHealth)
+{
+    // Set max health before current health to prevent visual glitches
+    Slider.maxValue = maxHealth;
+    Slider.value = health;  // Set current health
+
+    // Activate the slider after setting health values
+    Slider.gameObject.SetActive(true);
+
+    Debug.Log($"Health set to: {health}, Max Health: {maxHealth}"); // Debug log
+
+    // Change color based on the health value ranges
+    if (health >= 80f) // 100f - 80f
     {
-        // Set max health before current health to prevent visual glitches
-        Slider.maxValue = maxHealth;
-        Slider.value = health;  // Set current health
-
-        // Activate the slider after setting health values
-        Slider.gameObject.SetActive(true);
-
-        Debug.Log($"Health set to: {health}, Max Health: {maxHealth}"); // Debug log
-
-        // Change color based on the health percentage
-        float healthPercentage = health / maxHealth;
-        if (health == maxHealth) // Full health (100%)
-        {
-            Slider.fillRect.GetComponentInChildren<Image>().color = Color.green; // Set to green
-        }
-        else if (healthPercentage <= 0.8f && healthPercentage > 0.4f) // 80%-40%
-        {
-            Slider.fillRect.GetComponentInChildren<Image>().color = Color.yellow; // Set to yellow
-        }
-        else if (health > 0) // 39%-1%
-        {
-            Slider.fillRect.GetComponentInChildren<Image>().color = Color.red; // Set to red
-        }
-        else // Health is zero
-        {
-            Destroy(Slider.gameObject); // Destroy the slider if health is zero
-        }
+        Slider.fillRect.GetComponentInChildren<Image>().color = Color.green; // Set to green
     }
+    else if (health >= 40f) // 79f - 40f
+    {
+        Slider.fillRect.GetComponentInChildren<Image>().color = Color.yellow; // Set to yellow
+    }
+    else if (health > 0) // 39f - 1f
+    {
+        Slider.fillRect.GetComponentInChildren<Image>().color = Color.red; // Set to red
+    }
+    else // Health is zero
+    {
+        Destroy(Slider.gameObject); // Destroy the slider if health is zero
+    }
+}
+
 
     // New method to update the position of the health bar
     public void UpdatePosition(Vector3 enemyPosition)

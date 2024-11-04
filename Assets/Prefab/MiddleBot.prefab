@@ -137,7 +137,7 @@ Rigidbody2D:
   m_Simulated: 1
   m_UseFullKinematicContacts: 0
   m_UseAutoMass: 0
-  m_Mass: 1
+  m_Mass: 300
   m_LinearDrag: 0
   m_AngularDrag: 0.05
   m_GravityScale: 1
@@ -174,7 +174,6 @@ MonoBehaviour:
   followSpeed: 3
   detectionRange: 15
   attackRange: 10
-  attackCooldown: 1
   allyTag: Ally
   playerTag: Player
   healingItem20Prefab: {fileID: 4057959535107082469, guid: 334cfbdbb4a945849bb664932d38bc3e, type: 3}
@@ -425,6 +424,8 @@ MonoBehaviour:
   volleyPrefab: {fileID: 7376427935946097583, guid: 56801f4310dcbd94e803b8e689abb030, type: 3}
   projectileSpeed: 10
   attackCooldown: 2
+  volleyInterval: 0.2
+  volleyCount: 4
 --- !u!1 &7188451601359939958
 GameObject:
   m_ObjectHideFlags: 0
