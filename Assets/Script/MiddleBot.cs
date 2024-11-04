@@ -20,8 +20,6 @@ public class MiddleBot : MonoBehaviour
 
     public float detectionRange = 15f;
     public float attackRange = 10f;
-    public float attackCooldown = 1f;
-    private float lastAttackTime = 0f;
 
     public string allyTag = "Ally";
     public string playerTag = "Player";
@@ -144,14 +142,9 @@ public class MiddleBot : MonoBehaviour
 
     private void Attack()
     {
-        if (Time.time >= lastAttackTime + attackCooldown)
+        if (bulletTransform != null)
         {
-            if (bulletTransform != null)
-            {
-                bulletTransform.ShootAtTarget();
-            }
-
-            lastAttackTime = Time.time;
+            bulletTransform.ShootAtTarget();
         }
 
         if (currentTarget != null)
