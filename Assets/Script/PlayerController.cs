@@ -43,12 +43,30 @@ public class PlayerController : MonoBehaviour
     private bool canMoveLeft = true;
     private bool canMoveRight = true;
 
+    // Variabel untuk afterimage
+    public GameObject afterImagePrefab; // Prefab afterimage
+    public float afterImageInterval = 0.05f; // Interval antara setiap afterimage
+
+    // Untuk pengelolaan warna sprite
+    private SpriteRenderer[] spriteRenderers; // Array untuk menyimpan semua SpriteRenderer
+    private Color[] originalColors; // Array untuk menyimpan warna asli
+
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
         rb.gravityScale = 3f;
         mainCamera = Camera.main;
         animator = GetComponent<Animator>();
+
+        // Mendapatkan semua SpriteRenderer yang ada di dalam karakter
+        spriteRenderers = GetComponentsInChildren<SpriteRenderer>();
+        originalColors = new Color[spriteRenderers.Length];
+
+        // Menyimpan warna asli untuk setiap SpriteRenderer
+        for (int i = 0; i < spriteRenderers.Length; i++)
+        {
+            originalColors[i] = spriteRenderers[i].color;
+        }
     }
 
     private void Start()
@@ -274,7 +292,15 @@ public class PlayerController : MonoBehaviour
         isInvincible = true;
         gameObject.layer = LayerMask.NameToLayer("PlayerDash");
         animator.SetTrigger("StartDash");
+
+        // Ubah warna semua SpriteRenderer saat dash
+        foreach (var spriteRenderer in spriteRenderers)
+        {
+            spriteRenderer.color = new Color(1f, 0f, 0f, 100f / 255f); // Merah dengan alpha 100
+        }
+
         StartCoroutine(DashCoroutine());
+        StartCoroutine(CreateAfterImage()); // Mulai coroutine untuk membuat afterimages
     }
 
     private IEnumerator DashCoroutine()
@@ -290,6 +316,30 @@ public class PlayerController : MonoBehaviour
         isInvincible = false;
         lastDashTime = Time.time;
         gameObject.layer = LayerMask.NameToLayer("Player");
+
+        // Kembalikan warna semua SpriteRenderer setelah dash
+        for (int i = 0; i < spriteRenderers.Length; i++)
+        {
+            spriteRenderers[i].color = originalColors[i]; // Kembalikan ke warna asli
+        }
+    }
+
+    private IEnumerator CreateAfterImage()
+    {
+        while (isDashing)
+        {
+            GameObject afterImage = Instantiate(afterImagePrefab, transform.position, transform.rotation);
+            afterImage.transform.localScale = transform.localScale;
+
+            yield return new WaitForSeconds(afterImageInterval); // Interval antara afterimages
+
+            // Mencari dan menghancurkan afterimage yang sudah dibuat
+            GameObject[] afterImages = GameObject.FindGameObjectsWithTag("AfterImage");
+            foreach (GameObject img in afterImages)
+            {
+                Destroy(img); // Menghancurkan afterimage yang ditemukan
+            }
+        }
     }
 
     public bool IsInvincible()

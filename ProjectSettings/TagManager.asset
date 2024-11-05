@@ -16,6 +16,8 @@ TagManager:
   - HackedVolley
   - LowHealing
   - HighHealing
+  - Wall
+  - AfterImage
   layers:
   - Default
   - TransparentFX
@@ -32,8 +34,8 @@ TagManager:
   - PlayerDash
   - LowHealing
   - HighHealing
-  - 
-  - 
+  - WallLayer
+  - Ground
   - 
   - 
   - 
