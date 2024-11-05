@@ -301,7 +301,6 @@ private void DropHealingItem()
             if (hackedVolley != null)
             {
                 TakeDamage(hackedVolley.damage);
-                Debug.Log($"LightGrunt hit by HackedVolley. Damage taken: {hackedVolley.damage}");
             }
 
             Destroy(other.gameObject);

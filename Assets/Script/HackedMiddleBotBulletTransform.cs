@@ -9,10 +9,12 @@ public class HackedMiddlebotBulletTransform : MonoBehaviour
     public float attackCooldown = 3f; // Cooldown setelah semua proyektil ditembakkan
     public float volleyInterval = 0.2f; // Interval antar proyektil
     public int volleyCount = 4; // Jumlah proyektil yang akan ditembakkan
+    public float initialAttackDelay = 1f; // Delay 1 detik sebelum bisa menyerang pertama kali
 
     private float lastAttackTime = 0f;
     private Animator animator;
     private bool isShooting = false;
+    private bool initialDelayDone = false; // Flag untuk delay awal
 
     private void Start()
     {
@@ -74,44 +76,52 @@ public class HackedMiddlebotBulletTransform : MonoBehaviour
 
     public void ShootAtTarget()
     {
+        if (!initialDelayDone)
+        {
+            StartCoroutine(InitialDelay()); // Mulai delay 1 detik pertama kali
+            return;
+        }
+
         if (Time.time >= lastAttackTime + attackCooldown && !isShooting)
         {
             StartCoroutine(ShootVolley());
         }
     }
 
-private IEnumerator ShootVolley()
-{
-    isShooting = true; // Mencegah serangan berulang selama coroutine berjalan
-
-    if (animator != null)
+    private IEnumerator InitialDelay()
     {
-        animator.SetTrigger("Attack");
+        yield return new WaitForSeconds(initialAttackDelay);
+        initialDelayDone = true; // Delay 1 detik selesai, sekarang bisa menyerang
     }
 
-    // Simpan posisi target terakhir jika target hancur di tengah serangan
-    Vector3 lastKnownTargetPosition = target != null ? target.position : transform.position;
-
-    // Loop untuk menembakkan beberapa proyektil dalam satu volley
-    for (int i = 0; i < volleyCount; i++)
+    private IEnumerator ShootVolley()
     {
-        // Cek apakah target masih ada, jika tidak, gunakan posisi terakhir yang diketahui
-        Vector3 shootTargetPosition = target != null ? target.position : lastKnownTargetPosition;
+        isShooting = true;
 
-        GameObject projectile = Instantiate(volleyPrefab, transform.position, transform.rotation);
-        Rigidbody2D rb = projectile.GetComponent<Rigidbody2D>();
-
-        if (rb != null)
+        if (animator != null)
         {
-            Vector2 direction = (shootTargetPosition - transform.position).normalized;
-            rb.velocity = direction * projectileSpeed;
+            animator.SetTrigger("Attack");
         }
 
-        yield return new WaitForSeconds(volleyInterval); // Jeda antara setiap tembakan
+        Vector3 lastKnownTargetPosition = target != null ? target.position : transform.position;
+
+        for (int i = 0; i < volleyCount; i++)
+        {
+            Vector3 shootTargetPosition = target != null ? target.position : lastKnownTargetPosition;
+
+            GameObject projectile = Instantiate(volleyPrefab, transform.position, transform.rotation);
+            Rigidbody2D rb = projectile.GetComponent<Rigidbody2D>();
+
+            if (rb != null)
+            {
+                Vector2 direction = (shootTargetPosition - transform.position).normalized;
+                rb.velocity = direction * projectileSpeed;
+            }
+
+            yield return new WaitForSeconds(volleyInterval);
+        }
+
+        lastAttackTime = Time.time;
+        isShooting = false;
     }
-
-    lastAttackTime = Time.time; // Menyimpan waktu serangan terakhir
-    isShooting = false; // Mengizinkan serangan setelah cooldown selesai
-}
-
 }

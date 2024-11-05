@@ -30,7 +30,6 @@ public class Arrow : MonoBehaviour
         // Ignore collision with Volley projectiles
         if (other.CompareTag("Volley"))
         {
-            Debug.Log("Ignored collision with Volley: " + other.gameObject.name);
             Physics2D.IgnoreCollision(GetComponent<Collider2D>(), other); // Ignore collision
             return; // Exit the method
         }
@@ -38,12 +37,10 @@ public class Arrow : MonoBehaviour
         // Ignore player and allies, handle enemies
         if (other.CompareTag("Player"))
         {
-            Debug.Log("Arrow hit the player: " + other.gameObject.name);
             return; // Do nothing if it hits the player
         }
         else if (other.CompareTag("Ally")) 
         {
-            Debug.Log("Arrow hit an ally: " + other.gameObject.name);
             return; // Do nothing if it hits an ally
         }
         else if (other.CompareTag("Enemy")) // Check for any enemy tagged as "Enemy"

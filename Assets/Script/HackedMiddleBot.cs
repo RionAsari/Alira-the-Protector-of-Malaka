@@ -173,7 +173,6 @@ public class HackedMiddleBot : MonoBehaviour
             float damage = 10f;
 
             TakeDamage(damage);
-            Debug.Log($"HackedMiddleBot took {damage} damage from {other.gameObject.tag}");
 
             Destroy(other.gameObject);
         }

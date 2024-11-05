@@ -23,7 +23,6 @@ public class SpecialArrow : MonoBehaviour
         // Ignore collision with Volley projectiles
         if (other.CompareTag("Volley"))
         {
-            Debug.Log("Ignored collision with Volley: " + other.gameObject.name);
             Physics2D.IgnoreCollision(GetComponent<Collider2D>(), other); // Ignore collision
             return; // Exit the method
         }
@@ -34,7 +33,6 @@ public class SpecialArrow : MonoBehaviour
             LightGrunt enemy = other.GetComponent<LightGrunt>();
             if (enemy != null)
             {
-                Debug.Log("Hit LightGrunt enemy: " + enemy.name); // Debug log
                 StartCoroutine(DisableEnemy(enemy)); // Disable the enemy
             }
         }
@@ -43,14 +41,12 @@ public class SpecialArrow : MonoBehaviour
             MiddleBot middleBot = other.GetComponent<MiddleBot>();
             if (middleBot != null && middleBot.IncrementHitCount())
             {
-                Debug.Log("Hit MiddleBot enemy: " + middleBot.name); // Debug log
                 StartCoroutine(DisableEnemy(middleBot)); // Disable the MiddleBot
             }
         }
         else if (other.CompareTag("Ally"))
         {
             // Do nothing if it hits HackedLightGrunt
-            Debug.Log("SpecialArrow hit an ally: " + other.gameObject.name);
             return; // Prevent further processing for HackedLightGrunt
         }
 
