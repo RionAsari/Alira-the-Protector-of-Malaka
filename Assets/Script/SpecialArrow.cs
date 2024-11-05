@@ -23,7 +23,6 @@ public class SpecialArrow : MonoBehaviour
         // Ignore collision with Volley projectiles
         if (other.CompareTag("Volley"))
         {
-            Debug.Log("Ignored collision with Volley: " + other.gameObject.name);
             Physics2D.IgnoreCollision(GetComponent<Collider2D>(), other); // Ignore collision
             return; // Exit the method
         }
