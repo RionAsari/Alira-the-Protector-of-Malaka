@@ -13,12 +13,10 @@ public class Volley : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        Debug.Log("Collided with: " + other.gameObject.name); // Log the collided object name
 
         // Ignore collisions with Arrow and SpecialArrow
         if (other.CompareTag("Arrow") || other.CompareTag("SpecialArrow"))
         {
-            Debug.Log("Ignored collision with: " + other.gameObject.name);
             Physics2D.IgnoreCollision(GetComponent<Collider2D>(), other); // Ignore collision
             return; // Exit the method
         }
@@ -26,7 +24,6 @@ public class Volley : MonoBehaviour
         // Ignore collision with MiddleBot
         if (other.CompareTag("MiddleBot"))
         {
-            Debug.Log("Ignored collision with MiddleBot: " + other.gameObject.name);
             return; // Ignore collision and do nothing
         }
 
@@ -39,7 +36,6 @@ public class Volley : MonoBehaviour
             if (playerHealth != null)
             {
                 playerHealth.TakeDamage(damage); // Deal damage to the player
-                Debug.Log("Damage dealt to player: " + damage); // Log damage dealt
             }
 
             if (playerController != null)
@@ -62,16 +58,12 @@ public class Volley : MonoBehaviour
                     ((HackedMiddleBot)allyHealth).TakeDamage(damage); // Deal damage to HackedMiddleBot
                 else if (allyHealth is HackedLightGrunt)
                     ((HackedLightGrunt)allyHealth).TakeDamage(damage); // Deal damage to HackedLightGrunt
-
-                Debug.Log($"Damage dealt to ally: {damage}"); // Log damage dealt
             }
 
             Destroy(gameObject); // Destroy projectile after hitting Ally
         }
         else if (other.CompareTag("Enemy"))
         {
-            // Ignore collisions with enemies
-            Debug.Log("Ignored collision with enemy: " + other.gameObject.name);
             return; // Simply return and do nothing if it's an enemy
         }
         else

@@ -24,8 +24,6 @@ public class HealthBarMiddleBot : MonoBehaviour
         // Activate the slider after setting health values
         Slider.gameObject.SetActive(true);
 
-        Debug.Log($"Health set to: {health}, Max Health: {maxHealth}"); // Debug log
-
         // Change color based on the health value ranges
         if (health >= 350f) // 500f - 350f
         {

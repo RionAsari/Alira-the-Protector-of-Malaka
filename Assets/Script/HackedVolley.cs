@@ -13,12 +13,10 @@ public class HackedVolley : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        Debug.Log("Collided with: " + other.gameObject.name); // Log the collided object name
 
         // Ignore collisions with Arrow, SpecialArrow, and Ally
         if (other.CompareTag("Arrow") || other.CompareTag("SpecialArrow") || other.CompareTag("Ally"))
         {
-            Debug.Log("Ignored collision with: " + other.gameObject.name);
             Physics2D.IgnoreCollision(GetComponent<Collider2D>(), other); // Ignore collision
             return; // Exit the method
         }
@@ -26,7 +24,6 @@ public class HackedVolley : MonoBehaviour
         // Ignore collision with Player
         if (other.CompareTag("Player"))
         {
-            Debug.Log("Ignored collision with Player: " + other.gameObject.name);
             return; // Ignore collision and do nothing
         }
 
@@ -38,7 +35,6 @@ public class HackedVolley : MonoBehaviour
             if (enemyHealth != null)
             {
                 enemyHealth.TakeDamage(damage); // Deal damage to the enemy or MiddleBot
-                Debug.Log($"Damage dealt to {other.gameObject.name}: {damage}"); // Log damage dealt
             }
 
             // Destroy the projectile upon collision with an enemy or MiddleBot
