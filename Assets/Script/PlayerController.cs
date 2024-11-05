@@ -4,26 +4,23 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-    public float moveSpeed = 8f; // Increased speed
-    public float jumpForce = 8f; // Increased jump force
-    public float fallMultiplier = 2.5f; // Fall speed multiplier
+    public float moveSpeed = 8f; 
+    public float jumpForce = 8f; 
+    public float fallMultiplier = 2.5f;
     private Rigidbody2D rb;
     private bool isGrounded = true;
     private bool facingRight = true;
     private Camera mainCamera;
     private bool usingSpecialArrow = false;
 
-    // Knockback variables
     public float KBForce;
     public float KBCounter;
     public float KBTotalTime;
     public bool KnockFromRight;
 
-    // Jump variables
     private int jumpCount = 0;
-    public int maxJumpCount = 2; // Maximum jumps (1 for single jump, 2 for double jump)
+    public int maxJumpCount = 2;
 
-    // Dash variables
     public float dashSpeed = 20f;
     public float dashDuration = 0.2f;
     public float dashCooldown = 0.5f;
@@ -31,32 +28,49 @@ public class PlayerController : MonoBehaviour
     private bool isInvincible = false;
     private float lastDashTime = -10f;
 
-    private int dashDirection = 0; // -1 for left, 1 for right
+    private int dashDirection = 0;
     private float doubleTapTime = 0.2f;
     private KeyCode lastKeyPressed;
     private float lastKeyTime;
 
-    // Reference to Animator and Bow Transform
     private Animator animator;
-    public GameObject bowTransform; // Drag your bowTransform GameObject here in the inspector
+    public GameObject bowTransform;
 
     private float moveInput;
-    private float chargeWeight = 0f; // Blending weight for Charge animation
-private float chargeSpeed = 3f;  // Speed to blend into the Charge animation
+    private float chargeWeight = 0f;
+    private float chargeSpeed = 3f;
+
+    private bool canMoveLeft = true;
+    private bool canMoveRight = true;
+
+    // Variabel untuk afterimage
+    public GameObject afterImagePrefab; // Prefab afterimage
+    public float afterImageInterval = 0.05f; // Interval antara setiap afterimage
+
+    // Untuk pengelolaan warna sprite
+    private SpriteRenderer[] spriteRenderers; // Array untuk menyimpan semua SpriteRenderer
+    private Color[] originalColors; // Array untuk menyimpan warna asli
 
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
-        rb.gravityScale = 3f; // Set gravity scale for faster falling
+        rb.gravityScale = 3f;
         mainCamera = Camera.main;
-
-        // Get Animator component
         animator = GetComponent<Animator>();
+
+        // Mendapatkan semua SpriteRenderer yang ada di dalam karakter
+        spriteRenderers = GetComponentsInChildren<SpriteRenderer>();
+        originalColors = new Color[spriteRenderers.Length];
+
+        // Menyimpan warna asli untuk setiap SpriteRenderer
+        for (int i = 0; i < spriteRenderers.Length; i++)
+        {
+            originalColors[i] = spriteRenderers[i].color;
+        }
     }
 
     private void Start()
     {
-        // Always show the bow when the game starts
         ShowBow(true);
     }
 
@@ -64,9 +78,10 @@ private float chargeSpeed = 3f;  // Speed to blend into the Charge animation
     {
         if (Input.GetKeyDown(KeyCode.X))
         {
-            usingSpecialArrow = !usingSpecialArrow; // Toggle between regular and special arrows
+            usingSpecialArrow = !usingSpecialArrow;
             Debug.Log("Using Special Arrow: " + usingSpecialArrow);
         }
+
         if (KBCounter <= 0)
         {
             if (!isDashing)
@@ -74,12 +89,11 @@ private float chargeSpeed = 3f;  // Speed to blend into the Charge animation
                 Move();
                 HandleJump();
                 AimAtMouse();
-                UpdateAnimation(); // Update animation
-                CheckDash(); // Check for double tap input for dashing
+                UpdateAnimation();
+                CheckDash();
             }
             else
             {
-                // Stop any movement while dashing
                 rb.velocity = new Vector2(dashDirection * dashSpeed, rb.velocity.y);
             }
         }
@@ -96,78 +110,61 @@ private float chargeSpeed = 3f;  // Speed to blend into the Charge animation
             KBCounter -= Time.deltaTime;
         }
 
-        // Apply fall multiplier
         if (rb.velocity.y < 0)
         {
             rb.velocity += Vector2.up * Physics2D.gravity.y * (fallMultiplier - 1) * Time.deltaTime;
         }
     }
 
-    // Move with A and D keys
     private void Move()
     {
-        if (!isDashing) // Only allow movement if not dashing
+        if (!isDashing)
         {
-            moveInput = Input.GetAxisRaw("Horizontal"); // A = -1, D = 1
+            moveInput = Input.GetAxisRaw("Horizontal");
+
+            if ((moveInput < 0 && !canMoveLeft) || (moveInput > 0 && !canMoveRight))
+            {
+                moveInput = 0;
+            }
 
             Vector3 moveVelocity = new Vector3(moveInput * moveSpeed, rb.velocity.y, 0);
             rb.velocity = moveVelocity;
 
-            // Flip character if moving in the opposite direction
             if ((moveInput > 0 && !facingRight) || (moveInput < 0 && facingRight))
             {
                 Flip();
             }
 
-            // **Hapus logika untuk menyembunyikan bow** 
-            // Sekarang bow akan selalu ditampilkan
-            ShowBow(true); // Always show the bow
+            ShowBow(true);
         }
     }
 
-    // Function to show or hide the bow
     public void ShowBow(bool show)
     {
         bowTransform.SetActive(show);
     }
 
-    // Function to check if the player is idle
     public bool IsIdle()
     {
-        return moveInput == 0 && isGrounded; // Player is idle when not moving and is grounded
+        return moveInput == 0 && isGrounded;
     }
 
-    // Update the animator parameters
-private void UpdateAnimation()
-{
-    bool isCharging = Input.GetMouseButton(0); // Menekan tombol kiri mouse
-    
-    // Jika menekan tombol kiri mouse, naikkan chargeWeight secara bertahap
-    if (isCharging)
+    private void UpdateAnimation()
     {
-        chargeWeight = Mathf.MoveTowards(chargeWeight, 1f, chargeSpeed * Time.deltaTime);
+        bool isCharging = Input.GetMouseButton(0);
+        chargeWeight = Mathf.MoveTowards(chargeWeight, isCharging ? 1f : 0f, chargeSpeed * Time.deltaTime);
+
+        animator.SetLayerWeight(animator.GetLayerIndex("ChargeLayer"), chargeWeight);
+        animator.SetBool("isGrounded", isGrounded);
+        animator.SetBool("isMoving", isGrounded && moveInput != 0);
+        animator.SetBool("isFalling", !isGrounded && rb.velocity.y < 0);
+        animator.SetBool("isDashing", isDashing);
     }
-    else
-    {
-        chargeWeight = Mathf.MoveTowards(chargeWeight, 0f, chargeSpeed * Time.deltaTime);
-    }
 
-    // Set parameter untuk blending di Animator
-    animator.SetLayerWeight(animator.GetLayerIndex("ChargeLayer"), chargeWeight);
-
-    // Update animator parameters lainnya
-    animator.SetBool("isGrounded", isGrounded);
-    animator.SetBool("isMoving", isGrounded && moveInput != 0);
-    animator.SetBool("isFalling", !isGrounded && rb.velocity.y < 0);
-    animator.SetBool("isDashing", isDashing);
-}
-
-    // Aim at the mouse position
     private void AimAtMouse()
     {
         Vector3 mousePosition = GetMouseWorldPosition();
 
-        // Flip character sprite to face the cursor
         if (mousePosition.x > transform.position.x && !facingRight)
         {
             Flip();
@@ -178,25 +175,22 @@ private void UpdateAnimation()
         }
     }
 
-    // Get mouse position in world
     private Vector3 GetMouseWorldPosition()
     {
         Vector3 mouseScreenPosition = Input.mousePosition;
         Vector3 worldPosition = mainCamera.ScreenToWorldPoint(mouseScreenPosition);
-        worldPosition.z = 0; // Zero out Z-axis for 2D game
+        worldPosition.z = 0;
         return worldPosition;
     }
 
-    // Flip the character
     private void Flip()
     {
         facingRight = !facingRight;
         Vector3 scale = transform.localScale;
-        scale.x *= -1; // Flip the character
+        scale.x *= -1;
         transform.localScale = scale;
     }
 
-    // Handle jumping with W key
     private void HandleJump()
     {
         if (Input.GetKeyDown(KeyCode.W))
@@ -204,27 +198,44 @@ private void UpdateAnimation()
             if (isGrounded)
             {
                 rb.velocity = new Vector2(rb.velocity.x, jumpForce);
-                isGrounded = false; // Set not grounded after jumping
-                jumpCount = 1; // Reset jump count
-                animator.SetBool("isJumping", true); // Update animator parameter
+                isGrounded = false;
+                jumpCount = 1;
+                animator.SetBool("isJumping", true);
             }
             else if (jumpCount < maxJumpCount)
             {
                 rb.velocity = new Vector2(rb.velocity.x, jumpForce);
                 jumpCount++;
-                animator.SetBool("isJumping", true); // Update animator parameter for double jump
+                animator.SetBool("isJumping", true);
             }
         }
     }
 
-    // Detect if the player is grounded
     private void OnCollisionEnter2D(Collision2D collision)
     {
         if (collision.gameObject.CompareTag("Ground"))
         {
             isGrounded = true;
-            jumpCount = 0; // Reset jump count
-            animator.SetBool("isGrounded", true); // Update animator parameter
+            jumpCount = 0;
+            animator.SetBool("isGrounded", true);
+        }
+    }
+
+    private void OnCollisionStay2D(Collision2D collision)
+    {
+        if (collision.gameObject.CompareTag("Wall"))
+        {
+            Vector2 contactPoint = collision.contacts[0].point;
+            Vector2 playerPosition = transform.position;
+
+            if (contactPoint.x < playerPosition.x)
+            {
+                canMoveLeft = false;
+            }
+            else if (contactPoint.x > playerPosition.x)
+            {
+                canMoveRight = false;
+            }
         }
     }
 
@@ -232,12 +243,17 @@ private void UpdateAnimation()
     {
         if (collision.gameObject.CompareTag("Ground"))
         {
-            isGrounded = false; // Update grounded state when leaving ground
+            isGrounded = false;
             animator.SetBool("isGrounded", false);
+        }
+
+        if (collision.gameObject.CompareTag("Wall"))
+        {
+            canMoveLeft = true;
+            canMoveRight = true;
         }
     }
 
-    // Check for double tap input for dashing
     private void CheckDash()
     {
         if (Time.time - lastDashTime > dashCooldown)
@@ -246,7 +262,7 @@ private void UpdateAnimation()
             {
                 if (lastKeyPressed == KeyCode.D && Time.time - lastKeyTime < doubleTapTime)
                 {
-                    StartDash(1); // Dash to the right
+                    StartDash(1);
                 }
                 else
                 {
@@ -258,7 +274,7 @@ private void UpdateAnimation()
             {
                 if (lastKeyPressed == KeyCode.A && Time.time - lastKeyTime < doubleTapTime)
                 {
-                    StartDash(-1); // Dash to the left
+                    StartDash(-1);
                 }
                 else
                 {
@@ -269,43 +285,68 @@ private void UpdateAnimation()
         }
     }
 
-    // Start the dash movement
     private void StartDash(int direction)
     {
         dashDirection = direction;
         isDashing = true;
         isInvincible = true;
-        // Change the player's layer to PlayerDash
         gameObject.layer = LayerMask.NameToLayer("PlayerDash");
-        animator.SetTrigger("StartDash"); // Trigger the dash animation
+        animator.SetTrigger("StartDash");
+
+        // Ubah warna semua SpriteRenderer saat dash
+        foreach (var spriteRenderer in spriteRenderers)
+        {
+            spriteRenderer.color = new Color(1f, 0f, 0f, 100f / 255f); // Merah dengan alpha 100
+        }
+
         StartCoroutine(DashCoroutine());
+        StartCoroutine(CreateAfterImage()); // Mulai coroutine untuk membuat afterimages
     }
 
-    // Coroutine to handle dash duration and cooldown
     private IEnumerator DashCoroutine()
     {
         float startTime = Time.time;
 
         while (Time.time < startTime + dashDuration)
         {
-            yield return null; // Wait until the dash is over
+            yield return null;
         }
 
         isDashing = false;
         isInvincible = false;
         lastDashTime = Time.time;
-
-        // Revert the player's layer back to Player
         gameObject.layer = LayerMask.NameToLayer("Player");
+
+        // Kembalikan warna semua SpriteRenderer setelah dash
+        for (int i = 0; i < spriteRenderers.Length; i++)
+        {
+            spriteRenderers[i].color = originalColors[i]; // Kembalikan ke warna asli
+        }
     }
 
-    // Function to make the player invincible during the dash
+    private IEnumerator CreateAfterImage()
+    {
+        while (isDashing)
+        {
+            GameObject afterImage = Instantiate(afterImagePrefab, transform.position, transform.rotation);
+            afterImage.transform.localScale = transform.localScale;
+
+            yield return new WaitForSeconds(afterImageInterval); // Interval antara afterimages
+
+            // Mencari dan menghancurkan afterimage yang sudah dibuat
+            GameObject[] afterImages = GameObject.FindGameObjectsWithTag("AfterImage");
+            foreach (GameObject img in afterImages)
+            {
+                Destroy(img); // Menghancurkan afterimage yang ditemukan
+            }
+        }
+    }
+
     public bool IsInvincible()
     {
         return isInvincible;
     }
 
-    // Trigger knockback on collision with enemy
     private void OnTriggerEnter2D(Collider2D other)
     {
         if (other.gameObject.CompareTag("Enemy"))

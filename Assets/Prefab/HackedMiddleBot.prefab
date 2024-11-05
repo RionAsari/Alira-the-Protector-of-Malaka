@@ -293,6 +293,8 @@ MonoBehaviour:
   volleyPrefab: {fileID: 7376427935946097583, guid: 22972bba4cce39643aa9cff78c6f1340, type: 3}
   projectileSpeed: 10
   attackCooldown: 2
+  volleyInterval: 0.2
+  volleyCount: 4
 --- !u!1 &4791737973268090076
 GameObject:
   m_ObjectHideFlags: 0
@@ -521,7 +523,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 1
   m_Sprite: {fileID: 21300000, guid: 20daa800a641d9e4cae18a06630db1ef, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -634,5 +636,4 @@ MonoBehaviour:
   followSpeed: 3
   detectionRange: 15
   attackRange: 10
-  attackCooldown: 2
   stopDistance: 4

@@ -80,31 +80,38 @@ public class HackedMiddlebotBulletTransform : MonoBehaviour
         }
     }
 
-    private IEnumerator ShootVolley()
+private IEnumerator ShootVolley()
+{
+    isShooting = true; // Mencegah serangan berulang selama coroutine berjalan
+
+    if (animator != null)
     {
-        isShooting = true; // Mencegah serangan berulang selama coroutine berjalan
-
-        if (animator != null)
-        {
-            animator.SetTrigger("Attack");
-        }
-
-        // Loop untuk menembakkan beberapa proyektil dalam satu volley
-        for (int i = 0; i < volleyCount; i++)
-        {
-            GameObject projectile = Instantiate(volleyPrefab, transform.position, transform.rotation);
-            Rigidbody2D rb = projectile.GetComponent<Rigidbody2D>();
-
-            if (rb != null && target != null)
-            {
-                Vector2 direction = (target.position - transform.position).normalized;
-                rb.velocity = direction * projectileSpeed;
-            }
-
-            yield return new WaitForSeconds(volleyInterval); // Jeda antara setiap tembakan
-        }
-
-        lastAttackTime = Time.time; // Menyimpan waktu serangan terakhir
-        isShooting = false; // Mengizinkan serangan setelah cooldown selesai
+        animator.SetTrigger("Attack");
     }
+
+    // Simpan posisi target terakhir jika target hancur di tengah serangan
+    Vector3 lastKnownTargetPosition = target != null ? target.position : transform.position;
+
+    // Loop untuk menembakkan beberapa proyektil dalam satu volley
+    for (int i = 0; i < volleyCount; i++)
+    {
+        // Cek apakah target masih ada, jika tidak, gunakan posisi terakhir yang diketahui
+        Vector3 shootTargetPosition = target != null ? target.position : lastKnownTargetPosition;
+
+        GameObject projectile = Instantiate(volleyPrefab, transform.position, transform.rotation);
+        Rigidbody2D rb = projectile.GetComponent<Rigidbody2D>();
+
+        if (rb != null)
+        {
+            Vector2 direction = (shootTargetPosition - transform.position).normalized;
+            rb.velocity = direction * projectileSpeed;
+        }
+
+        yield return new WaitForSeconds(volleyInterval); // Jeda antara setiap tembakan
+    }
+
+    lastAttackTime = Time.time; // Menyimpan waktu serangan terakhir
+    isShooting = false; // Mengizinkan serangan setelah cooldown selesai
+}
+
 }
