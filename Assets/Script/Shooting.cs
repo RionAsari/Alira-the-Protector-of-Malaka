@@ -17,13 +17,14 @@ public class Shooting : MonoBehaviour
     public float rotationDistance = 1.5f; // Jarak offset dari rotatePoint
     public float maxArrowSpeed = 15f; // Maximum arrow speed (constant)
     public float chargeSpeed = 5f; // Speed of charging (how fast charge builds)
-
+    
     private float currentCharge = 0f; // Amount of charge
     private bool isCharging = false; // Is the player currently charging?
     private bool canFire = true;
     private float timer;
     public float timeBetweenFiring = 0.5f; // Cooldown time between firing
     private PlayerController playerController;
+    private Health playerHealth; // Reference to the Health script
 
     // UI Slider for charge bar
     public Slider chargeSlider; // Reference to the slider
@@ -39,14 +40,12 @@ public class Shooting : MonoBehaviour
     // Offset for slider position
     public Vector3 sliderOffset = new Vector3(0, 2, 0); // Offset to place slider above player
 
-    // Variable for pause state
-    private bool isPaused = false; // Flag to check if the game is paused
-
     private void Start()
     {
         mainCam = Camera.main; // Get the main camera reference
         playerTransform = transform.parent; // Get the reference of the player (parent)
         playerController = playerTransform.GetComponent<PlayerController>(); // Get PlayerController
+        playerHealth = playerTransform.GetComponent<Health>(); // Get Health script
 
         // Reset slider at the start
         if (chargeSlider != null)
@@ -62,14 +61,8 @@ public class Shooting : MonoBehaviour
 
     private void Update()
     {
-        // Handle Pause
-        if (Input.GetKeyDown(KeyCode.Escape)) // Press Escape to pause/unpause
-        {
-            isPaused = !isPaused;
-            Time.timeScale = isPaused ? 0f : 1f; // Stop or resume time
-        }
-
-        if (isPaused) return; // If paused, stop further processing
+        // Cek apakah pemain mati
+        if (playerHealth.isDead || playerController.isPaused) return; // Jika mati atau game dipause, hentikan proses Update lebih lanjut
 
         // Get mouse position in world coordinates
         mousePos = mainCam.ScreenToWorldPoint(Input.mousePosition);
@@ -223,12 +216,21 @@ public class Shooting : MonoBehaviour
         Arrow arrowScript = arrow.GetComponent<Arrow>();
         if (arrowScript != null)
         {
-            arrowScript.SetDamage(arrowDamage); // Set damage to arrow
-            arrowScript.SetChargeLevel(charge); // Set charge level
+            arrowScript.SetDamage(Mathf.RoundToInt(arrowDamage)); // Set damage
+            arrowScript.SetChargeLevel(charge); // Set charge level for the arrow
         }
 
-        // Add cooldown before next shot
-        canFire = false;
-        timer = 0f;
+        // Flip the arrow sprite if player is facing left
+        if (playerTransform.localScale.x < 0)
+        {
+            Vector3 arrowScale = arrow.transform.localScale;
+            arrowScale.x *= -1; // Flip on X axis for sprite
+            arrow.transform.localScale = arrowScale;
+        }
+    }
+
+    public bool IsCharging()
+    {
+        return isCharging; // Return charging state
     }
 }

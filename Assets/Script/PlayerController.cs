@@ -42,6 +42,8 @@ public class PlayerController : MonoBehaviour
 
     private bool canMoveLeft = true;
     private bool canMoveRight = true;
+    public Health health;  // Tambahkan ini ke deklarasi variabel
+
 
     // Variabel untuk afterimage
     public GameObject afterImagePrefab; // Prefab afterimage
@@ -79,6 +81,9 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
+            if (health.isDead)  // Cek apakah pemain mati
+        return;  // Jika mati, hentikan semua input
+
         if (isPaused)
             return; // Jika game dipause, tidak ada input yang diproses
 
@@ -124,6 +129,9 @@ public class PlayerController : MonoBehaviour
 
     private void Move()
     {
+            if (health.isDead)  // Cek apakah pemain mati
+        return;  // Jika mati, hentikan pergerakan
+
         if (!isDashing)
         {
             moveInput = Input.GetAxisRaw("Horizontal");
