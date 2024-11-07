@@ -18,6 +18,7 @@ TagManager:
   - HighHealing
   - Wall
   - AfterImage
+  - PlayerDeath
   layers:
   - Default
   - TransparentFX

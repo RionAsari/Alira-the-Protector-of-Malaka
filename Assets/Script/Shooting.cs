@@ -24,6 +24,7 @@ public class Shooting : MonoBehaviour
     private float timer;
     public float timeBetweenFiring = 0.5f; // Cooldown time between firing
     private PlayerController playerController;
+    private Health playerHealth; // Reference to the Health script
 
     // UI Slider for charge bar
     public Slider chargeSlider; // Reference to the slider
@@ -44,6 +45,7 @@ public class Shooting : MonoBehaviour
         mainCam = Camera.main; // Get the main camera reference
         playerTransform = transform.parent; // Get the reference of the player (parent)
         playerController = playerTransform.GetComponent<PlayerController>(); // Get PlayerController
+        playerHealth = playerTransform.GetComponent<Health>(); // Get Health script
 
         // Reset slider at the start
         if (chargeSlider != null)
@@ -59,6 +61,9 @@ public class Shooting : MonoBehaviour
 
     private void Update()
     {
+        // Cek apakah pemain mati
+        if (playerHealth.isDead || playerController.isPaused) return; // Jika mati atau game dipause, hentikan proses Update lebih lanjut
+
         // Get mouse position in world coordinates
         mousePos = mainCam.ScreenToWorldPoint(Input.mousePosition);
         mousePos.z = 0; // Set z to 0 since we're in 2D
