@@ -17,7 +17,7 @@ public class Shooting : MonoBehaviour
     public float rotationDistance = 1.5f; // Jarak offset dari rotatePoint
     public float maxArrowSpeed = 15f; // Maximum arrow speed (constant)
     public float chargeSpeed = 5f; // Speed of charging (how fast charge builds)
-    
+
     private float currentCharge = 0f; // Amount of charge
     private bool isCharging = false; // Is the player currently charging?
     private bool canFire = true;
@@ -39,6 +39,9 @@ public class Shooting : MonoBehaviour
     // Offset for slider position
     public Vector3 sliderOffset = new Vector3(0, 2, 0); // Offset to place slider above player
 
+    // Variable for pause state
+    private bool isPaused = false; // Flag to check if the game is paused
+
     private void Start()
     {
         mainCam = Camera.main; // Get the main camera reference
@@ -59,6 +62,15 @@ public class Shooting : MonoBehaviour
 
     private void Update()
     {
+        // Handle Pause
+        if (Input.GetKeyDown(KeyCode.Escape)) // Press Escape to pause/unpause
+        {
+            isPaused = !isPaused;
+            Time.timeScale = isPaused ? 0f : 1f; // Stop or resume time
+        }
+
+        if (isPaused) return; // If paused, stop further processing
+
         // Get mouse position in world coordinates
         mousePos = mainCam.ScreenToWorldPoint(Input.mousePosition);
         mousePos.z = 0; // Set z to 0 since we're in 2D
@@ -211,21 +223,12 @@ public class Shooting : MonoBehaviour
         Arrow arrowScript = arrow.GetComponent<Arrow>();
         if (arrowScript != null)
         {
-            arrowScript.SetDamage(Mathf.RoundToInt(arrowDamage)); // Set damage
-            arrowScript.SetChargeLevel(charge); // Set charge level for the arrow
+            arrowScript.SetDamage(arrowDamage); // Set damage to arrow
+            arrowScript.SetChargeLevel(charge); // Set charge level
         }
 
-        // Flip the arrow sprite if player is facing left
-        if (playerTransform.localScale.x < 0)
-        {
-            Vector3 arrowScale = arrow.transform.localScale;
-            arrowScale.x *= -1; // Flip on X axis for sprite
-            arrow.transform.localScale = arrowScale;
-        }
-    }
-
-    public bool IsCharging()
-    {
-        return isCharging; // Return charging state
+        // Add cooldown before next shot
+        canFire = false;
+        timer = 0f;
     }
 }

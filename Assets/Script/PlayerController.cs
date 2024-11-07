@@ -51,6 +51,9 @@ public class PlayerController : MonoBehaviour
     private SpriteRenderer[] spriteRenderers; // Array untuk menyimpan semua SpriteRenderer
     private Color[] originalColors; // Array untuk menyimpan warna asli
 
+    // Tambahkan status pause
+    public bool isPaused = false;
+
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -76,6 +79,9 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
+        if (isPaused)
+            return; // Jika game dipause, tidak ada input yang diproses
+
         if (Input.GetKeyDown(KeyCode.X))
         {
             usingSpecialArrow = !usingSpecialArrow;
@@ -354,5 +360,12 @@ public class PlayerController : MonoBehaviour
             KBCounter = KBTotalTime;
             KnockFromRight = other.transform.position.x >= transform.position.x;
         }
+    }
+
+    // Pause / Unpause Game
+    public void TogglePause()
+    {
+        isPaused = !isPaused;
+        Time.timeScale = isPaused ? 0f : 1f; // Stop or resume the game
     }
 }
