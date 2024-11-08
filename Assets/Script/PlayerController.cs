@@ -4,6 +4,10 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
+    AudioManager audioManager;
+    private bool isSFXPlaying = false;
+    public AudioSource audioSource; // Reference to AudioSource
+private bool isMoving = false; // To track if the player is moving
     public float moveSpeed = 8f; 
     public float jumpForce = 8f; 
     public float fallMultiplier = 2.5f;
@@ -58,6 +62,7 @@ public class PlayerController : MonoBehaviour
 
     private void Awake()
     {
+        audioManager = GameObject.FindGameObjectWithTag("Audio").GetComponent<AudioManager>();
         rb = GetComponent<Rigidbody2D>();
         rb.gravityScale = 3f;
         mainCamera = Camera.main;
@@ -127,31 +132,55 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    private void Move()
-    {
-            if (health.isDead)  // Cek apakah pemain mati
+private void Move()
+{
+    if (health.isDead)  // Cek apakah pemain mati
         return;  // Jika mati, hentikan pergerakan
 
-        if (!isDashing)
+    if (!isDashing)
+    {
+        moveInput = Input.GetAxisRaw("Horizontal");
+
+        // Check if the player is moving and grounded
+        bool wasMoving = isMoving;
+        isMoving = isGrounded && moveInput != 0;
+
+        if (isMoving && !wasMoving)  // Only play sound when starting to move
         {
-            moveInput = Input.GetAxisRaw("Horizontal");
-
-            if ((moveInput < 0 && !canMoveLeft) || (moveInput > 0 && !canMoveRight))
+            if (!audioSource.isPlaying)
             {
-                moveInput = 0;
+                audioSource.clip = audioManager.moving;  // Ensure correct clip is selected
+                audioSource.loop = true;  // Enable looping
+                audioSource.Play();  // Start playing sound
             }
-
-            Vector3 moveVelocity = new Vector3(moveInput * moveSpeed, rb.velocity.y, 0);
-            rb.velocity = moveVelocity;
-
-            if ((moveInput > 0 && !facingRight) || (moveInput < 0 && facingRight))
-            {
-                Flip();
-            }
-
-            ShowBow(true);
         }
+        else if (!isMoving && wasMoving)  // Stop sound when stopping movement
+        {
+            if (audioSource.isPlaying)
+            {
+                audioSource.Stop();
+            }
+        }
+
+        // Prevent movement when colliding with walls
+        if ((moveInput < 0 && !canMoveLeft) || (moveInput > 0 && !canMoveRight))
+        {
+            moveInput = 0;
+        }
+
+        Vector3 moveVelocity = new Vector3(moveInput * moveSpeed, rb.velocity.y, 0);
+        rb.velocity = moveVelocity;
+
+        if ((moveInput > 0 && !facingRight) || (moveInput < 0 && facingRight))
+        {
+            Flip();
+        }
+
+        ShowBow(true);
     }
+}
+
+
 
     public void ShowBow(bool show)
     {
