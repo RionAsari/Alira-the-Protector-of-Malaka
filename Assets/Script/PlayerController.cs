@@ -376,4 +376,16 @@ public class PlayerController : MonoBehaviour
         isPaused = !isPaused;
         Time.timeScale = isPaused ? 0f : 1f; // Stop or resume the game
     }
+    // Add these methods in the PlayerController script
+
+public bool GetIsGrounded()
+{
+    return isGrounded;
+}
+
+public float GetMoveInput()
+{
+    return moveInput;
+}
+
 }
