@@ -1523,6 +1523,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   settingsPanel: {fileID: 1478491292}
   mainMenuPanel: {fileID: 1748222640}
+  volumeSlider: {fileID: 1932750099}
 --- !u!1 &1478491292
 GameObject:
   m_ObjectHideFlags: 0
