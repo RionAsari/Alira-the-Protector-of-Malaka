@@ -19,6 +19,7 @@ TagManager:
   - Wall
   - AfterImage
   - PlayerDeath
+  - Audio
   layers:
   - Default
   - TransparentFX
