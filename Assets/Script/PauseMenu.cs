@@ -29,6 +29,7 @@ public class PauseMenu : MonoBehaviour
     {
         isPaused = true;
         pauseMenuUI.SetActive(true);         // Show pause menu
+        optionsMenuUI.SetActive(false);      // Ensure options menu is hidden
         playerController.TogglePause();      // Disable player interactions
         Time.timeScale = 0f;                 // Pause the game
     }
@@ -46,6 +47,12 @@ public class PauseMenu : MonoBehaviour
     {
         optionsMenuUI.SetActive(true);       // Show options menu
         pauseMenuUI.SetActive(false);        // Hide pause menu
+    }
+
+    public void BackToPauseMenu()
+    {
+        optionsMenuUI.SetActive(false);      // Hide options menu
+        pauseMenuUI.SetActive(true);         // Show pause menu
     }
 
     public void Restart()
