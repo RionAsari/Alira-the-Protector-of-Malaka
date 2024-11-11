@@ -3,13 +3,14 @@ using UnityEngine.SceneManagement;
 
 public class PauseMenu : MonoBehaviour
 {
-    public GameObject pauseMenuUI;       // Reference to the panel or pause menu UI
+    public GameObject pauseMenuUI;          // Reference to the pause menu UI
+    public GameObject optionsMenuUI;        // Reference to the options menu UI
     private bool isPaused = false;
     private PlayerController playerController;
 
     private void Start()
     {
-        playerController = FindObjectOfType<PlayerController>(); // Mendapatkan referensi ke PlayerController
+        playerController = FindObjectOfType<PlayerController>(); // Get reference to PlayerController
     }
 
     void Update()
@@ -27,17 +28,31 @@ public class PauseMenu : MonoBehaviour
     public void Pause()
     {
         isPaused = true;
-        pauseMenuUI.SetActive(true);         // Menampilkan menu pause
-        playerController.TogglePause();     // Menonaktifkan interaksi pada PlayerController
-        Time.timeScale = 0f;                // Menjeda permainan
+        pauseMenuUI.SetActive(true);         // Show pause menu
+        optionsMenuUI.SetActive(false);      // Ensure options menu is hidden
+        playerController.TogglePause();      // Disable player interactions
+        Time.timeScale = 0f;                 // Pause the game
     }
 
     public void Resume()
     {
         isPaused = false;
-        pauseMenuUI.SetActive(false);        // Menyembunyikan menu pause
-        playerController.TogglePause();     // Melanjutkan interaksi pada PlayerController
-        Time.timeScale = 1f;                // Melanjutkan permainan
+        pauseMenuUI.SetActive(false);        // Hide pause menu
+        optionsMenuUI.SetActive(false);      // Hide options menu if open
+        playerController.TogglePause();      // Enable player interactions
+        Time.timeScale = 1f;                 // Resume the game
+    }
+
+    public void Options()
+    {
+        optionsMenuUI.SetActive(true);       // Show options menu
+        pauseMenuUI.SetActive(false);        // Hide pause menu
+    }
+
+    public void BackToPauseMenu()
+    {
+        optionsMenuUI.SetActive(false);      // Hide options menu
+        pauseMenuUI.SetActive(true);         // Show pause menu
     }
 
     public void Restart()
@@ -55,6 +70,6 @@ public class PauseMenu : MonoBehaviour
     public void GoToStartMenu()
     {
         Time.timeScale = 1f;                 // Reset time scale
-        SceneManager.LoadScene("Main Menu"); // Ganti dengan nama scene yang sesuai
+        SceneManager.LoadScene("Main Menu"); // Replace with the appropriate scene name
     }
 }
