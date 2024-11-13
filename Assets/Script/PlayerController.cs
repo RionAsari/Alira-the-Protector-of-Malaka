@@ -7,6 +7,8 @@ public class PlayerController : MonoBehaviour
     AudioManager audioManager;
     private bool isSFXPlaying = false;
     public AudioSource audioSource; // Reference to AudioSource
+    public AudioClip dashSound;  // Suara saat melakukan dash
+
 private bool isMoving = false; // To track if the player is moving
     public float moveSpeed = 8f; 
     public float jumpForce = 8f; 
@@ -330,22 +332,29 @@ private void Move()
     }
 
     private void StartDash(int direction)
+{
+    dashDirection = direction;
+    isDashing = true;
+    isInvincible = true;
+    gameObject.layer = LayerMask.NameToLayer("PlayerDash");
+    animator.SetTrigger("StartDash");
+
+    // Mainkan suara dash
+    if (dashSound != null && audioSource != null)
     {
-        dashDirection = direction;
-        isDashing = true;
-        isInvincible = true;
-        gameObject.layer = LayerMask.NameToLayer("PlayerDash");
-        animator.SetTrigger("StartDash");
-
-        // Ubah warna semua SpriteRenderer saat dash
-        foreach (var spriteRenderer in spriteRenderers)
-        {
-            spriteRenderer.color = new Color(1f, 0f, 0f, 100f / 255f); // Merah dengan alpha 100
-        }
-
-        StartCoroutine(DashCoroutine());
-        StartCoroutine(CreateAfterImage()); // Mulai coroutine untuk membuat afterimages
+        audioSource.PlayOneShot(dashSound);  // Memutar suara dash
     }
+
+    // Ubah warna semua SpriteRenderer saat dash
+    foreach (var spriteRenderer in spriteRenderers)
+    {
+        spriteRenderer.color = new Color(1f, 0f, 0f, 100f / 255f); // Merah dengan alpha 100
+    }
+
+    StartCoroutine(DashCoroutine());
+    StartCoroutine(CreateAfterImage()); // Mulai coroutine untuk membuat afterimages
+}
+
 
     private IEnumerator DashCoroutine()
     {

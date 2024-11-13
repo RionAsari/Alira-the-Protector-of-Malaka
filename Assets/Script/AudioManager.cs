@@ -12,6 +12,7 @@ public class AudioManager : MonoBehaviour
     public AudioClip healSound;
     public AudioClip bowChargeSound;
     public AudioClip bowReleaseSound;
+    public AudioClip dashSound;  // Added for dash sound
 
     public static AudioManager instance;
 
@@ -74,6 +75,14 @@ public class AudioManager : MonoBehaviour
         if (SFXSource != null && bowReleaseSound != null)
         {
             SFXSource.PlayOneShot(bowReleaseSound);
+        }
+    }
+
+    public void PlayDashSound()  // Added method to play dash sound
+    {
+        if (SFXSource != null && dashSound != null)
+        {
+            SFXSource.PlayOneShot(dashSound);
         }
     }
 
