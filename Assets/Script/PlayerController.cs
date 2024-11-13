@@ -267,26 +267,44 @@ private void Move()
         }
     }
 
-    private void OnCollisionStay2D(Collision2D collision)
+private void OnCollisionStay2D(Collision2D collision)
+{
+    if (collision.gameObject.CompareTag("Wall"))
     {
-        if (collision.gameObject.CompareTag("Wall"))
-        {
-            Vector2 contactPoint = collision.contacts[0].point;
-            Vector2 playerPosition = transform.position;
+        Vector2 contactNormal = collision.contacts[0].normal;
 
-            if (contactPoint.x < playerPosition.x)
+        // Jika wall berada di bawah (normal ke atas), izinkan gerakan
+        if (contactNormal.y > 0.5f)
+        {
+            canMoveLeft = true;
+            canMoveRight = true;
+            isGrounded = true;
+        }
+        else
+        {
+            // Jika wall berada di kiri (normal ke kanan), cegah gerakan ke kiri
+            if (contactNormal.x > 0.5f)
             {
                 canMoveLeft = false;
             }
-            else if (contactPoint.x > playerPosition.x)
+            // Jika wall berada di kanan (normal ke kiri), cegah gerakan ke kanan
+            else if (contactNormal.x < -0.5f)
             {
                 canMoveRight = false;
             }
         }
     }
+}
 
     private void OnCollisionExit2D(Collision2D collision)
     {
+        if (collision.gameObject.CompareTag("Wall"))
+    {
+        // Kembalikan semua kontrol pergerakan ketika meninggalkan wall
+        canMoveLeft = true;
+        canMoveRight = true;
+        isGrounded = false;
+    }
         if (collision.gameObject.CompareTag("Ground"))
         {
             isGrounded = false;
