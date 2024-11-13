@@ -1,75 +1,61 @@
-using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class AudioManager : MonoBehaviour
 {
     [Header("Audio Source")]
-    [SerializeField] private AudioSource musicSource;
-    [SerializeField] private AudioSource SFXSource;
-    [SerializeField] private AudioSource chargeSFXSource; // Separate source for charging sound
+    [SerializeField] public AudioSource SFXSource;
+    [SerializeField] private AudioSource chargeSFXSource;
 
     [Header("Audio Clips")]
-    public AudioClip mainMenuMusic;  // Music for the main menu
-    public AudioClip gameMusic;      // Music for the game
-    public AudioClip moving;         // Sound effects
-    public AudioClip healSound;      // Healing sound effect
-    public AudioClip bowChargeSound; // Bow charge sound effect
+    public AudioClip moving;
+    public AudioClip healSound;
+    public AudioClip bowChargeSound;
+    public AudioClip bowReleaseSound;
 
     public static AudioManager instance;
 
     private void Awake()
     {
-        if (instance != null)
-        {
-
-        }
-        else
+        // Ensure there is only one instance of AudioManager
+        if (instance == null)
         {
             instance = this;
-            DontDestroyOnLoad(gameObject);
+            DontDestroyOnLoad(gameObject); // Persist across scenes
+        }
+        else if (instance != this)
+        {
+            Destroy(gameObject); // Destroy duplicates
         }
 
+        // Add scene change listener
         SceneManager.sceneLoaded += OnSceneLoaded;
-    }
-
-    private void Start()
-    {
-        musicSource.Play();
     }
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        switch (scene.name)
+        // Destroy the AudioManager if we're not in the gameplay scenes
+        if (scene.name == "Scene1" || scene.name == "TutorialLevel" || scene.name == "Level1")
         {
-            case "MainMenu":
-                SetBackgroundMusic(mainMenuMusic);
-                break;
-
-            case "TutorialLevel":
-                SetBackgroundMusic(gameMusic);
-                break;
-
-            default:
-                SetBackgroundMusic(mainMenuMusic);
-                break;
+            DontDestroyOnLoad(gameObject);  // Keep in the gameplay scenes
         }
-    }
-
-    private void SetBackgroundMusic(AudioClip clip)
-    {
-        musicSource.clip = clip;
-        musicSource.Play();
+        else
+        {
+            Destroy(gameObject);  // Destroy in non-interactive scenes
+        }
     }
 
     public void PlaySFX(AudioClip clip)
     {
-        SFXSource.PlayOneShot(clip);
+        if (SFXSource != null && clip != null)
+        {
+            SFXSource.PlayOneShot(clip);
+        }
     }
 
     public void PlayHealSound()
     {
-        if (healSound != null)
+        if (SFXSource != null && healSound != null)
         {
             SFXSource.PlayOneShot(healSound);
         }
@@ -77,20 +63,23 @@ public class AudioManager : MonoBehaviour
 
     public void PlayBowChargeSound()
     {
-        if (bowChargeSound != null)
+        if (chargeSFXSource != null && bowChargeSound != null)
         {
-            chargeSFXSource.PlayOneShot(bowChargeSound); // Play on dedicated charge source
+            chargeSFXSource.PlayOneShot(bowChargeSound);
         }
     }
 
-    public void SetMusicVolume(float volume)
+    public void PlayBowReleaseSound()
     {
-        musicSource.volume = volume;
+        if (SFXSource != null && bowReleaseSound != null)
+        {
+            SFXSource.PlayOneShot(bowReleaseSound);
+        }
     }
 
     public void SetSFXVolume(float volume)
     {
-        SFXSource.volume = volume;
-        chargeSFXSource.volume = volume; // Set volume for both SFX and charge sources
+        if (SFXSource != null) SFXSource.volume = volume;
+        if (chargeSFXSource != null) chargeSFXSource.volume = volume;
     }
 }
