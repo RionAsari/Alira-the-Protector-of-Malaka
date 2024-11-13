@@ -40,6 +40,12 @@ public class Shooting : MonoBehaviour
     // Offset for slider position
     public Vector3 sliderOffset = new Vector3(0, 2, 0); // Offset to place slider above player
 
+    // Add a reference to the AudioManager and Sound Effects
+    public AudioClip bowChargeSound;  // Suara saat mengisi daya bow
+    public AudioClip bowReleaseSound; // Suara saat melepas anak panah
+
+    private AudioSource audioSource; // Sumber suara untuk memutar suara
+
     private void Start()
     {
         mainCam = Camera.main; // Get the main camera reference
@@ -57,6 +63,9 @@ public class Shooting : MonoBehaviour
 
         // Get reference to the bow's Animator
         bowAnimator = bowTransform.GetComponent<Animator>();
+
+        // Get the AudioSource component for playing sounds
+        audioSource = GetComponent<AudioSource>(); // Pastikan komponen AudioSource ada pada objek yang sama
     }
 
     private void Update()
@@ -107,7 +116,7 @@ public class Shooting : MonoBehaviour
             bowAnimator.SetBool("isCharging", true);
 
             // Play bow charging sound
-            AudioManager.instance.PlayBowChargeSound();
+            PlayBowChargeSound();  // Play the charge sound
         }
 
         if (Input.GetMouseButton(0) && isCharging)
@@ -140,6 +149,9 @@ public class Shooting : MonoBehaviour
                 chargeSlider.value = 0f; // Reset slider
                 chargeSlider.gameObject.SetActive(false); // Hide slider
             }
+
+            // Play bow release sound immediately after shooting
+            PlayBowReleaseSound();  // Play the release sound immediately
         }
 
         // Cooldown between firing
@@ -232,8 +244,23 @@ public class Shooting : MonoBehaviour
         }
     }
 
-    public bool IsCharging()
+    // Function to play the charging sound
+    private void PlayBowChargeSound()
     {
-        return isCharging; // Return charging state
+        if (audioSource != null && bowChargeSound != null)
+        {
+            audioSource.clip = bowChargeSound;
+            audioSource.loop = false;  // Jangan loop
+            audioSource.Play();
+        }
+    }
+
+    // Function to play the release sound immediately after firing the arrow
+    private void PlayBowReleaseSound()
+    {
+        if (audioSource != null && bowReleaseSound != null)
+        {
+            audioSource.PlayOneShot(bowReleaseSound);  // Play release sound once, immediately
+        }
     }
 }
