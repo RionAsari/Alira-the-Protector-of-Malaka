@@ -12,16 +12,16 @@ public class AudioManager : MonoBehaviour
     public AudioClip mainMenuMusic;  // Music for the main menu
     public AudioClip gameMusic;      // Music for the game
     public AudioClip moving;         // Sound effects
+    public AudioClip healSound;      // Healing sound effect
 
-    private static AudioManager instance;
+    public static AudioManager instance;
 
     // Make sure there's only one instance of AudioManager across scenes
     private void Awake()
     {
-        // Ensure this AudioManager persists between scenes
         if (instance != null)
         {
-  
+
         }
         else
         {
@@ -40,7 +40,6 @@ public class AudioManager : MonoBehaviour
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        // Change background music based on the scene name
         switch (scene.name)
         {
             case "MainMenu":  // Replace with your actual main menu scene name
@@ -51,7 +50,6 @@ public class AudioManager : MonoBehaviour
                 SetBackgroundMusic(gameMusic);
                 break;
 
-            // Add more cases for different scenes if needed
             default:
                 SetBackgroundMusic(mainMenuMusic);  // Default to main menu music
                 break;
@@ -68,6 +66,14 @@ public class AudioManager : MonoBehaviour
     public void PlaySFX(AudioClip clip)
     {
         SFXSource.PlayOneShot(clip);
+    }
+
+    public void PlayHealSound()
+    {
+        if (healSound != null)
+        {
+            SFXSource.PlayOneShot(healSound);
+        }
     }
 
     public void SetMusicVolume(float volume)

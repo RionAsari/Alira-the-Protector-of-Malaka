@@ -55,6 +55,9 @@ public class Health : MonoBehaviour
         }
 
         Debug.Log($"Player healed by {healAmount} points. Current health: {health}");
+
+        // Play heal sound effect
+        AudioManager.instance.PlayHealSound();
     }
 
     private void Die()
