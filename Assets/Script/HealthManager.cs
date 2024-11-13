@@ -14,14 +14,20 @@ public class Health : MonoBehaviour
 
     public bool isDead = false;  // Menandakan apakah pemain sudah mati atau belum
 
+    // Tambahan untuk AudioSource dan AudioClip healing
+    public AudioClip healSound;  // Suara saat pemulihan
+    private AudioSource audioSource;  // Referensi ke AudioSource untuk memutar suara healing
+
     private void Start()
     {
-        animator = GetComponent<Animator>(); // Assuming the player has an Animator component
+        animator = GetComponent<Animator>(); // Mengambil referensi ke komponen Animator
 
         if (healthbar != null)
         {
-            healthbar.SetHealth(health, maxHealth);
+            healthbar.SetHealth(health, maxHealth);  // Set health bar pada nilai awal
         }
+
+        audioSource = GetComponent<AudioSource>();  // Mengambil referensi ke komponen AudioSource
     }
 
     public void TakeDamage(float damage)
@@ -29,11 +35,11 @@ public class Health : MonoBehaviour
         if (isDead) return;  // Jika sudah mati, jangan proses damage lagi
 
         health -= damage;
-        health = Mathf.Max(0, health); // Ensure health doesn't go below 0
+        health = Mathf.Max(0, health); // Pastikan kesehatan tidak kurang dari 0
 
         if (healthbar != null)
         {
-            healthbar.SetHealth(health, maxHealth);
+            healthbar.SetHealth(health, maxHealth);  // Update health bar
         }
 
         if (health <= 0)
@@ -47,25 +53,31 @@ public class Health : MonoBehaviour
         if (isDead) return;  // Jika sudah mati, jangan proses heal lagi
 
         health += healAmount;
-        health = Mathf.Min(health, maxHealth); // Ensure health doesn't exceed maxHealth
+        health = Mathf.Min(health, maxHealth); // Pastikan kesehatan tidak melebihi maxHealth
 
         if (healthbar != null)
         {
-            healthbar.SetHealth(health, maxHealth);
+            healthbar.SetHealth(health, maxHealth);  // Update health bar
         }
 
         Debug.Log($"Player healed by {healAmount} points. Current health: {health}");
+
+        // Mainkan suara healing jika ada
+        if (healSound != null && audioSource != null)
+        {
+            audioSource.PlayOneShot(healSound);  // Memutar suara healing
+        }
     }
 
     private void Die()
     {
-        // Trigger death animation
+        // Trigger animasi mati
         if (animator != null)
         {
             animator.SetTrigger("Die");
         }
 
-        isDead = true;  // Tandai bahwa pemain sudah mati
+        isDead = true;  // Tandai pemain sebagai mati
 
         // Mengubah tag menjadi PlayerDeath agar musuh tidak menyerang
         gameObject.tag = "PlayerDeath";

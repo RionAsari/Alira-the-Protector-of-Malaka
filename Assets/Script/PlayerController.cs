@@ -7,6 +7,8 @@ public class PlayerController : MonoBehaviour
     AudioManager audioManager;
     private bool isSFXPlaying = false;
     public AudioSource audioSource; // Reference to AudioSource
+    public AudioClip dashSound;  // Suara saat melakukan dash
+
 private bool isMoving = false; // To track if the player is moving
     public float moveSpeed = 8f; 
     public float jumpForce = 8f; 
@@ -134,35 +136,35 @@ private bool isMoving = false; // To track if the player is moving
 
 private void Move()
 {
-    if (health.isDead)  // Cek apakah pemain mati
-        return;  // Jika mati, hentikan pergerakan
+    if (health.isDead) // Cek apakah pemain mati
+        return; // Jika mati, hentikan pergerakan
 
     if (!isDashing)
     {
         moveInput = Input.GetAxisRaw("Horizontal");
 
-        // Check if the player is moving and grounded
+        // Cek apakah pemain sedang bergerak dan berada di tanah
         bool wasMoving = isMoving;
         isMoving = isGrounded && moveInput != 0;
 
-        if (isMoving && !wasMoving)  // Only play sound when starting to move
+        if (isMoving && !wasMoving) // Mainkan suara saat mulai bergerak
         {
-            if (!audioSource.isPlaying)
+            if (audioManager != null && audioManager.SFXSource != null && !audioManager.SFXSource.isPlaying)
             {
-                audioSource.clip = audioManager.moving;  // Ensure correct clip is selected
-                audioSource.loop = true;  // Enable looping
-                audioSource.Play();  // Start playing sound
+                audioManager.SFXSource.clip = audioManager.moving; // Pastikan clip suara yang benar dipilih
+                audioManager.SFXSource.loop = true; // Nyalakan looping
+                audioManager.SFXSource.Play(); // Mulai memainkan suara
             }
         }
-        else if (!isMoving && wasMoving)  // Stop sound when stopping movement
+        else if (!isMoving && wasMoving) // Hentikan suara saat berhenti bergerak
         {
-            if (audioSource.isPlaying)
+            if (audioManager != null && audioManager.SFXSource != null && audioManager.SFXSource.isPlaying)
             {
-                audioSource.Stop();
+                audioManager.SFXSource.Stop(); // Hentikan suara
             }
         }
 
-        // Prevent movement when colliding with walls
+        // Cegah pergerakan jika ada tabrakan dengan dinding
         if ((moveInput < 0 && !canMoveLeft) || (moveInput > 0 && !canMoveRight))
         {
             moveInput = 0;
@@ -179,6 +181,7 @@ private void Move()
         ShowBow(true);
     }
 }
+
 
 
 
@@ -329,22 +332,29 @@ private void Move()
     }
 
     private void StartDash(int direction)
+{
+    dashDirection = direction;
+    isDashing = true;
+    isInvincible = true;
+    gameObject.layer = LayerMask.NameToLayer("PlayerDash");
+    animator.SetTrigger("StartDash");
+
+    // Mainkan suara dash
+    if (dashSound != null && audioSource != null)
     {
-        dashDirection = direction;
-        isDashing = true;
-        isInvincible = true;
-        gameObject.layer = LayerMask.NameToLayer("PlayerDash");
-        animator.SetTrigger("StartDash");
-
-        // Ubah warna semua SpriteRenderer saat dash
-        foreach (var spriteRenderer in spriteRenderers)
-        {
-            spriteRenderer.color = new Color(1f, 0f, 0f, 100f / 255f); // Merah dengan alpha 100
-        }
-
-        StartCoroutine(DashCoroutine());
-        StartCoroutine(CreateAfterImage()); // Mulai coroutine untuk membuat afterimages
+        audioSource.PlayOneShot(dashSound);  // Memutar suara dash
     }
+
+    // Ubah warna semua SpriteRenderer saat dash
+    foreach (var spriteRenderer in spriteRenderers)
+    {
+        spriteRenderer.color = new Color(1f, 0f, 0f, 100f / 255f); // Merah dengan alpha 100
+    }
+
+    StartCoroutine(DashCoroutine());
+    StartCoroutine(CreateAfterImage()); // Mulai coroutine untuk membuat afterimages
+}
+
 
     private IEnumerator DashCoroutine()
     {
