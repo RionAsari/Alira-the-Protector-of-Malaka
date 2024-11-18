@@ -9,12 +9,11 @@ public class PlayerController : MonoBehaviour
     public AudioSource audioSource; // Reference to AudioSource
     public AudioClip dashSound;  // Suara saat melakukan dash
 
-private bool isMoving = false; // To track if the player is moving
+    private bool isMoving = false; // To track if the player is moving
     public float moveSpeed = 8f; 
     public float jumpForce = 8f; 
     public float fallMultiplier = 2.5f;
     private Rigidbody2D rb;
-    private bool isGrounded = true;
     private bool facingRight = true;
     private Camera mainCamera;
     private bool usingSpecialArrow = false;
@@ -46,10 +45,7 @@ private bool isMoving = false; // To track if the player is moving
     private float chargeWeight = 0f;
     private float chargeSpeed = 3f;
 
-    private bool canMoveLeft = true;
-    private bool canMoveRight = true;
     public Health health;  // Tambahkan ini ke deklarasi variabel
-
 
     // Variabel untuk afterimage
     public GameObject afterImagePrefab; // Prefab afterimage
@@ -61,6 +57,21 @@ private bool isMoving = false; // To track if the player is moving
 
     // Tambahkan status pause
     public bool isPaused = false;
+
+    // Variables for Touching Directions
+    public ContactFilter2D castFilter; // Filter kontak untuk physics casts
+    public float groundDistance = 0.05f; // Jarak dari collider ke tanah
+    public float wallDistance = 0.05f; // Jarak ke dinding
+    public float ceilingDistance = 0.05f; // Jarak ke langit-langit
+
+    private CapsuleCollider2D touchingCol; // Collider untuk mendeteksi kontak
+    private RaycastHit2D[] groundHits = new RaycastHit2D[5];
+    private RaycastHit2D[] wallHits = new RaycastHit2D[5];
+    private RaycastHit2D[] ceilingHits = new RaycastHit2D[5];
+
+    private bool isGrounded; // Apakah menyentuh tanah
+    private bool isTouchingWall; // Apakah menyentuh dinding
+    private bool isTouchingCeiling; // Apakah menyentuh langit-langit
 
     private void Awake()
     {
@@ -79,6 +90,8 @@ private bool isMoving = false; // To track if the player is moving
         {
             originalColors[i] = spriteRenderers[i].color;
         }
+
+        touchingCol = GetComponent<CapsuleCollider2D>(); // Assign collider untuk Touching Directions
     }
 
     private void Start()
@@ -88,11 +101,14 @@ private bool isMoving = false; // To track if the player is moving
 
     private void Update()
     {
-            if (health.isDead)  // Cek apakah pemain mati
-        return;  // Jika mati, hentikan semua input
+        if (health.isDead)  // Cek apakah pemain mati
+            return;  // Jika mati, hentikan semua input
 
         if (isPaused)
             return; // Jika game dipause, tidak ada input yang diproses
+
+        // Update Touching Directions
+        DetectEnvironment(); // Memanggil fungsi untuk cek lingkungan
 
         if (Input.GetKeyDown(KeyCode.X))
         {
@@ -134,78 +150,67 @@ private bool isMoving = false; // To track if the player is moving
         }
     }
 
-private void Move()
-{
-    if (health.isDead) // Cek apakah pemain mati
-        return; // Jika mati, hentikan pergerakan
-
-    if (!isDashing)
+    private void Move()
     {
-        moveInput = Input.GetAxisRaw("Horizontal");
+        if (health.isDead) // Cek apakah pemain mati
+            return; // Jika mati, hentikan pergerakan
 
-        // Cek apakah pemain sedang bergerak dan berada di tanah
-        bool wasMoving = isMoving;
-        isMoving = isGrounded && moveInput != 0;
-
-        if (isMoving && !wasMoving) // Mainkan suara saat mulai bergerak
+        if (!isDashing)
         {
-            if (audioManager != null && audioManager.SFXSource != null && !audioManager.SFXSource.isPlaying)
+            moveInput = Input.GetAxisRaw("Horizontal");
+
+            Vector3 moveVelocity = new Vector3(moveInput * moveSpeed, rb.velocity.y, 0);
+            rb.velocity = moveVelocity;
+
+            if ((moveInput > 0 && !facingRight) || (moveInput < 0 && facingRight))
             {
-                audioManager.SFXSource.clip = audioManager.moving; // Pastikan clip suara yang benar dipilih
-                audioManager.SFXSource.loop = true; // Nyalakan looping
-                audioManager.SFXSource.Play(); // Mulai memainkan suara
+                Flip();
             }
-        }
-        else if (!isMoving && wasMoving) // Hentikan suara saat berhenti bergerak
-        {
-            if (audioManager != null && audioManager.SFXSource != null && audioManager.SFXSource.isPlaying)
-            {
-                audioManager.SFXSource.Stop(); // Hentikan suara
-            }
-        }
 
-        // Cegah pergerakan jika ada tabrakan dengan dinding
-        if ((moveInput < 0 && !canMoveLeft) || (moveInput > 0 && !canMoveRight))
-        {
-            moveInput = 0;
+            ShowBow(true);
         }
-
-        Vector3 moveVelocity = new Vector3(moveInput * moveSpeed, rb.velocity.y, 0);
-        rb.velocity = moveVelocity;
-
-        if ((moveInput > 0 && !facingRight) || (moveInput < 0 && facingRight))
-        {
-            Flip();
-        }
-
-        ShowBow(true);
     }
-}
-
-
-
 
     public void ShowBow(bool show)
     {
         bowTransform.SetActive(show);
     }
 
-    public bool IsIdle()
-    {
-        return moveInput == 0 && isGrounded;
-    }
+    private void DetectEnvironment()
+{
+    // Memeriksa kontak dengan tanah
+    isGrounded = touchingCol.Cast(Vector2.down, castFilter, groundHits, groundDistance) > 0;
+
+    // Memeriksa kontak dengan dinding dan langit-langit (opsional, jika perlu)
+    isTouchingWall = touchingCol.Cast(Vector2.right, castFilter, wallHits, wallDistance) > 0 ||
+                     touchingCol.Cast(Vector2.left, castFilter, wallHits, wallDistance) > 0;
+    isTouchingCeiling = touchingCol.Cast(Vector2.up, castFilter, ceilingHits, ceilingDistance) > 0;
+
+    // Perbarui parameter animator
+    animator.SetBool("isGrounded", isGrounded);
+    animator.SetBool("isTouchingWall", isTouchingWall);
+    animator.SetBool("isTouchingCeiling", isTouchingCeiling);
+}
+
 
     private void UpdateAnimation()
-    {
-        bool isCharging = Input.GetMouseButton(0);
-        chargeWeight = Mathf.MoveTowards(chargeWeight, isCharging ? 1f : 0f, chargeSpeed * Time.deltaTime);
+{
+    bool isCharging = Input.GetMouseButton(0);
+    chargeWeight = Mathf.MoveTowards(chargeWeight, isCharging ? 1f : 0f, chargeSpeed * Time.deltaTime);
 
-        animator.SetLayerWeight(animator.GetLayerIndex("ChargeLayer"), chargeWeight);
-        animator.SetBool("isGrounded", isGrounded);
-        animator.SetBool("isMoving", isGrounded && moveInput != 0);
-        animator.SetBool("isFalling", !isGrounded && rb.velocity.y < 0);
-        animator.SetBool("isDashing", isDashing);
-    }
+    // Mengatur nilai layer "ChargeLayer" di animator
+    animator.SetLayerWeight(animator.GetLayerIndex("ChargeLayer"), chargeWeight);
+
+    // Memastikan animasi bergerak saat ada input
+    animator.SetBool("isMoving", moveInput != 0);
+
+    // Memastikan animasi dash aktif
+    animator.SetBool("isDashing", isDashing);
+
+    // Menambahkan pengaturan YVelocity untuk mengetahui apakah pemain sedang Falling atau Rising
+    animator.SetFloat("YVelocity", rb.velocity.y);
+}
+
 
     private void AimAtMouse()
     {
@@ -237,86 +242,28 @@ private void Move()
         transform.localScale = scale;
     }
 
-    private void HandleJump()
-    {
-        if (Input.GetKeyDown(KeyCode.W))
-        {
-            if (isGrounded)
-            {
-                rb.velocity = new Vector2(rb.velocity.x, jumpForce);
-                isGrounded = false;
-                jumpCount = 1;
-                animator.SetBool("isJumping", true);
-            }
-            else if (jumpCount < maxJumpCount)
-            {
-                rb.velocity = new Vector2(rb.velocity.x, jumpForce);
-                jumpCount++;
-                animator.SetBool("isJumping", true);
-            }
-        }
-    }
-
-    private void OnCollisionEnter2D(Collision2D collision)
-    {
-        if (collision.gameObject.CompareTag("Ground"))
-        {
-            isGrounded = true;
-            jumpCount = 0;
-            animator.SetBool("isGrounded", true);
-        }
-    }
-
-private void OnCollisionStay2D(Collision2D collision)
+private void HandleJump()
 {
-    if (collision.gameObject.CompareTag("Wall"))
+    // Reset jumpCount saat pemain menyentuh tanah
+    if (isGrounded)
     {
-        Vector2 contactNormal = collision.contacts[0].normal;
+        jumpCount = 0;
+        animator.ResetTrigger("isJumping");  // Reset trigger ketika berada di tanah
+    }
 
-        // Jika wall berada di bawah (normal ke atas), izinkan gerakan
-        if (contactNormal.y > 0.5f)
+    // Memeriksa input lompat
+    if (Input.GetKeyDown(KeyCode.W))
+    {
+        if (jumpCount < maxJumpCount)
         {
-            canMoveLeft = true;
-            canMoveRight = true;
-            isGrounded = true;
-        }
-        else
-        {
-            // Jika wall berada di kiri (normal ke kanan), cegah gerakan ke kiri
-            if (contactNormal.x > 0.5f)
-            {
-                canMoveLeft = false;
-            }
-            // Jika wall berada di kanan (normal ke kiri), cegah gerakan ke kanan
-            else if (contactNormal.x < -0.5f)
-            {
-                canMoveRight = false;
-            }
+            rb.velocity = new Vector2(rb.velocity.x, jumpForce);
+            jumpCount++;
+            animator.SetTrigger("isJumping");  // Menggunakan trigger untuk lompat
         }
     }
 }
 
-    private void OnCollisionExit2D(Collision2D collision)
-    {
-        if (collision.gameObject.CompareTag("Wall"))
-    {
-        // Kembalikan semua kontrol pergerakan ketika meninggalkan wall
-        canMoveLeft = true;
-        canMoveRight = true;
-        isGrounded = false;
-    }
-        if (collision.gameObject.CompareTag("Ground"))
-        {
-            isGrounded = false;
-            animator.SetBool("isGrounded", false);
-        }
 
-        if (collision.gameObject.CompareTag("Wall"))
-        {
-            canMoveLeft = true;
-            canMoveRight = true;
-        }
-    }
 
     private void CheckDash()
     {
@@ -350,29 +297,26 @@ private void OnCollisionStay2D(Collision2D collision)
     }
 
     private void StartDash(int direction)
-{
-    dashDirection = direction;
-    isDashing = true;
-    isInvincible = true;
-    gameObject.layer = LayerMask.NameToLayer("PlayerDash");
-    animator.SetTrigger("StartDash");
-
-    // Mainkan suara dash
-    if (dashSound != null && audioSource != null)
     {
-        audioSource.PlayOneShot(dashSound);  // Memutar suara dash
+        dashDirection = direction;
+        isDashing = true;
+        isInvincible = true;
+        gameObject.layer = LayerMask.NameToLayer("PlayerDash");
+        animator.SetTrigger("StartDash");
+
+        if (dashSound != null && audioSource != null)
+        {
+            audioSource.PlayOneShot(dashSound);
+        }
+
+        foreach (var spriteRenderer in spriteRenderers)
+        {
+            spriteRenderer.color = new Color(1f, 0f, 0f, 100f / 255f);
+        }
+
+        StartCoroutine(DashCoroutine());
+        StartCoroutine(CreateAfterImage());
     }
-
-    // Ubah warna semua SpriteRenderer saat dash
-    foreach (var spriteRenderer in spriteRenderers)
-    {
-        spriteRenderer.color = new Color(1f, 0f, 0f, 100f / 255f); // Merah dengan alpha 100
-    }
-
-    StartCoroutine(DashCoroutine());
-    StartCoroutine(CreateAfterImage()); // Mulai coroutine untuk membuat afterimages
-}
-
 
     private IEnumerator DashCoroutine()
     {
@@ -388,10 +332,9 @@ private void OnCollisionStay2D(Collision2D collision)
         lastDashTime = Time.time;
         gameObject.layer = LayerMask.NameToLayer("Player");
 
-        // Kembalikan warna semua SpriteRenderer setelah dash
         for (int i = 0; i < spriteRenderers.Length; i++)
         {
-            spriteRenderers[i].color = originalColors[i]; // Kembalikan ke warna asli
+            spriteRenderers[i].color = originalColors[i];
         }
     }
 
@@ -402,20 +345,8 @@ private void OnCollisionStay2D(Collision2D collision)
             GameObject afterImage = Instantiate(afterImagePrefab, transform.position, transform.rotation);
             afterImage.transform.localScale = transform.localScale;
 
-            yield return new WaitForSeconds(afterImageInterval); // Interval antara afterimages
-
-            // Mencari dan menghancurkan afterimage yang sudah dibuat
-            GameObject[] afterImages = GameObject.FindGameObjectsWithTag("AfterImage");
-            foreach (GameObject img in afterImages)
-            {
-                Destroy(img); // Menghancurkan afterimage yang ditemukan
-            }
+            yield return new WaitForSeconds(afterImageInterval);
         }
-    }
-
-    public bool IsInvincible()
-    {
-        return isInvincible;
     }
 
     private void OnTriggerEnter2D(Collider2D other)
@@ -427,10 +358,19 @@ private void OnCollisionStay2D(Collision2D collision)
         }
     }
 
-    // Pause / Unpause Game
+    public bool IsInvincible()
+    {
+        return isInvincible;
+    }
+
     public void TogglePause()
     {
         isPaused = !isPaused;
-        Time.timeScale = isPaused ? 0f : 1f; // Stop or resume the game
+        Time.timeScale = isPaused ? 0f : 1f;
     }
+    public bool IsIdle()
+{
+    return moveInput == 0 && rb.velocity.y == 0 && !isDashing; // Idle jika tidak ada input gerakan, tidak sedang melompat/dash
+}
+
 }
