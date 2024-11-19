@@ -4,6 +4,7 @@ using UnityEngine;
 public class LightGrunt : MonoBehaviour
 {
     public float health = 100f;
+    public static int activeEnemies = 0;
     public float maxHealth = 100f;
 
     public bool isDisabled = false;
@@ -291,6 +292,15 @@ private void DropHealingItem()
     {
         GameObject hackedGrunt = Instantiate(hackedLightGruntPrefab, transform.position, transform.rotation);
         Destroy(gameObject);
+    }
+    private void OnEnable()
+    {
+        activeEnemies++; // Tambahkan ketika musuh diaktifkan
+    }
+
+    private void OnDisable()
+    {
+        activeEnemies--; // Kurangi ketika musuh dinonaktifkan
     }
 
     private void OnTriggerEnter2D(Collider2D other)

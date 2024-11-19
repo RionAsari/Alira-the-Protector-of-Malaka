@@ -5,9 +5,24 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour
 {
     AudioManager audioManager;
+
+
+public LayerMask groundLayer;  // Set layer Ground dari inspector
+    public AudioClip jumpSound;  // Suara saat melompat
+    [SerializeField] private float wallCheckDistance = 0.5f;
+    [SerializeField] private LayerMask wallLayer;
+    private bool isAboveWall;
+    private bool isTouchingLeftWall;
+    public float ceilingCheckDistance = 0.5f;
+    private bool isTouchingRightWall;
+    private Vector2 wallCheckDirection;
     private bool isSFXPlaying = false;
     public AudioSource audioSource; // Reference to AudioSource
     public AudioClip dashSound;  // Suara saat melakukan dash
+
+    // Tambahkan variabel untuk suara langkah
+    public AudioClip footstepSound;  // Suara langkah kaki
+    private bool isWalking = false; // Untuk mengecek apakah pemain sedang berjalan
 
     private bool isMoving = false; // To track if the player is moving
     public float moveSpeed = 8f; 
@@ -39,7 +54,6 @@ public class PlayerController : MonoBehaviour
     private float lastKeyTime;
 
     private Animator animator;
-    public GameObject bowTransform;
 
     private float moveInput;
     private float chargeWeight = 0f;
@@ -62,16 +76,15 @@ public class PlayerController : MonoBehaviour
     public ContactFilter2D castFilter; // Filter kontak untuk physics casts
     public float groundDistance = 0.05f; // Jarak dari collider ke tanah
     public float wallDistance = 0.05f; // Jarak ke dinding
-    public float ceilingDistance = 0.05f; // Jarak ke langit-langit
 
     private CapsuleCollider2D touchingCol; // Collider untuk mendeteksi kontak
     private RaycastHit2D[] groundHits = new RaycastHit2D[5];
     private RaycastHit2D[] wallHits = new RaycastHit2D[5];
-    private RaycastHit2D[] ceilingHits = new RaycastHit2D[5];
 
     private bool isGrounded; // Apakah menyentuh tanah
     private bool isTouchingWall; // Apakah menyentuh dinding
-    private bool isTouchingCeiling; // Apakah menyentuh langit-langit
+
+    private bool IsOnWall; // Declare IsOnWall variable
 
     private void Awake()
     {
@@ -92,15 +105,46 @@ public class PlayerController : MonoBehaviour
         }
 
         touchingCol = GetComponent<CapsuleCollider2D>(); // Assign collider untuk Touching Directions
+
+        // Cek jika audioSource ada, jika tidak maka tambahkan komponen AudioSource baru
+        if (audioSource == null)
+        {
+            audioSource = gameObject.AddComponent<AudioSource>();
+        }
+        audioSource.loop = true; // Agar suara langkah bisa di-loop
     }
 
     private void Start()
     {
-        ShowBow(true);
+    
     }
 
     private void Update()
     {
+        isTouchingLeftWall = Physics2D.Raycast(transform.position, Vector2.left, wallCheckDistance, LayerMask.GetMask("WallLayer"));
+    
+        // Deteksi tembok di kanan
+        isTouchingRightWall = Physics2D.Raycast(transform.position, Vector2.right, wallCheckDistance, LayerMask.GetMask("WallLayer"));
+    
+
+        // Deteksi tembok di atas pemain (berfungsi untuk memastikan pemain bisa melangkah ke atas tembok)
+        isAboveWall = Physics2D.Raycast(transform.position, Vector2.down, wallCheckDistance, LayerMask.GetMask("WallLayer"));
+
+        // Cek pergerakan
+        Move();
+        wallCheckDirection = transform.localScale.x > 0 ? Vector2.right : Vector2.left;
+
+        // Perform the wall check
+        RaycastHit2D wallHit = Physics2D.Raycast(transform.position, wallCheckDirection, wallCheckDistance, wallLayer);
+        if (wallHit.collider != null)
+        {
+            isTouchingWall = true;
+        }
+        else
+        {
+            isTouchingWall = false;
+        }
+
         if (health.isDead)  // Cek apakah pemain mati
             return;  // Jika mati, hentikan semua input
 
@@ -109,6 +153,32 @@ public class PlayerController : MonoBehaviour
 
         // Update Touching Directions
         DetectEnvironment(); // Memanggil fungsi untuk cek lingkungan
+
+        // Cek apakah pemain bergerak dan putar suara langkah
+         if (moveInput != 0 && isGrounded)
+        {
+            if (!isWalking)
+            {
+                isWalking = true;
+                PlayFootstepSound(); // Mulai mainkan suara langkah
+            }
+        }
+        else if (!isGrounded)
+        {
+            if (isWalking)
+            {
+                isWalking = false;
+                StopFootstepSound(); // Hentikan suara langkah
+            }
+        }
+         else
+    {
+        if (isWalking)
+        {
+            isWalking = false;
+            StopFootstepSound(); // Hentikan suara langkah jika tidak bergerak
+        }
+    }
 
         if (Input.GetKeyDown(KeyCode.X))
         {
@@ -150,46 +220,98 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    private void Move()
+private void PlayFootstepSound()
+{
+    // Pastikan footstep sound hanya diputar saat isGrounded dan tidak sedang bermain
+    if (footstepSound != null && audioSource != null && !audioSource.isPlaying && isGrounded)
     {
-        if (health.isDead) // Cek apakah pemain mati
-            return; // Jika mati, hentikan pergerakan
+        audioSource.clip = footstepSound;
+        audioSource.Play();
+    }
+}
 
-        if (!isDashing)
+private void StopFootstepSound()
+{
+    // Hentikan suara langkah jika audioSource sedang bermain
+    if (audioSource != null && audioSource.isPlaying)
+    {
+        audioSource.Stop();
+    }
+}
+
+
+private void Move()
+{
+    if (health.isDead)
+        return;
+
+    if (!isDashing)
+    {
+        moveInput = Input.GetAxisRaw("Horizontal");
+
+        // Cek jika pemain bergerak ke arah tembok dengan tag "Wall"
+        bool isBlockedLeft = IsWallInDirection(Vector2.left) && moveInput < 0; // Gerak ke kiri & ada tembok kiri
+        bool isBlockedRight = IsWallInDirection(Vector2.right) && moveInput > 0; // Gerak ke kanan & ada tembok kanan
+
+        // Hentikan pergerakan jika terhalang tembok
+        if (isBlockedLeft || isBlockedRight)
         {
-            moveInput = Input.GetAxisRaw("Horizontal");
+            moveInput = 0;
+        }
 
-            Vector3 moveVelocity = new Vector3(moveInput * moveSpeed, rb.velocity.y, 0);
-            rb.velocity = moveVelocity;
+        // Pergerakan horizontal
+        Vector3 moveVelocity = new Vector3(moveInput * moveSpeed, rb.velocity.y, 0);
+        rb.velocity = moveVelocity;
 
-            if ((moveInput > 0 && !facingRight) || (moveInput < 0 && facingRight))
-            {
-                Flip();
-            }
+        // Flip sprite jika arah berubah
+        if ((moveInput > 0 && !facingRight) || (moveInput < 0 && facingRight))
+        {
+            Flip();
+        }
 
-            ShowBow(true);
+        // Menampilkan bow saat bergerak
+    }
+}
+
+// Fungsi untuk memeriksa apakah ada dinding di arah tertentu berdasarkan tag
+private bool IsWallInDirection(Vector2 direction)
+{
+    RaycastHit2D[] hits = new RaycastHit2D[5];
+    int hitCount = touchingCol.Cast(direction, castFilter, hits, wallCheckDistance);
+
+    for (int i = 0; i < hitCount; i++)
+    {
+        if (hits[i].collider != null && hits[i].collider.CompareTag("Wall"))
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+
+private void DetectEnvironment()
+{
+    // Ensure we are only checking the main player collider for grounding.
+    Collider2D playerCollider = GetComponent<Collider2D>();
+    int groundHitsCount = touchingCol.Cast(Vector2.down, castFilter, groundHits, groundDistance);
+
+    for (int i = 0; i < groundHitsCount; i++)
+    {
+        // Exclude bow and only consider the player's main collider for grounding
+        if (groundHits[i].collider != playerCollider && groundHits[i].collider.CompareTag("Ground"))
+        {
+            isGrounded = true;
+            break;
         }
     }
 
-    public void ShowBow(bool show)
+    if (groundHitsCount == 0)
     {
-        bowTransform.SetActive(show);
+        isGrounded = false;
     }
 
-    private void DetectEnvironment()
-{
-    // Memeriksa kontak dengan tanah
-    isGrounded = touchingCol.Cast(Vector2.down, castFilter, groundHits, groundDistance) > 0;
-
-    // Memeriksa kontak dengan dinding dan langit-langit (opsional, jika perlu)
-    isTouchingWall = touchingCol.Cast(Vector2.right, castFilter, wallHits, wallDistance) > 0 ||
-                     touchingCol.Cast(Vector2.left, castFilter, wallHits, wallDistance) > 0;
-    isTouchingCeiling = touchingCol.Cast(Vector2.up, castFilter, ceilingHits, ceilingDistance) > 0;
-
-    // Perbarui parameter animator
     animator.SetBool("isGrounded", isGrounded);
-    animator.SetBool("isTouchingWall", isTouchingWall);
-    animator.SetBool("isTouchingCeiling", isTouchingCeiling);
 }
 
 
@@ -244,25 +366,35 @@ public class PlayerController : MonoBehaviour
 
 private void HandleJump()
 {
-    // Reset jumpCount saat pemain menyentuh tanah
+    // Reset jumpCount hanya saat pemain menyentuh tanah
     if (isGrounded)
     {
-        jumpCount = 0;
-        animator.ResetTrigger("isJumping");  // Reset trigger ketika berada di tanah
+        // Pastikan pemain hanya reset jumpCount saat mendarat
+        if (jumpCount > 0)
+        {
+            jumpCount = 0;
+            animator.ResetTrigger("isJumping");  // Reset trigger saat berada di tanah
+        }
     }
 
     // Memeriksa input lompat
     if (Input.GetKeyDown(KeyCode.W))
     {
+        // Pastikan pemain bisa melompat hingga dua kali, meskipun tidak di tanah
         if (jumpCount < maxJumpCount)
         {
             rb.velocity = new Vector2(rb.velocity.x, jumpForce);
             jumpCount++;
             animator.SetTrigger("isJumping");  // Menggunakan trigger untuk lompat
+
+            // Play the jump sound
+            if (jumpSound != null && audioSource != null)
+            {
+                audioSource.PlayOneShot(jumpSound);  // Mainkan suara lompat
+            }
         }
     }
 }
-
 
 
     private void CheckDash()
@@ -362,6 +494,7 @@ private void HandleJump()
     {
         return isInvincible;
     }
+    
 
     public void TogglePause()
     {

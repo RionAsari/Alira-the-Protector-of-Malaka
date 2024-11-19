@@ -26,7 +26,7 @@ public class AudioManager : MonoBehaviour
         }
         else if (instance != this)
         {
-            Destroy(gameObject); // Destroy duplicates
+             // Destroy duplicates
         }
 
         // Add scene change listener

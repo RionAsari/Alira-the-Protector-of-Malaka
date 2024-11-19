@@ -20,6 +20,8 @@ TagManager:
   - AfterImage
   - PlayerDeath
   - Audio
+  - Bow
+  - NextLevelZone
   layers:
   - Default
   - TransparentFX
@@ -38,7 +40,7 @@ TagManager:
   - HighHealing
   - WallLayer
   - Ground
-  - 
+  - BowLayer
   - 
   - 
   - 

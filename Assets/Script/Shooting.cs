@@ -104,7 +104,6 @@ public class Shooting : MonoBehaviour
         {
             isCharging = true;
             currentCharge = 0f;
-            playerController.ShowBow(true); // Show bow on mouse click
 
             // Show slider
             if (chargeSlider != null)
@@ -168,7 +167,7 @@ public class Shooting : MonoBehaviour
         // Hide the bow when idle and not charging
         if (!isCharging && playerController.IsIdle())
         {
-            playerController.ShowBow(false); // Hide bow when idle
+
         }
 
         // Switch between normal and special arrow on 'X' key press
@@ -263,4 +262,5 @@ public class Shooting : MonoBehaviour
             audioSource.PlayOneShot(bowReleaseSound);  // Play release sound once, immediately
         }
     }
+    
 }
