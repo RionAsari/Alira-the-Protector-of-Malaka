@@ -4,6 +4,7 @@ using UnityEngine;
 public class MiddleBot : MonoBehaviour
 {
     public float health = 500f;
+    public static int activeEnemies = 0; // Variabel statis untuk menghitung musuh aktif
     public float maxHealth = 500f;
 
     public bool isDisabled = false;
@@ -242,6 +243,15 @@ public class MiddleBot : MonoBehaviour
             return true;
         }
         return false;
+    }
+    private void OnEnable()
+    {
+        activeEnemies++; // Tambahkan ketika MiddleBot diaktifkan
+    }
+
+    private void OnDisable()
+    {
+        activeEnemies--; // Kurangi ketika MiddleBot dinonaktifkan
     }
 
     private void SwitchToHackedMiddleBot()

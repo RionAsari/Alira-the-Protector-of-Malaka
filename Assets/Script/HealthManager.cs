@@ -14,6 +14,8 @@ public class Health : MonoBehaviour
 
     public bool isDead = false; // Menandakan apakah pemain sudah mati atau belum
 
+    public Transform bowTransform; // Referensi ke BowTransform
+
     // Tambahan untuk AudioSource dan AudioClip healing
     public AudioClip healSound; // Suara saat pemulihan
     private AudioSource audioSource; // Referensi ke AudioSource untuk memutar suara healing
@@ -94,6 +96,12 @@ public class Health : MonoBehaviour
         if (virtualCamera != null)
         {
             virtualCamera.Follow = null;
+        }
+
+        // Nonaktifkan BowTransform
+        if (bowTransform != null)
+        {
+            bowTransform.gameObject.SetActive(false);
         }
 
         // Call the GameOver method after animation is complete
