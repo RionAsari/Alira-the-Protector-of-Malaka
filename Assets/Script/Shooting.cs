@@ -5,6 +5,14 @@ using UnityEngine.UI;
 
 public class Shooting : MonoBehaviour
 {
+    public Slider cooldownSlider;
+        public Sprite normalArrowSprite; // Sprite untuk panah normal
+    public Sprite specialArrowSprite; // Sprite untuk panah spesial
+    public Image arrowTypeUI; // UI Image untuk menampilkan jenis panah
+        private bool isSpecialArrowOnCooldown = false;
+    private float specialArrowCooldownTimer = 0f;
+    public float specialArrowCooldown = 10f; // Waktu cooldown panah spesial
+    
     private Animator bowAnimator; // Reference to the bow's Animator
     private Camera mainCam;
     private Vector3 mousePos;
@@ -48,6 +56,10 @@ public class Shooting : MonoBehaviour
 
     private void Start()
     {
+        if (arrowTypeUI != null)
+        {
+            arrowTypeUI.sprite = normalArrowSprite;
+        }
         mainCam = Camera.main; // Get the main camera reference
         playerTransform = transform.parent; // Get the reference of the player (parent)
         playerController = playerTransform.GetComponent<PlayerController>(); // Get PlayerController
@@ -70,6 +82,7 @@ public class Shooting : MonoBehaviour
 
     private void Update()
     {
+        
         // Check if player is dead
         if (playerHealth.isDead || playerController.isPaused) return; // If dead or game is paused, stop Update
 
@@ -169,13 +182,53 @@ public class Shooting : MonoBehaviour
         {
 
         }
-
-        // Switch between normal and special arrow on 'X' key press
-        if (Input.GetKeyDown(KeyCode.X))
+        
+       if (isSpecialArrowOnCooldown)
+    {
+        specialArrowCooldownTimer += Time.deltaTime;
+        if (cooldownSlider != null)
         {
-            usingSpecialArrow = !usingSpecialArrow; // Toggle between normal and special arrow
+            cooldownSlider.value = specialArrowCooldownTimer / specialArrowCooldown; // Update slider berdasarkan waktu cooldown
+        }
+        if (specialArrowCooldownTimer >= specialArrowCooldown)
+        {
+            isSpecialArrowOnCooldown = false;
+            specialArrowCooldownTimer = 0f;
+            if (cooldownSlider != null)
+            {
+                cooldownSlider.gameObject.SetActive(false); // Sembunyikan slider setelah cooldown selesai
+            }
+
+            // Hanya ubah jika saat ini menggunakan panah spesial
+            if (usingSpecialArrow)
+            {
+                usingSpecialArrow = false; // Kembali ke panah normal
+                UpdateArrowTypeUI(); // Perbarui UI untuk menunjukkan panah normal
+            }
         }
     }
+
+    // Jika cooldown aktif, pastikan menggunakan panah biasa
+    if (isSpecialArrowOnCooldown && usingSpecialArrow)
+    {
+        usingSpecialArrow = false; // Ganti ke panah biasa
+        UpdateArrowTypeUI(); // Perbarui UI
+    }
+
+    // Switch antara panah normal dan spesial dengan tombol X
+    if (Input.GetKeyDown(KeyCode.X))
+    {
+        if (!isSpecialArrowOnCooldown) // Hanya ubah jika tidak dalam cooldown
+        {
+            usingSpecialArrow = !usingSpecialArrow; // Toggle antara panah normal dan spesial
+            UpdateArrowTypeUI(); // Perbarui UI
+        }
+        else
+        {
+            Debug.Log("Special arrow is on cooldown!");
+        }
+    }
+}
 
     // Function to update the slider color based on charge
     private void UpdateSliderColor(float charge)
@@ -195,8 +248,27 @@ public class Shooting : MonoBehaviour
     }
 
     // Function to fire the arrow
-    private void FireArrow(float charge)
+private void FireArrow(float charge)
+{
+    if (usingSpecialArrow && isSpecialArrowOnCooldown)
     {
+        Debug.Log("Cannot fire special arrow: still on cooldown.");
+        return; // Jangan lanjutkan jika special arrow masih cooldown
+    }
+
+    // Aktifkan cooldown jika menggunakan panah spesial
+    if (usingSpecialArrow)
+    {
+        isSpecialArrowOnCooldown = true;
+        if (cooldownSlider != null)
+        {
+            cooldownSlider.gameObject.SetActive(true); // Tampilkan slider cooldown
+        }
+        if (arrowBackground != null)
+        {
+            arrowBackground.color = Color.gray; // Indikasikan panah spesial sedang cooldown
+        }
+    }
         // Instantiate the appropriate arrow prefab
         GameObject arrow = Instantiate(usingSpecialArrow ? specialArrowPrefab : arrowPrefab, bowTransform.position, bowTransform.rotation);
 
@@ -262,5 +334,24 @@ public class Shooting : MonoBehaviour
             audioSource.PlayOneShot(bowReleaseSound);  // Play release sound once, immediately
         }
     }
+    public Image arrowBackground; // Kotak latar belakang
+
+private void UpdateArrowTypeUI()
+{
+    if (arrowTypeUI != null)
+    {
+        // Perbarui ikon panah
+        arrowTypeUI.sprite = usingSpecialArrow ? specialArrowSprite : normalArrowSprite;
+        arrowTypeUI.SetNativeSize(); // Sesuaikan ukuran sprite
+
+        // Perbarui warna latar belakang
+        if (arrowBackground != null)
+        {
+            arrowBackground.color = usingSpecialArrow ? Color.yellow : Color.white; // Kuning untuk special arrow
+        }
+    }
+}
+
+
     
 }
