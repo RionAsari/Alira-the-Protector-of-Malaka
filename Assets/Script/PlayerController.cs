@@ -6,7 +6,7 @@ public class PlayerController : MonoBehaviour
 {
     AudioManager audioManager;
 
-
+    private bool canMove = false;
 public LayerMask groundLayer;  // Set layer Ground dari inspector
     public AudioClip jumpSound;  // Suara saat melompat
     [SerializeField] private float wallCheckDistance = 0.5f;
@@ -121,6 +121,12 @@ public LayerMask groundLayer;  // Set layer Ground dari inspector
 
     private void Update()
     {
+        if (canMove)
+        {
+            // Allow player movement here
+            float move = Input.GetAxis("Horizontal");
+            transform.Translate(Vector3.right * move * Time.deltaTime);
+        }
         isTouchingLeftWall = Physics2D.Raycast(transform.position, Vector2.left, wallCheckDistance, LayerMask.GetMask("WallLayer"));
     
         // Deteksi tembok di kanan
@@ -505,5 +511,9 @@ private void HandleJump()
 {
     return moveInput == 0 && rb.velocity.y == 0 && !isDashing; // Idle jika tidak ada input gerakan, tidak sedang melompat/dash
 }
+public void EnableMovement(bool enable)
+    {
+        canMove = enable;
+    }
 
 }
