@@ -153,6 +153,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 303b1e75d6851af48b66f87abb6eb9c2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  cooldownSlider: {fileID: 0}
+  normalArrowSprite: {fileID: 0}
+  specialArrowSprite: {fileID: 0}
+  arrowTypeUI: {fileID: 0}
+  specialArrowCooldown: 7.5
   arrowPrefab: {fileID: 4202928060292712031, guid: e1d112512c32bab4a87dc58b8e88c301, type: 3}
   specialArrowPrefab: {fileID: 1629300785913835111, guid: 06d7f26cdf76d9646bb2e3ed1e5ea7c4, type: 3}
   bowTransform: {fileID: 3648261084022714162}
@@ -168,6 +173,7 @@ MonoBehaviour:
   sliderOffset: {x: 0, y: 2, z: 0}
   bowChargeSound: {fileID: 0}
   bowReleaseSound: {fileID: 8300000, guid: 8bb9c2bd857880447acb68c1da651e9f, type: 3}
+  arrowBackground: {fileID: 0}
 --- !u!1 &2914838629928704030
 GameObject:
   m_ObjectHideFlags: 0
@@ -5813,11 +5819,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -7552582706839291426, guid: 5248248ff9dc86e4dae93cb901f6c13e, type: 3}
       propertyPath: m_LocalScale.x
-      value: 0.3
+      value: 0.15
       objectReference: {fileID: 0}
     - target: {fileID: -7552582706839291426, guid: 5248248ff9dc86e4dae93cb901f6c13e, type: 3}
       propertyPath: m_LocalScale.y
-      value: 0.24
+      value: 0.15
       objectReference: {fileID: 0}
     - target: {fileID: -7552582706839291426, guid: 5248248ff9dc86e4dae93cb901f6c13e, type: 3}
       propertyPath: m_LocalPosition.x

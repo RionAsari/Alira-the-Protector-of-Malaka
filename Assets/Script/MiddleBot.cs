@@ -6,7 +6,7 @@ public class MiddleBot : MonoBehaviour
     public float health = 500f;
     public static int activeEnemies = 0; // Variabel statis untuk menghitung musuh aktif
     public float maxHealth = 500f;
-
+    public float hackRange = 2f;
     public bool isDisabled = false;
     public bool isHackable = false;
     public bool isHacked = false;
@@ -56,13 +56,18 @@ public class MiddleBot : MonoBehaviour
         }
 
         if (isDisabled && isHackable)
+    {
+        GameObject player = GameObject.FindGameObjectWithTag("Player");  // Find the player in the scene
+        if (player != null)
         {
-            if (Input.GetKeyDown(KeyCode.F))
+            float distanceToPlayer = Vector3.Distance(transform.position, player.transform.position);
+            if (Input.GetKeyDown(KeyCode.F) && distanceToPlayer <= hackRange)
             {
                 SwitchToHackedMiddleBot();
             }
-            return;
         }
+        return;
+    }
 
         HandleTargeting();
 
