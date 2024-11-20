@@ -3,6 +3,7 @@ using UnityEngine;
 
 public class LightGrunt : MonoBehaviour
 {
+    public float hackRange = 2f;
     public float health = 100f;
     public static int activeEnemies = 0;
     public float maxHealth = 100f;
@@ -56,13 +57,18 @@ public class LightGrunt : MonoBehaviour
         }
 
         if (isDisabled && isHackable)
+    {
+        GameObject player = GameObject.FindGameObjectWithTag("Player");  // Find the player in the scene
+        if (player != null)
         {
-            if (Input.GetKeyDown(KeyCode.F))
+            float distanceToPlayer = Vector3.Distance(transform.position, player.transform.position);
+            if (Input.GetKeyDown(KeyCode.F) && distanceToPlayer <= hackRange)
             {
                 SwitchToHackedLightGrunt();
             }
-            return;
         }
+        return;
+    }
 
         if (!isAttacking)
         {
