@@ -63,13 +63,23 @@ public class PauseMenu : MonoBehaviour
 
     public void QuitGame()
     {
-        Time.timeScale = 1f;                 // Reset time scale
-        Application.Quit();                  // Quit application (won't work in editor)
+        SaveCurrentScene();  // Save the current scene before quitting the game
+        Time.timeScale = 1f; // Reset time scale
+        Application.Quit();  // Quit application (won't work in editor)
     }
 
     public void GoToStartMenu()
     {
-        Time.timeScale = 1f;                 // Reset time scale
-        SceneManager.LoadScene("Main Menu"); // Replace with the appropriate scene name
+        SaveCurrentScene();  // Save the current scene before transitioning to Main Menu
+        Time.timeScale = 1f; // Reset time scale
+        SceneManager.LoadScene("Main Menu"); // Load the main menu scene
+    }
+
+    // Function to save the current scene name
+    void SaveCurrentScene()
+    {
+        string currentScene = SceneManager.GetActiveScene().name; // Get the name of the active scene
+        PlayerPrefs.SetString("SavedScene", currentScene);         // Save the scene name
+        PlayerPrefs.Save();                                        // Ensure the data is saved
     }
 }

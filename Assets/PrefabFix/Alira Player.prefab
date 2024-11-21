@@ -162,7 +162,7 @@ MonoBehaviour:
   specialArrowPrefab: {fileID: 1629300785913835111, guid: 06d7f26cdf76d9646bb2e3ed1e5ea7c4, type: 3}
   bowTransform: {fileID: 3648261084022714162}
   rotatePoint: {fileID: 6695582108577641991}
-  rotationDistance: 0.7
+  rotationDistance: 0.3
   maxArrowSpeed: 25
   chargeSpeed: 5
   timeBetweenFiring: 0.5
@@ -229,7 +229,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3909335882142320316}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0.14719835, w: 0.989107}
+  m_LocalRotation: {x: -0, y: -0, z: -0.14024353, w: 0.9901171}
   m_LocalPosition: {x: 2.6, y: -0.13, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -5383,7 +5383,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5850384349026719752}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0.99930173, w: -0.037364956}
+  m_LocalRotation: {x: -0, y: -0, z: -0.9996368, w: -0.02694788}
   m_LocalPosition: {x: 2.73, y: 0.14, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -5871,11 +5871,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -5889871850375034049, guid: 5248248ff9dc86e4dae93cb901f6c13e, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 0.7833273
+      value: 0.8035382
       objectReference: {fileID: 0}
     - target: {fileID: -5889871850375034049, guid: 5248248ff9dc86e4dae93cb901f6c13e, type: 3}
       propertyPath: m_LocalRotation.z
-      value: 0.6216095
+      value: 0.5952532
       objectReference: {fileID: 0}
     - target: {fileID: -5444829323979365214, guid: 5248248ff9dc86e4dae93cb901f6c13e, type: 3}
       propertyPath: m_Layer
@@ -5883,7 +5883,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -4914885062078002609, guid: 5248248ff9dc86e4dae93cb901f6c13e, type: 3}
       propertyPath: m_LocalRotation.w
-      value: -0.23732117
+      value: -0.2653404
       objectReference: {fileID: 0}
     - target: {fileID: -4914885062078002609, guid: 5248248ff9dc86e4dae93cb901f6c13e, type: 3}
       propertyPath: m_LocalRotation.x
@@ -5895,7 +5895,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -4914885062078002609, guid: 5248248ff9dc86e4dae93cb901f6c13e, type: 3}
       propertyPath: m_LocalRotation.z
-      value: 0.97143126
+      value: 0.96415484
       objectReference: {fileID: 0}
     - target: {fileID: -4914885062078002609, guid: 5248248ff9dc86e4dae93cb901f6c13e, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
@@ -5907,7 +5907,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -4125621854359220565, guid: 5248248ff9dc86e4dae93cb901f6c13e, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 0.19842952
+      value: 0.22402507
       objectReference: {fileID: 0}
     - target: {fileID: -4125621854359220565, guid: 5248248ff9dc86e4dae93cb901f6c13e, type: 3}
       propertyPath: m_LocalRotation.x
@@ -5919,7 +5919,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -4125621854359220565, guid: 5248248ff9dc86e4dae93cb901f6c13e, type: 3}
       propertyPath: m_LocalRotation.z
-      value: -0.9801152
+      value: -0.97458345
       objectReference: {fileID: 0}
     - target: {fileID: -4125621854359220565, guid: 5248248ff9dc86e4dae93cb901f6c13e, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
@@ -5983,11 +5983,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6114081496955904922, guid: 5248248ff9dc86e4dae93cb901f6c13e, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 0.8528013
+      value: 0.87269664
       objectReference: {fileID: 0}
     - target: {fileID: 6114081496955904922, guid: 5248248ff9dc86e4dae93cb901f6c13e, type: 3}
       propertyPath: m_LocalRotation.z
-      value: 0.5222355
+      value: 0.48826286
       objectReference: {fileID: 0}
     - target: {fileID: 6592351116214588188, guid: 5248248ff9dc86e4dae93cb901f6c13e, type: 3}
       propertyPath: m_Layer
