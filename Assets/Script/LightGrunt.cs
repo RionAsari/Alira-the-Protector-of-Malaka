@@ -4,6 +4,13 @@ using UnityEngine;
 public class LightGrunt : MonoBehaviour
 {
     public float hackRange = 2f;
+    public AudioClip disableSound;
+    private AudioSource audioSource;
+    public AudioClip walkSound;
+private bool isPlayingWalkSound = false;
+public AudioClip takeDamageSound;
+public AudioClip deathSound;
+
     public float health = 100f;
     public static int activeEnemies = 0;
     public float maxHealth = 100f;
@@ -38,6 +45,7 @@ public class LightGrunt : MonoBehaviour
     {
         health = maxHealth;
         animator = GetComponent<Animator>();
+        audioSource = GetComponent<AudioSource>();
 
         if (healthbar != null)
         {
@@ -49,6 +57,7 @@ public class LightGrunt : MonoBehaviour
 
     private void Update()
     {
+        AdjustAudioRelativeToPlayer();
         if (health <= 0) return;
 
         if (healthbar != null)
@@ -142,25 +151,42 @@ public class LightGrunt : MonoBehaviour
     }
 
     private void ChaseTarget()
+{
+    if (currentTarget == null || isDisabled || isAttacking) return;
+
+    float distanceToTarget = Vector3.Distance(transform.position, currentTarget.position);
+
+    if (distanceToTarget > attackRange)
     {
-        if (currentTarget == null || isDisabled || isAttacking) return;
+        Vector3 direction = (currentTarget.position - transform.position).normalized;
 
-        float distanceToTarget = Vector3.Distance(transform.position, currentTarget.position);
+        FlipSprite(direction);
 
-        if (distanceToTarget > attackRange)
+        transform.position += direction * followSpeed * Time.deltaTime;
+        animator.SetBool("isWalking", true);
+
+        // Mainkan suara langkah jika belum dimainkan
+        if (!isPlayingWalkSound && audioSource != null && walkSound != null)
         {
-            Vector3 direction = (currentTarget.position - transform.position).normalized;
-
-            FlipSprite(direction);
-
-            transform.position += direction * followSpeed * Time.deltaTime;
-            animator.SetBool("isWalking", true);
-        }
-        else
-        {
-            animator.SetBool("isWalking", false);
+            audioSource.clip = walkSound;
+            audioSource.loop = true;
+            audioSource.Play();
+            isPlayingWalkSound = true;
         }
     }
+    else
+    {
+        animator.SetBool("isWalking", false);
+
+        // Hentikan suara langkah jika berhenti berjalan
+        if (isPlayingWalkSound && audioSource != null)
+        {
+            audioSource.Stop();
+            isPlayingWalkSound = false;
+        }
+    }
+}
+
 
     private void AttackTarget()
     {
@@ -230,31 +256,61 @@ public class LightGrunt : MonoBehaviour
     }
 
     public void TakeDamage(float damage)
+{
+    health -= damage;
+    if (health < 0) health = 0;
+
+    // Mainkan suara damage jika ada
+    if (audioSource != null && takeDamageSound != null)
     {
-        health -= damage;
-        if (health < 0) health = 0;
-
-        if (healthbar != null)
-        {
-            healthbar.SetHealth(health, maxHealth);
-        }
-
-        if (health <= 0)
-        {
-            Die();
-        }
+        audioSource.PlayOneShot(takeDamageSound);
     }
 
-    private void Die()
+    if (healthbar != null)
     {
-        animator.SetTrigger("isDead");
-        isDisabled = true;
-
-        // Drop healing item
-        DropHealingItem();
-
-        Destroy(gameObject, 0.2f);
+        healthbar.SetHealth(health, maxHealth);
     }
+
+    if (health <= 0)
+    {
+        Die();
+    }
+}
+
+ private void Die()
+{
+    // Play death sound if available
+    if (audioSource != null && deathSound != null)
+    {
+        // Create a temporary GameObject to hold the audio source for the death sound
+        GameObject soundObject = new GameObject("DeathSound");
+        AudioSource soundAudioSource = soundObject.AddComponent<AudioSource>();
+        soundAudioSource.clip = deathSound;
+        soundAudioSource.Play();
+
+        // Make sure the sound persists after this object is destroyed
+        DontDestroyOnLoad(soundObject);
+
+        // Destroy the temporary sound object after the sound has finished playing
+        Destroy(soundObject, deathSound.length);
+    }
+
+    animator.SetTrigger("isDead");
+    isDisabled = true;
+
+    if (isPlayingWalkSound && audioSource != null)
+    {
+        audioSource.Stop();
+        isPlayingWalkSound = false;
+    }
+
+    DropHealingItem();
+
+    // Destroy the LightGrunt prefab after a short delay
+    Destroy(gameObject, 0.2f);
+}
+
+
 
 private void DropHealingItem()
 {
@@ -275,24 +331,31 @@ private void DropHealingItem()
 
 
     public IEnumerator DisableEnemy(float duration)
+{
+    isDisabled = true;
+    isHackable = true;
+    animator.SetTrigger("isDisabled");
+
+    if (audioSource != null && disableSound != null)
     {
-        isDisabled = true;
-        isHackable = true;
-        animator.SetTrigger("isDisabled");
-
-        Rigidbody2D rb = GetComponent<Rigidbody2D>();
-        if (rb != null)
-        {
-            rb.velocity = Vector2.zero;
-            rb.isKinematic = true;
-        }
-
-        yield return new WaitForSeconds(duration);
-
-        rb.isKinematic = false;
-        isDisabled = false;
-        animator.SetTrigger("isReactivated");
+        audioSource.PlayOneShot(disableSound);
     }
+
+    Rigidbody2D rb = GetComponent<Rigidbody2D>();
+    if (rb != null)
+    {
+        rb.velocity = Vector2.zero;
+        rb.isKinematic = true;
+    }
+
+    yield return new WaitForSeconds(duration);
+
+    rb.isKinematic = false;
+    isDisabled = false;
+    animator.SetTrigger("isReactivated");
+}
+
+
 
     private void SwitchToHackedLightGrunt()
     {
@@ -322,4 +385,21 @@ private void DropHealingItem()
             Destroy(other.gameObject);
         }
     }
+    private void AdjustAudioRelativeToPlayer()
+{
+    GameObject player = GameObject.FindGameObjectWithTag(playerTag); // Temukan pemain
+    if (player == null || audioSource == null) return;
+
+    float distanceToPlayer = Vector3.Distance(transform.position, player.transform.position);
+
+    // Sesuaikan volume berdasarkan jarak
+    float maxDistance = 20f; // Jarak maksimum suara terdengar
+    float volume = Mathf.Clamp01(1 - (distanceToPlayer / maxDistance)); // Volume berkurang sesuai jarak
+    audioSource.volume = volume;
+
+    // Sesuaikan arah suara (kiri/kanan)
+    float pan = Mathf.Clamp((transform.position.x - player.transform.position.x) / maxDistance, -1f, 1f);
+    audioSource.panStereo = pan; // -1 = kiri, 0 = tengah, 1 = kanan
+}
+
 }

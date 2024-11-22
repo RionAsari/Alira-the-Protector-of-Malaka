@@ -3,6 +3,13 @@ using UnityEngine;
 
 public class HackedMiddleBot : MonoBehaviour
 {
+    // AudioSource dan sound clips
+    private AudioSource audioSource;
+    public AudioClip walkingSound;
+    private bool isWalkingSoundPlaying = false;
+    public AudioClip dieSound; // Tidak ada disableSound untuk HackedMiddleBot
+    public AudioClip damageSound;
+
     public float health = 500f;
     public float maxHealth = 500f;
     public HealthBarMiddleBot healthbar;
@@ -23,8 +30,9 @@ public class HackedMiddleBot : MonoBehaviour
         health = maxHealth;
         animator = GetComponent<Animator>();
         bulletTransform = GetComponentInChildren<HackedMiddlebotBulletTransform>();
+        audioSource = GetComponent<AudioSource>();
 
-        // Set the health bar's initial value
+        // Set health bar initial value
         if (healthbar != null)
         {
             healthbar.SetHealth(health, maxHealth);
@@ -36,10 +44,26 @@ public class HackedMiddleBot : MonoBehaviour
 
     private void Update()
     {
+        AdjustAudioRelativeToPlayer();
+
         if (health <= 0) return;
 
-        UpdateHealthBar();  // Update health bar position and value
+        UpdateHealthBar();
         HandleTargeting();
+
+        // Play walking sound
+        if (animator.GetBool("isWalking") && !isWalkingSoundPlaying)
+        {
+            isWalkingSoundPlaying = true;
+            audioSource.clip = walkingSound;
+            audioSource.loop = true;
+            audioSource.Play();
+        }
+        else if (!animator.GetBool("isWalking") && isWalkingSoundPlaying)
+        {
+            isWalkingSoundPlaying = false;
+            audioSource.Stop();
+        }
 
         // Ensure sprite faces target every frame if there's a target
         if (currentTarget != null)
@@ -53,8 +77,8 @@ public class HackedMiddleBot : MonoBehaviour
     {
         if (healthbar != null)
         {
-            healthbar.UpdatePosition(transform.position);  // Update health bar position to follow the bot
-            healthbar.SetHealth(health, maxHealth);  // Update health bar's displayed health
+            healthbar.UpdatePosition(transform.position);
+            healthbar.SetHealth(health, maxHealth);
         }
     }
 
@@ -129,7 +153,7 @@ public class HackedMiddleBot : MonoBehaviour
     {
         if (bulletTransform != null)
         {
-            bulletTransform.ShootAtTarget(); // Mengubah untuk memanggil ShootAtTarget tanpa parameter
+            bulletTransform.ShootAtTarget();
         }
 
         animator.SetBool("isWalking", false);
@@ -152,7 +176,13 @@ public class HackedMiddleBot : MonoBehaviour
         health -= damage;
         if (health < 0) health = 0;
 
-        UpdateHealthBar();  // Call to update health bar after taking damage
+        // Play damage sound
+        if (audioSource != null && damageSound != null)
+        {
+            audioSource.PlayOneShot(damageSound);
+        }
+
+        UpdateHealthBar();
 
         if (health <= 0)
         {
@@ -162,19 +192,25 @@ public class HackedMiddleBot : MonoBehaviour
 
     private void Die()
     {
+        // Play die sound
+        if (audioSource != null && dieSound != null)
+        {
+            audioSource.PlayOneShot(dieSound);
+        }
+
         animator.SetTrigger("isDead");
         Destroy(gameObject, 0.2f);
     }
-
-    private void OnTriggerEnter(Collider other)
+    private void AdjustAudioRelativeToPlayer()
     {
-        if (other.CompareTag("EnemyAttack") || other.CompareTag("Volley"))
+        GameObject player = GameObject.FindGameObjectWithTag("Player");
+        if (player != null && audioSource != null)
         {
-            float damage = 10f;
+            float distanceToPlayer = Vector3.Distance(transform.position, player.transform.position);
 
-            TakeDamage(damage);
-
-            Destroy(other.gameObject);
+            // Adjust volume and pan based on the distance to the player
+            audioSource.volume = Mathf.Clamp01(1f - (distanceToPlayer / 20f)); // Volume decreases with distance
+            audioSource.panStereo = Mathf.Clamp((transform.position.x - player.transform.position.x) / 10f, -1f, 1f); // Stereo pan based on position
         }
     }
 }

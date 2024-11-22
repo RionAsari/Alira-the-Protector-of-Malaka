@@ -6,28 +6,37 @@ public class HackedLightGrunt : MonoBehaviour
 {
     public float health = 100f;
     public float maxHealth = 100f;
-    public HealthbarBehaviour healthbar; 
-    public float followDistance = 3f; 
-    public float followSpeed = 3f; 
-    public float attackRange = 1.5f; 
-    public float enemyDetectRange = 5f; 
-    public float attackCooldown = 2f; 
-    public float damage = 10f; 
+    public HealthbarBehaviour healthbar;
+    public float followDistance = 3f;
+    public float followSpeed = 3f;
+    public float attackRange = 1.5f;
+    public float enemyDetectRange = 5f;
+    public float attackCooldown = 2f;
+    public float damage = 10f;
+
+    public AudioClip walkSound;
+    public AudioClip takeDamageSound;
+    public AudioClip deathSound;
+    private AudioSource audioSource;
 
     private Animator animator;
-    private Transform player; 
-    private Transform currentTarget; 
-    private float lastAttackTime; 
-    private Vector3 originalScale; // Tambahkan variabel untuk menyimpan skala asli
+    private Transform player;
+    private Transform currentTarget;
+    private float lastAttackTime;
+    private Vector3 originalScale;
 
-    private Collider2D playerCollider; 
-    private Collider2D enemyCollider; 
+    private Collider2D playerCollider;
+    private Collider2D enemyCollider;
+
+    private bool isPlayingWalkSound = false;
+    private bool hasPlayedDeathSound = false; // Flag to prevent multiple death sounds
 
     private void Start()
     {
         health = maxHealth;
         animator = GetComponent<Animator>();
-        player = GameObject.FindGameObjectWithTag("Player").transform; 
+        player = GameObject.FindGameObjectWithTag("Player").transform;
+        audioSource = GetComponent<AudioSource>();
 
         playerCollider = player.GetComponent<Collider2D>();
         enemyCollider = GetComponent<Collider2D>();
@@ -44,20 +53,20 @@ public class HackedLightGrunt : MonoBehaviour
 
         lastAttackTime = Time.time;
 
-        // Simpan skala asli sprite
         originalScale = transform.localScale;
     }
 
     private void Update()
     {
         UpdateAnimation();
-        DetectEnemyOrFollowPlayer(); 
+        DetectEnemyOrFollowPlayer();
         UpdateHealthBar();
+        AdjustAudioRelativeToPlayer();
     }
 
     private void UpdateAnimation()
     {
-        animator.SetBool("isWalking", false); 
+        animator.SetBool("isWalking", false);
     }
 
     private void UpdateHealthBar()
@@ -72,7 +81,7 @@ public class HackedLightGrunt : MonoBehaviour
     {
         GameObject[] targets = GameObject.FindGameObjectsWithTag("Enemy");
         GameObject[] middleBots = GameObject.FindGameObjectsWithTag("MiddleBot");
-        
+
         float nearestDistance = Mathf.Infinity;
         currentTarget = null;
 
@@ -125,23 +134,36 @@ public class HackedLightGrunt : MonoBehaviour
             {
                 Vector3 direction = (player.position - transform.position).normalized;
 
-                // Flip sprite berdasarkan arah gerakan tanpa mengubah skala
-                if (direction.x > 0) // Jika player ada di kanan
+                if (direction.x > 0)
                 {
-                    transform.localScale = new Vector3(-Mathf.Abs(originalScale.x), originalScale.y, originalScale.z);  // Balik ke kanan
+                    transform.localScale = new Vector3(-Mathf.Abs(originalScale.x), originalScale.y, originalScale.z);
                 }
-                else if (direction.x < 0) // Jika player ada di kiri
+                else if (direction.x < 0)
                 {
-                    transform.localScale = new Vector3(Mathf.Abs(originalScale.x), originalScale.y, originalScale.z);  // Tetap menghadap kiri
+                    transform.localScale = new Vector3(Mathf.Abs(originalScale.x), originalScale.y, originalScale.z);
                 }
 
                 transform.position += direction * followSpeed * Time.deltaTime;
 
                 animator.SetBool("isWalking", true);
+
+                if (!isPlayingWalkSound && audioSource != null && walkSound != null)
+                {
+                    audioSource.clip = walkSound;
+                    audioSource.loop = true;
+                    audioSource.Play();
+                    isPlayingWalkSound = true;
+                }
             }
             else
             {
                 animator.SetBool("isWalking", false);
+
+                if (isPlayingWalkSound && audioSource != null)
+                {
+                    audioSource.Stop();
+                    isPlayingWalkSound = false;
+                }
             }
         }
     }
@@ -152,14 +174,13 @@ public class HackedLightGrunt : MonoBehaviour
         {
             Vector3 direction = (currentTarget.position - transform.position).normalized;
 
-            // Flip sprite berdasarkan arah gerakan tanpa mengubah skala
-            if (direction.x > 0) // Jika target ada di kanan
+            if (direction.x > 0)
             {
-                transform.localScale = new Vector3(-Mathf.Abs(originalScale.x), originalScale.y, originalScale.z);  // Balik ke kanan
+                transform.localScale = new Vector3(-Mathf.Abs(originalScale.x), originalScale.y, originalScale.z);
             }
-            else if (direction.x < 0) // Jika target ada di kiri
+            else if (direction.x < 0)
             {
-                transform.localScale = new Vector3(Mathf.Abs(originalScale.x), originalScale.y, originalScale.z);  // Tetap menghadap kiri
+                transform.localScale = new Vector3(Mathf.Abs(originalScale.x), originalScale.y, originalScale.z);
             }
 
             transform.position += direction * followSpeed * Time.deltaTime;
@@ -174,20 +195,18 @@ public class HackedLightGrunt : MonoBehaviour
         {
             animator.SetTrigger("isAttacking");
 
-            // Flip sprite berdasarkan posisi target tanpa mengubah skala
             if (currentTarget != null)
             {
                 if (currentTarget.position.x > transform.position.x)
                 {
-                    transform.localScale = new Vector3(-Mathf.Abs(originalScale.x), originalScale.y, originalScale.z);  // Balik ke kanan
+                    transform.localScale = new Vector3(-Mathf.Abs(originalScale.x), originalScale.y, originalScale.z);
                 }
                 else if (currentTarget.position.x < transform.position.x)
                 {
-                    transform.localScale = new Vector3(Mathf.Abs(originalScale.x), originalScale.y, originalScale.z);  // Tetap menghadap kiri
+                    transform.localScale = new Vector3(Mathf.Abs(originalScale.x), originalScale.y, originalScale.z);
                 }
             }
 
-            // Hanya menyerang jika target bertag "Enemy" atau "MiddleBot"
             if (currentTarget != null)
             {
                 if (currentTarget.CompareTag("Enemy"))
@@ -195,7 +214,7 @@ public class HackedLightGrunt : MonoBehaviour
                     LightGrunt enemyScript = currentTarget.GetComponent<LightGrunt>();
                     if (enemyScript != null)
                     {
-                        enemyScript.TakeDamage(damage); 
+                        enemyScript.TakeDamage(damage);
                     }
                 }
                 else if (currentTarget.CompareTag("MiddleBot"))
@@ -217,12 +236,17 @@ public class HackedLightGrunt : MonoBehaviour
         health -= damage;
         if (health < 0) health = 0;
 
+        if (audioSource != null && takeDamageSound != null)
+        {
+            audioSource.PlayOneShot(takeDamageSound);
+        }
+
         if (healthbar != null)
         {
             healthbar.SetHealth(health, maxHealth);
         }
 
-        if (health <= 0)
+        if (health <= 0 && !hasPlayedDeathSound)  // Ensure the sound only plays once
         {
             Die();
         }
@@ -230,12 +254,43 @@ public class HackedLightGrunt : MonoBehaviour
 
     private void Die()
     {
-        animator.SetTrigger("isDead");
-        Destroy(gameObject, 0.2f); 
-    }
+        if (audioSource != null && deathSound != null && !hasPlayedDeathSound)
+        {
+            GameObject soundObject = new GameObject("DeathSound");
+            AudioSource soundAudioSource = soundObject.AddComponent<AudioSource>();
+            soundAudioSource.clip = deathSound;
+            soundAudioSource.Play();
 
-    public void ReceiveEnemyAttack(float damage)
-    {
-        TakeDamage(damage);
+            DontDestroyOnLoad(soundObject);
+            Destroy(soundObject, deathSound.length);
+
+            hasPlayedDeathSound = true; // Set flag to true after sound plays
+        }
+
+        animator.SetTrigger("isDead");
+
+        if (isPlayingWalkSound && audioSource != null)
+        {
+            audioSource.Stop();
+            isPlayingWalkSound = false;
+        }
+
+        Destroy(gameObject, 0.2f);
     }
+    private void AdjustAudioRelativeToPlayer()
+{
+    if (player == null || audioSource == null) return;
+
+    float distanceToPlayer = Vector3.Distance(transform.position, player.position);
+
+    // Sesuaikan volume berdasarkan jarak
+    float maxDistance = 20f; // Jarak maksimum suara terdengar
+    float volume = Mathf.Clamp01(1 - (distanceToPlayer / maxDistance)); // Volume berkurang sesuai jarak
+    audioSource.volume = volume;
+
+    // Sesuaikan arah suara (kiri/kanan)
+    float pan = Mathf.Clamp((transform.position.x - player.position.x) / maxDistance, -1f, 1f);
+    audioSource.panStereo = pan; // -1 = kiri, 0 = tengah, 1 = kanan
+}
+
 }
