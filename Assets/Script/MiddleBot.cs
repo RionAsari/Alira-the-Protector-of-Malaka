@@ -3,6 +3,17 @@ using UnityEngine;
 
 public class MiddleBot : MonoBehaviour
 {
+    // AudioSource and sound clips
+    private AudioSource audioSource;
+    public AudioClip walkingSound; // Drag and drop the walking sound here in the inspector
+    private bool isWalkingSoundPlaying = false;
+    public AudioClip disableSound; // Drag and drop the disable sound here in the inspector
+    private bool isDisableSoundPlaying = false;
+    private bool hasPlayedDisableSound = false;
+    public AudioClip dieSound; // Drag and drop the death sound here in the inspector
+    public AudioClip damageSound;
+    
+
     public float health = 500f;
     public static int activeEnemies = 0; // Variabel statis untuk menghitung musuh aktif
     public float maxHealth = 500f;
@@ -34,6 +45,7 @@ public class MiddleBot : MonoBehaviour
 
     private void Start()
     {
+        audioSource = GetComponent<AudioSource>();
         health = maxHealth;
         animator = GetComponent<Animator>();
 
@@ -48,6 +60,8 @@ public class MiddleBot : MonoBehaviour
 
     private void Update()
     {
+        AdjustAudioRelativeToPlayer();
+        
         if (health <= 0) return;
 
         if (healthbar != null)
@@ -56,26 +70,39 @@ public class MiddleBot : MonoBehaviour
         }
 
         if (isDisabled && isHackable)
-    {
-        GameObject player = GameObject.FindGameObjectWithTag("Player");  // Find the player in the scene
-        if (player != null)
         {
-            float distanceToPlayer = Vector3.Distance(transform.position, player.transform.position);
-            if (Input.GetKeyDown(KeyCode.F) && distanceToPlayer <= hackRange)
+            GameObject player = GameObject.FindGameObjectWithTag("Player");
+            if (player != null)
             {
-                SwitchToHackedMiddleBot();
+                float distanceToPlayer = Vector3.Distance(transform.position, player.transform.position);
+                if (Input.GetKeyDown(KeyCode.F) && distanceToPlayer <= hackRange)
+                {
+                    SwitchToHackedMiddleBot();
+                }
             }
+            return;
         }
-        return;
-    }
 
         HandleTargeting();
 
-        // Ensure sprite faces target every frame if there's a target
         if (currentTarget != null)
         {
             Vector3 direction = (currentTarget.position - transform.position).normalized;
             FlipSprite(direction);
+        }
+
+        // Play walking sound when moving
+        if (animator.GetBool("isWalking") && !isWalkingSoundPlaying)
+        {
+            isWalkingSoundPlaying = true;
+            audioSource.clip = walkingSound;
+            audioSource.loop = true; // Loop the walking sound while moving
+            audioSource.Play();
+        }
+        else if (!animator.GetBool("isWalking") && isWalkingSoundPlaying)
+        {
+            isWalkingSoundPlaying = false;
+            audioSource.Stop();
         }
     }
 
@@ -155,7 +182,6 @@ public class MiddleBot : MonoBehaviour
 
         if (currentTarget != null)
         {
-            // Ensure sprite faces target while attacking
             Vector3 direction = (currentTarget.position - transform.position).normalized;
             FlipSprite(direction);
         }
@@ -180,6 +206,11 @@ public class MiddleBot : MonoBehaviour
         health -= damage;
         if (health < 0) health = 0;
 
+        if (audioSource != null && damageSound != null)
+        {
+            audioSource.PlayOneShot(damageSound);  
+        }
+
         if (healthbar != null)
         {
             healthbar.SetHealth(health, maxHealth);
@@ -191,16 +222,39 @@ public class MiddleBot : MonoBehaviour
         }
     }
 
-    private void Die()
+private void Die()
+{
+    // Play death sound if available
+    if (audioSource != null && dieSound != null)
     {
-        animator.SetTrigger("isDead");
-        isDisabled = true;
+        // Create a temporary GameObject to hold the audio source for the death sound
+        GameObject soundObject = new GameObject("DeathSound");
+        AudioSource soundAudioSource = soundObject.AddComponent<AudioSource>();
+        soundAudioSource.clip = dieSound;
+        soundAudioSource.Play();
 
-        // Drop healing item
-        DropHealingItem();
+        // Make sure the sound persists after this object is destroyed
+        DontDestroyOnLoad(soundObject);
 
-        Destroy(gameObject, 0.2f);
+        // Destroy the temporary sound object after the sound has finished playing
+        Destroy(soundObject, dieSound.length);
     }
+
+    animator.SetTrigger("isDead");
+    isDisabled = true;
+
+    if (isWalkingSoundPlaying && audioSource != null)
+    {
+        audioSource.Stop();
+        isWalkingSoundPlaying = false;
+    }
+
+    DropHealingItem();
+
+    // Destroy the MiddleBot prefab after a short delay
+    Destroy(gameObject, 0.2f);
+}
+
 
     private void DropHealingItem()
     {
@@ -225,6 +279,13 @@ public class MiddleBot : MonoBehaviour
         isHackable = true;
         animator.SetTrigger("isDisabled");
 
+        // Pastikan audioSource dan disableSound tidak null, kemudian mainkan suara hanya sekali
+        if (audioSource != null && disableSound != null && !isDisableSoundPlaying)
+        {
+            audioSource.PlayOneShot(disableSound);
+            isDisableSoundPlaying = true;  // Tandai bahwa suara telah dimainkan
+        }
+
         Rigidbody2D rb = GetComponent<Rigidbody2D>();
         if (rb != null)
         {
@@ -237,6 +298,9 @@ public class MiddleBot : MonoBehaviour
         rb.isKinematic = false;
         isDisabled = false;
         animator.SetTrigger("isReactivated");
+
+        // Reset flag suara setelah durasi selesai, agar bisa dimainkan lagi jika diperlukan
+        isDisableSoundPlaying = false;
     }
 
     public bool IncrementHitCount()
@@ -249,6 +313,7 @@ public class MiddleBot : MonoBehaviour
         }
         return false;
     }
+
     private void OnEnable()
     {
         activeEnemies++; // Tambahkan ketika MiddleBot diaktifkan
@@ -278,6 +343,18 @@ public class MiddleBot : MonoBehaviour
                 TakeDamage(hackedVolley.damage);
                 Destroy(other.gameObject);
             }
+        }
+    }
+    private void AdjustAudioRelativeToPlayer()
+    {
+        GameObject player = GameObject.FindGameObjectWithTag("Player");
+        if (player != null && audioSource != null)
+        {
+            float distanceToPlayer = Vector3.Distance(transform.position, player.transform.position);
+
+            // Adjust volume and pan based on the distance to the player
+            audioSource.volume = Mathf.Clamp01(1f - (distanceToPlayer / 20f)); // Volume decreases with distance
+            audioSource.panStereo = Mathf.Clamp((transform.position.x - player.transform.position.x) / 10f, -1f, 1f); // Stereo pan based on position
         }
     }
 }

@@ -7,9 +7,13 @@ public class MusicManager : MonoBehaviour
     [SerializeField] private AudioSource musicSource;
 
     [Header("Audio Clips")]
-    public AudioClip mainMenuMusic;  // Musik untuk main menu
-    public AudioClip gameMusic;      // Musik untuk game
-    public AudioClip tutorialLevelMusic;  // Musik untuk tutorial level
+    public AudioClip mainMenuMusic;          // Musik untuk main menu
+    public AudioClip gameMusic;              // Musik untuk game
+    public AudioClip tutorialLevelMusic;    // Musik untuk tutorial level
+    public AudioClip introMusic;            // Musik untuk intro
+    public AudioClip cutSceneMusic;         // Musik untuk cutscene
+    public AudioClip levelOneMusic;         // Musik untuk level one
+    public AudioClip levelTwoMusic;         // Musik untuk level two
 
     public static MusicManager instance;
 
@@ -53,42 +57,58 @@ public class MusicManager : MonoBehaviour
         // Debugging: Show the exact scene name received
         Debug.Log("Received Scene Name: " + sceneName);
 
-        // Determine which music clip to play based on the scene name
+        // Tentukan musik yang sesuai berdasarkan nama scene
         switch (sceneName)
         {
-            case "Main Menu":  // Ensure that "Main Menu" with space is used here
+            case "Main Menu":
                 clipToPlay = mainMenuMusic;
+                break;
+
+            case "Intro":
+                clipToPlay = introMusic;
+                break;
+
+            case "CutScene":
+                clipToPlay = cutSceneMusic;
+                break;
+
+            case "TutorialLevel":
+                clipToPlay = tutorialLevelMusic;
+                break;
+
+            case "LevelOne":
+                clipToPlay = levelOneMusic;
+                break;
+
+            case "LevelTwo":
+                clipToPlay = levelTwoMusic;
                 break;
 
             case "GameScene":
                 clipToPlay = gameMusic;
                 break;
 
-            case "TutorialLevel":  // Added condition for the Tutorial Level scene
-                clipToPlay = tutorialLevelMusic;
-                break;
-
             default:
-                clipToPlay = mainMenuMusic;  // Default to main menu music
+                clipToPlay = mainMenuMusic;  // Default ke main menu music
                 break;
         }
 
         // Debugging: Check which music clip has been selected
         Debug.Log("Selected Music Clip: " + (clipToPlay != null ? clipToPlay.name : "None"));
 
-        // If the selected music is not the same as the current one, change it
+        // Jika musik yang dipilih berbeda dengan yang sedang diputar, ubah musik
         if (clipToPlay != null && musicSource.clip != clipToPlay)
         {
-            musicSource.Stop();  // Stop any currently playing music
-            musicSource.clip = clipToPlay;  // Assign the new music
-            musicSource.Play();  // Play the new music
-            Debug.Log("Now Playing: " + clipToPlay.name);  // Debugging: Confirm the new music is playing
+            musicSource.Stop();  // Hentikan musik yang sedang diputar
+            musicSource.clip = clipToPlay;  // Ganti musik
+            musicSource.Play();  // Putar musik yang baru
+            Debug.Log("Now Playing: " + clipToPlay.name);  // Debugging: Konfirmasi musik yang baru diputar
         }
     }
 
     private void OnDestroy()
     {
-        // Unregister from the scene loaded event to avoid memory leaks
+        // Unregister dari event scene loaded untuk mencegah memory leaks
         SceneManager.sceneLoaded -= OnSceneLoaded;
     }
 }

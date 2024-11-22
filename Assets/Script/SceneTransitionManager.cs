@@ -5,14 +5,19 @@ using System.Collections;
 public class SceneTransitionManager : MonoBehaviour
 {
     public Image fadeImage; // Gambar untuk efek fade
-    public float fadeDuration = 2f; // Durasi fade (diubah menjadi 2 detik)
+    public float fadeDuration = 2f; // Durasi fade
     private bool isFading = false;
+
+    private void Awake()
+    {
+        StartFadeOut(); // Mulai fade-out begitu prefab aktif
+    }
 
     public void StartFadeIn()
     {
         if (!isFading)
         {
-            StartCoroutine(Fade(0, 1)); // Fade In (dari transparan ke hitam)
+            StartCoroutine(Fade(0, 1)); // Fade-in (dari transparan ke hitam)
         }
     }
 
@@ -20,7 +25,7 @@ public class SceneTransitionManager : MonoBehaviour
     {
         if (!isFading)
         {
-            StartCoroutine(Fade(1, 0)); // Fade Out (dari hitam ke transparan)
+            StartCoroutine(Fade(1, 0)); // Fade-out (dari hitam ke transparan)
         }
     }
 

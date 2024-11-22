@@ -23,12 +23,21 @@ public class GameOverManager : MonoBehaviour
 
     public void QuitGame()
     {
+        SaveCurrentScene(); // Simpan scene terakhir sebelum keluar game
         Application.Quit(); // Menutup aplikasi
     }
 
     public void GoToMainMenu()
     {
-        // Ganti "MainMenu" dengan nama scene Main Menu Anda
+        SaveCurrentScene(); // Simpan scene terakhir sebelum kembali ke menu utama
         SceneManager.LoadScene("Main Menu"); // Pindah ke scene Main Menu
+    }
+
+    // Function to save the current scene name
+    void SaveCurrentScene()
+    {
+        string currentScene = SceneManager.GetActiveScene().name; // Mendapatkan nama scene yang sedang aktif
+        PlayerPrefs.SetString("SavedScene", currentScene);         // Menyimpan nama scene
+        PlayerPrefs.Save();                                        // Pastikan data disimpan
     }
 }

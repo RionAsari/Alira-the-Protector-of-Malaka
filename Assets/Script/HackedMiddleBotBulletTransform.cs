@@ -11,6 +11,9 @@ public class HackedMiddlebotBulletTransform : MonoBehaviour
     public int volleyCount = 4; // Jumlah proyektil yang akan ditembakkan
     public float initialAttackDelay = 1f; // Delay 1 detik sebelum bisa menyerang pertama kali
 
+    public AudioClip shootSound; // Klip audio untuk suara tembakan
+    private AudioSource audioSource; // Komponen AudioSource
+
     private float lastAttackTime = 0f;
     private Animator animator;
     private bool isShooting = false;
@@ -18,7 +21,9 @@ public class HackedMiddlebotBulletTransform : MonoBehaviour
 
     private void Start()
     {
+        // Mendapatkan komponen Animator dan AudioSource
         animator = GetComponentInParent<Animator>();
+        audioSource = GetComponent<AudioSource>(); // Komponen AudioSource pada GameObject yang sama
         FindTarget();
     }
 
@@ -31,6 +36,7 @@ public class HackedMiddlebotBulletTransform : MonoBehaviour
         else
         {
             AimAtTarget();
+            AdjustAudioRelativeToPlayer(); // Adjust audio position each frame
         }
     }
 
@@ -109,6 +115,12 @@ public class HackedMiddlebotBulletTransform : MonoBehaviour
         {
             Vector3 shootTargetPosition = target != null ? target.position : lastKnownTargetPosition;
 
+            // Mainkan suara tembakan
+            if (audioSource != null && shootSound != null)
+            {
+                audioSource.PlayOneShot(shootSound);
+            }
+
             GameObject projectile = Instantiate(volleyPrefab, transform.position, transform.rotation);
             Rigidbody2D rb = projectile.GetComponent<Rigidbody2D>();
 
@@ -123,5 +135,23 @@ public class HackedMiddlebotBulletTransform : MonoBehaviour
 
         lastAttackTime = Time.time;
         isShooting = false;
+    }
+
+    // Adjust audio based on player position
+    private void AdjustAudioRelativeToPlayer()
+    {
+        GameObject player = GameObject.FindGameObjectWithTag("Player");
+        if (player == null || audioSource == null) return;
+
+        float distanceToPlayer = Vector3.Distance(transform.position, player.transform.position);
+
+        // Adjust volume based on distance
+        float maxDistance = 20f; // Maximum distance at which the sound is still heard clearly
+        float volume = Mathf.Clamp01(1 - (distanceToPlayer / maxDistance)); // Volume decreases with distance
+        audioSource.volume = volume;
+
+        // Adjust the sound direction (left/right) based on the position of the player
+        float pan = Mathf.Clamp((transform.position.x - player.transform.position.x) / maxDistance, -1f, 1f);
+        audioSource.panStereo = pan; // -1 = left, 0 = center, 1 = right
     }
 }
