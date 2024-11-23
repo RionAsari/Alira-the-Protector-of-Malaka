@@ -1,34 +1,59 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using TMPro; // Pastikan kita menggunakan namespace TextMeshPro
+using TMPro;
 using UnityEngine.UI;
 
 public class MainMenuScript : MonoBehaviour
 {
     public GameObject settingsPanel;
     public GameObject mainMenuPanel;
-    public GameObject loadMenuPanel; // Panel untuk memilih level
-    public Button loadButton; // Button load game
-    public Transform levelListParent; // Parent object untuk menampilkan tombol level
-    public Button levelButtonPrefab; // Prefab tombol level yang akan diinstansiasi
-    public TMP_Text warningText; // Teks peringatan untuk Load Game
-    public TMP_Text warningText2; // Teks peringatan untuk "Load Game is available only after completing all levels"
+    public GameObject loadMenuPanel;
+    public Button loadButton;
+    public Transform levelListParent;
+    public Button levelButtonPrefab;
+    public TMP_Text warningText;
+    public TMP_Text warningText2;
+    public AudioClip buttonClickSound; // Tambahkan referensi audio
+    private AudioSource audioSource; // Untuk memutar suara
 
     void Start()
     {
+        // Inisialisasi AudioSource
+        audioSource = GetComponent<AudioSource>();
         CheckLevelCompletion();
         DisplaySavedGames();
+
+        // Tambahkan suara ke semua tombol
+        AssignButtonSounds();
     }
 
-    // Fungsi untuk memulai game baru
+    // Fungsi untuk memutar suara klik
+    void PlayButtonClickSound()
+    {
+        if (audioSource != null && buttonClickSound != null)
+        {
+            audioSource.PlayOneShot(buttonClickSound);
+        }
+    }
+
+    // Fungsi untuk menambahkan suara klik ke semua tombol
+    void AssignButtonSounds()
+    {
+        foreach (Button button in FindObjectsOfType<Button>())
+        {
+            button.onClick.AddListener(PlayButtonClickSound);
+        }
+    }
+
     public void StartGame()
     {
-        SceneManager.LoadScene("Intro"); // Ganti "Intro" dengan nama scene yang ingin dibuka
+        PlayButtonClickSound();
+        SceneManager.LoadScene("Intro");
     }
 
-    // Fungsi untuk melanjutkan permainan
     public void ContinueGame()
     {
+        PlayButtonClickSound();
         if (PlayerPrefs.HasKey("SavedScene"))
         {
             string savedScene = PlayerPrefs.GetString("SavedScene");
@@ -40,73 +65,70 @@ public class MainMenuScript : MonoBehaviour
         }
     }
 
-    // Fungsi untuk membuka pengaturan
     public void OpenSettings()
     {
+        PlayButtonClickSound();
         settingsPanel.SetActive(true);
         mainMenuPanel.SetActive(false);
     }
 
-    // Fungsi untuk menutup pengaturan
     public void CloseSettings()
     {
+        PlayButtonClickSound();
         settingsPanel.SetActive(false);
         mainMenuPanel.SetActive(true);
     }
 
-    // Fungsi untuk keluar dari game
     public void QuitGame()
     {
+        PlayButtonClickSound();
         Debug.Log("Game Quit");
         Application.Quit();
     }
 
-    // Fungsi untuk memeriksa apakah level sudah selesai atau belum
     void CheckLevelCompletion()
     {
         if (PlayerPrefs.GetInt("LevelCompleted", 0) > 0)
         {
-            warningText.text = ""; // Menyembunyikan peringatan jika level sudah selesai
-            warningText2.text = "Load Game is available"; // Memberitahu jika Load Game sudah tersedia
+            warningText.text = "";
+            warningText2.text = "Load Game is available";
         }
         else
         {
-            warningText.text = "You must complete all levels first."; // Menampilkan peringatan untuk menyelesaikan semua level
-            warningText2.text = ""; // Menyembunyikan peringatan load game jika belum selesai
+            warningText.text = "You must complete all levels first.";
+            warningText2.text = "";
         }
     }
 
-    // Fungsi untuk menampilkan panel load game
     public void ShowLoadMenu()
     {
-        mainMenuPanel.SetActive(false); // Menyembunyikan main menu
-        loadMenuPanel.SetActive(true); // Menampilkan panel load game
+        PlayButtonClickSound();
+        mainMenuPanel.SetActive(false);
+        loadMenuPanel.SetActive(true);
     }
 
-    // Fungsi untuk menampilkan daftar level yang bisa dimuat
     void DisplaySavedGames()
     {
-        // Contoh level yang disimpan
-        string[] savedScenes = { "Level1", "Level2", "Level3", "Level4" }; // Ganti dengan nama level yang ada di game
+        string[] savedScenes = { "Level1", "Level2", "Level3", "Level4" };
 
         foreach (var sceneName in savedScenes)
         {
-            Button newButton = Instantiate(levelButtonPrefab, levelListParent); // Membuat tombol baru untuk setiap scene
-            newButton.GetComponentInChildren<TMP_Text>().text = sceneName; // Menampilkan nama scene pada tombol
-            newButton.onClick.AddListener(() => LoadLevel(sceneName)); // Menambahkan listener untuk memuat scene ketika tombol diklik
+            Button newButton = Instantiate(levelButtonPrefab, levelListParent);
+            newButton.GetComponentInChildren<TMP_Text>().text = sceneName;
+            newButton.onClick.AddListener(() => LoadLevel(sceneName));
         }
     }
 
-    // Fungsi untuk memuat level yang dipilih
     void LoadLevel(string sceneName)
     {
-        SceneManager.LoadScene(sceneName); // Memuat scene sesuai yang dipilih
+        PlayButtonClickSound();
+        SceneManager.LoadScene(sceneName);
     }
 
-    // Fungsi untuk kembali ke menu utama setelah memilih level
     public void BackToMainMenu()
     {
-        loadMenuPanel.SetActive(false); // Menyembunyikan load menu
-        mainMenuPanel.SetActive(true); // Menampilkan main menu
+        PlayButtonClickSound();
+        loadMenuPanel.SetActive(false);
+        mainMenuPanel.SetActive(true);
     }
 }

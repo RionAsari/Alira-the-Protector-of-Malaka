@@ -22,6 +22,9 @@ public LayerMask groundLayer;  // Set layer Ground dari inspector
 
     // Tambahkan variabel untuk suara langkah
     public AudioClip footstepSound;  // Suara langkah kaki
+    public AudioClip hackSound;  // Suara saat ngehack musuh
+
+    
     private bool isWalking = false; // Untuk mengecek apakah pemain sedang berjalan
 
     private bool isMoving = false; // To track if the player is moving
@@ -121,6 +124,19 @@ public LayerMask groundLayer;  // Set layer Ground dari inspector
 
     private void Update()
     {
+        if (health.isDead)  // Check if the player is dead
+    {
+        StopAllAudio();  // Stop all sounds if the player is dead
+        return;  // Prevent further input or actions
+    }
+        if (Input.GetKeyDown(KeyCode.F))
+    {
+        // Mainkan suara ngehack
+        PlayHackSound();
+
+        // Logika untuk ngehack musuh (misalnya mengubah status musuh menjadi 'Hacked')
+        // Tambahkan kode hack musuh di sini
+    }
         if (canMove)
         {
             // Allow player movement here
@@ -502,11 +518,27 @@ private void HandleJump()
     }
     
 
-    public void TogglePause()
+public void TogglePause()
+{
+    isPaused = !isPaused;
+    Time.timeScale = isPaused ? 0f : 1f;
+
+    // Hentikan semua suara saat game dipause
+    if (isPaused)
     {
-        isPaused = !isPaused;
-        Time.timeScale = isPaused ? 0f : 1f;
+        StopAllAudio();
     }
+}
+
+private void StopAllAudio()
+{
+    // Hentikan suara langkah
+    if (audioSource.isPlaying)
+    {
+        audioSource.Stop();
+    }
+}
+
     public bool IsIdle()
 {
     return moveInput == 0 && rb.velocity.y == 0 && !isDashing; // Idle jika tidak ada input gerakan, tidak sedang melompat/dash
@@ -515,5 +547,13 @@ public void EnableMovement(bool enable)
     {
         canMove = enable;
     }
+    private void PlayHackSound()
+{
+    if (hackSound != null && audioSource != null)
+    {
+        audioSource.PlayOneShot(hackSound);  // Mainkan suara hack
+    }
+}
+
 
 }

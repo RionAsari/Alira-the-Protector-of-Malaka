@@ -60,6 +60,23 @@ public class MiddleBot : MonoBehaviour
 
     private void Update()
     {
+        if (Time.timeScale == 0)
+    {
+        // Stop any playing sound when paused
+        if (audioSource.isPlaying)
+        {
+            audioSource.Pause(); // Pause the sound if it's playing
+        }
+        return; // Exit early if the game is paused
+    }
+    else
+    {
+        // Resume sound if not paused
+        if (!audioSource.isPlaying && isWalkingSoundPlaying)
+        {
+            audioSource.Play(); // Play sound if it's not playing and it should be
+        }
+    }
         AdjustAudioRelativeToPlayer();
         
         if (health <= 0) return;
