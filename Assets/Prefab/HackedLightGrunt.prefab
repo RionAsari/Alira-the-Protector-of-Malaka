@@ -194,9 +194,10 @@ MonoBehaviour:
   enemyDetectRange: 10
   attackCooldown: 1
   damage: 10
-  walkSound: {fileID: 8300000, guid: b4c071c7e3291e44983f2e5722b003f2, type: 3}
-  takeDamageSound: {fileID: 8300000, guid: f59516a85203c1d4d80de8ad6d3a5ea3, type: 3}
-  deathSound: {fileID: 8300000, guid: f96f5e078943ff84d8b970080e6d559f, type: 3}
+  walkSound: {fileID: 8300000, guid: b8ad4d475b6c22c42aa3e5e203eb2942, type: 3}
+  takeDamageSound: {fileID: 8300000, guid: 9e0e13a4d9387094b9a0aba6cf468e41, type: 3}
+  deathSound: {fileID: 8300000, guid: 9d52932bc1a3f3f44bd4f94dec816179, type: 3}
+  attackSound: {fileID: 8300000, guid: a8af77121ce768b4b8162967c7d17cbd, type: 3}
 --- !u!82 &8300177824986067170
 AudioSource:
   m_ObjectHideFlags: 0

@@ -171,8 +171,8 @@ MonoBehaviour:
   midDamage: 50
   maxDamage: 100
   sliderOffset: {x: 0, y: 2, z: 0}
-  bowChargeSound: {fileID: 0}
-  bowReleaseSound: {fileID: 8300000, guid: 8bb9c2bd857880447acb68c1da651e9f, type: 3}
+  bowChargeSound: {fileID: 8300000, guid: f0148befd76db5a4f9327e9d26515a0d, type: 3}
+  bowReleaseSound: {fileID: 8300000, guid: ee1a8c6aa78597441a28ae1214a3bdef, type: 3}
   arrowBackground: {fileID: 0}
 --- !u!1 &2914838629928704030
 GameObject:
@@ -229,7 +229,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3909335882142320316}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0.14024353, w: 0.9901171}
+  m_LocalRotation: {x: -0, y: -0, z: -0.14024463, w: 0.99011695}
   m_LocalPosition: {x: 2.6, y: -0.13, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -5383,7 +5383,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5850384349026719752}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0.9996368, w: -0.02694788}
+  m_LocalRotation: {x: -0, y: -0, z: -0.9996369, w: -0.026948657}
   m_LocalPosition: {x: 2.73, y: 0.14, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -5871,11 +5871,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -5889871850375034049, guid: 5248248ff9dc86e4dae93cb901f6c13e, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 0.8035382
+      value: 0.80353576
       objectReference: {fileID: 0}
     - target: {fileID: -5889871850375034049, guid: 5248248ff9dc86e4dae93cb901f6c13e, type: 3}
       propertyPath: m_LocalRotation.z
-      value: 0.5952532
+      value: 0.5952565
       objectReference: {fileID: 0}
     - target: {fileID: -5444829323979365214, guid: 5248248ff9dc86e4dae93cb901f6c13e, type: 3}
       propertyPath: m_Layer
@@ -5883,7 +5883,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -4914885062078002609, guid: 5248248ff9dc86e4dae93cb901f6c13e, type: 3}
       propertyPath: m_LocalRotation.w
-      value: -0.2653404
+      value: -0.26533842
       objectReference: {fileID: 0}
     - target: {fileID: -4914885062078002609, guid: 5248248ff9dc86e4dae93cb901f6c13e, type: 3}
       propertyPath: m_LocalRotation.x
@@ -5895,7 +5895,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -4914885062078002609, guid: 5248248ff9dc86e4dae93cb901f6c13e, type: 3}
       propertyPath: m_LocalRotation.z
-      value: 0.96415484
+      value: 0.9641554
       objectReference: {fileID: 0}
     - target: {fileID: -4914885062078002609, guid: 5248248ff9dc86e4dae93cb901f6c13e, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
@@ -5907,7 +5907,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -4125621854359220565, guid: 5248248ff9dc86e4dae93cb901f6c13e, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 0.22402507
+      value: 0.22402215
       objectReference: {fileID: 0}
     - target: {fileID: -4125621854359220565, guid: 5248248ff9dc86e4dae93cb901f6c13e, type: 3}
       propertyPath: m_LocalRotation.x
@@ -5919,7 +5919,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -4125621854359220565, guid: 5248248ff9dc86e4dae93cb901f6c13e, type: 3}
       propertyPath: m_LocalRotation.z
-      value: -0.97458345
+      value: -0.9745841
       objectReference: {fileID: 0}
     - target: {fileID: -4125621854359220565, guid: 5248248ff9dc86e4dae93cb901f6c13e, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
@@ -5983,11 +5983,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6114081496955904922, guid: 5248248ff9dc86e4dae93cb901f6c13e, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 0.87269664
+      value: 0.87269527
       objectReference: {fileID: 0}
     - target: {fileID: 6114081496955904922, guid: 5248248ff9dc86e4dae93cb901f6c13e, type: 3}
       propertyPath: m_LocalRotation.z
-      value: 0.48826286
+      value: 0.48826534
       objectReference: {fileID: 0}
     - target: {fileID: 6592351116214588188, guid: 5248248ff9dc86e4dae93cb901f6c13e, type: 3}
       propertyPath: m_Layer
@@ -6258,7 +6258,9 @@ MonoBehaviour:
   virtualCamera: {fileID: 0}
   isDead: 0
   bowTransform: {fileID: 0}
-  healSound: {fileID: 8300000, guid: 30d461d353e6e294393324f531742fb6, type: 3}
+  healSound: {fileID: 8300000, guid: 220bc83fff3ecb84bb19d4eb75d7163a, type: 3}
+  dieSound: {fileID: 8300000, guid: 5810895fbab4c2540b7ec484270bff8c, type: 3}
+  damageSound: {fileID: 8300000, guid: d14fc0f2e8657f7469cbaa988aa78121, type: 3}
 --- !u!114 &3225741031599130528
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6274,15 +6276,16 @@ MonoBehaviour:
   groundLayer:
     serializedVersion: 2
     m_Bits: 0
-  jumpSound: {fileID: 0}
+  jumpSound: {fileID: 8300000, guid: 513b35c33213cc841955713aa1f168af, type: 3}
   wallCheckDistance: 0.5
   wallLayer:
     serializedVersion: 2
     m_Bits: 0
   ceilingCheckDistance: 0.5
   audioSource: {fileID: 0}
-  dashSound: {fileID: 8300000, guid: 05aca11e00130e942a77a5e037d769ba, type: 3}
-  footstepSound: {fileID: 0}
+  dashSound: {fileID: 8300000, guid: 35a74bf8df3a0ba459e06223c4b5e1d0, type: 3}
+  footstepSound: {fileID: 8300000, guid: a798234680ccec04d8d7aae9807e62d3, type: 3}
+  hackSound: {fileID: 8300000, guid: 48de1945379345a47b90c8ae7fc2076e, type: 3}
   moveSpeed: 8
   jumpForce: 15
   fallMultiplier: 0
