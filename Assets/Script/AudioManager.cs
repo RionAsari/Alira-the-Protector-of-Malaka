@@ -26,7 +26,8 @@ public class AudioManager : MonoBehaviour
         }
         else if (instance != this)
         {
-             // Destroy duplicates
+            // Destroy duplicates
+            Destroy(gameObject);
         }
 
         // Add scene change listener
@@ -36,7 +37,11 @@ public class AudioManager : MonoBehaviour
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
         // Destroy the AudioManager if we're not in the gameplay scenes
-        if (scene.name == "Scene1" || scene.name == "TutorialLevel" || scene.name == "Level1")
+        if (scene.name == "TutorialLevel" || 
+            scene.name == "LevelOne" || 
+            scene.name == "LevelTwo" || 
+            scene.name == "Level3" || 
+            scene.name == "Level4")
         {
             DontDestroyOnLoad(gameObject);  // Keep in the gameplay scenes
         }
