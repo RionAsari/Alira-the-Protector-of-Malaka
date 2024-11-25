@@ -18,6 +18,8 @@ public class Health : MonoBehaviour
 
     // Tambahan untuk AudioSource dan AudioClip healing
     public AudioClip healSound; // Suara saat pemulihan
+    public AudioClip dieSound;
+    public AudioClip damageSound;
     private AudioSource audioSource; // Referensi ke AudioSource untuk memutar suara healing
 
     private void Start()
@@ -33,22 +35,29 @@ public class Health : MonoBehaviour
     }
 
     public void TakeDamage(float damage)
+{
+    if (isDead) return; // Jika sudah mati, jangan proses damage lagi
+
+    health -= damage;
+    health = Mathf.Max(0, health); // Pastikan kesehatan tidak kurang dari 0
+
+    // Mainkan suara saat terkena damage
+    if (damageSound != null && audioSource != null)
     {
-        if (isDead) return; // Jika sudah mati, jangan proses damage lagi
-
-        health -= damage;
-        health = Mathf.Max(0, health); // Pastikan kesehatan tidak kurang dari 0
-
-        if (healthbar != null)
-        {
-            healthbar.SetHealth(health, maxHealth); // Update health bar
-        }
-
-        if (health <= 0)
-        {
-            Die();
-        }
+        audioSource.PlayOneShot(damageSound); // Memutar suara damage
     }
+
+    if (healthbar != null)
+    {
+        healthbar.SetHealth(health, maxHealth); // Update health bar
+    }
+
+    if (health <= 0)
+    {
+        Die();
+    }
+}
+
 
     public void Heal(float healAmount)
     {
@@ -71,54 +80,61 @@ public class Health : MonoBehaviour
         }
     }
 
-    private void Die()
+private void Die()
+{
+    if (dieSound != null && audioSource != null)
     {
-        // Trigger animasi mati
-        if (animator != null)
-        {
-            animator.SetTrigger("Die");
-        }
-
-        isDead = true; // Tandai pemain sebagai mati
-
-        // Mengubah tag menjadi PlayerDeath agar musuh tidak menyerang
-        gameObject.tag = "PlayerDeath";
-
-        // Stop semua pergerakan karakter
-        Rigidbody2D rb = GetComponent<Rigidbody2D>();
-        if (rb != null)
-        {
-            rb.velocity = Vector2.zero;
-            rb.isKinematic = true; // Membuat karakter tidak terpengaruh physics
-        }
-
-        // Hentikan kamera mengikuti pemain
-        if (virtualCamera != null)
-        {
-            virtualCamera.Follow = null;
-        }
-
-        // Nonaktifkan BowTransform
-        if (bowTransform != null)
-        {
-            bowTransform.gameObject.SetActive(false);
-        }
-
-        // Call the GameOver method after animation is complete
-        StartCoroutine(WaitForDeathAnimation());
+        audioSource.PlayOneShot(dieSound);
     }
 
-    private IEnumerator WaitForDeathAnimation()
+    // Trigger animasi mati
+    if (animator != null)
     {
-        // Tunggu durasi animasi mati selesai
-        AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
-        float deathAnimationLength = stateInfo.length;
-        yield return new WaitForSeconds(deathAnimationLength);
-
-        // Setelah animasi selesai, munculkan Game Over
-        if (gameOverManager != null)
-        {
-            gameOverManager.ShowGameOverMenu();
-        }
+        animator.SetTrigger("Die");
     }
+
+    isDead = true; // Tandai pemain sebagai mati
+
+    // Mengubah tag menjadi PlayerDeath agar musuh tidak menyerang
+    gameObject.tag = "PlayerDeath";
+
+    // Aktifkan physics agar pemain mulai jatuh sambil memainkan animasi
+    Rigidbody2D rb = GetComponent<Rigidbody2D>();
+    if (rb != null)
+    {
+        rb.isKinematic = false; // Aktifkan physics
+        rb.velocity = Vector2.zero; // Pastikan kecepatan awal direset
+        rb.gravityScale = 1; // Pastikan gravitasi diaktifkan
+    }
+
+    // Hentikan kamera mengikuti pemain
+    if (virtualCamera != null)
+    {
+        virtualCamera.Follow = null;
+    }
+
+    // Nonaktifkan BowTransform
+    if (bowTransform != null)
+    {
+        bowTransform.gameObject.SetActive(false);
+    }
+
+    // Munculkan menu Game Over setelah animasi selesai
+    StartCoroutine(WaitForDeathAnimation());
+}
+
+private IEnumerator WaitForDeathAnimation()
+{
+    // Tunggu durasi animasi mati selesai
+    AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
+    float deathAnimationLength = stateInfo.length;
+    yield return new WaitForSeconds(deathAnimationLength);
+
+    // Setelah animasi selesai, munculkan Game Over
+    if (gameOverManager != null)
+    {
+        gameOverManager.ShowGameOverMenu();
+    }
+}
+
 }

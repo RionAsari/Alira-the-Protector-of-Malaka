@@ -10,6 +10,8 @@ public class LightGrunt : MonoBehaviour
 private bool isPlayingWalkSound = false;
 public AudioClip takeDamageSound;
 public AudioClip deathSound;
+public AudioClip attackSound; // Tambahkan audio clip untuk suara serangan
+
 
     public float health = 100f;
     public static int activeEnemies = 0;
@@ -57,6 +59,16 @@ public AudioClip deathSound;
 
     private void Update()
     {
+        if (Time.timeScale == 0)
+    {
+        // Jika game dijeda, berhentikan suara berjalan
+        if (isPlayingWalkSound && audioSource != null)
+        {
+            audioSource.Stop();
+            isPlayingWalkSound = false;
+        }
+        return; // Keluar dari update jika game dijeda
+    }
         AdjustAudioRelativeToPlayer();
         if (health <= 0) return;
 
@@ -150,9 +162,9 @@ public AudioClip deathSound;
         return nearestTarget;
     }
 
-    private void ChaseTarget()
+private void ChaseTarget()
 {
-    if (currentTarget == null || isDisabled || isAttacking) return;
+    if (currentTarget == null || isDisabled || isAttacking || Time.timeScale == 0) return;  // Cek pause di sini
 
     float distanceToTarget = Vector3.Distance(transform.position, currentTarget.position);
 
@@ -198,6 +210,10 @@ public AudioClip deathSound;
             lastAttackTime = Time.time;
 
             FlipSprite(currentTarget.position - transform.position);
+            if (audioSource != null && attackSound != null) 
+        {
+            audioSource.PlayOneShot(attackSound);
+        }
 
             if (currentTarget != null && currentTarget.CompareTag("Ally"))
             {

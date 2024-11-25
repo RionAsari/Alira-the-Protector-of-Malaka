@@ -18,6 +18,8 @@ public class HackedLightGrunt : MonoBehaviour
     public AudioClip takeDamageSound;
     public AudioClip deathSound;
     private AudioSource audioSource;
+    public AudioClip attackSound; // Suara serangan
+
 
     private Animator animator;
     private Transform player;
@@ -62,7 +64,24 @@ public class HackedLightGrunt : MonoBehaviour
         DetectEnemyOrFollowPlayer();
         UpdateHealthBar();
         AdjustAudioRelativeToPlayer();
+        if (Time.timeScale == 0) // If the game is paused
+    {
+        if (isPlayingWalkSound && audioSource != null)
+        {
+            audioSource.Pause();  // Pause the audio
+            isPlayingWalkSound = false;
+        }
     }
+    else // When game is unpaused
+    {
+        if (!isPlayingWalkSound && audioSource != null && walkSound != null)
+        {
+            audioSource.Play();  // Resume the audio
+            isPlayingWalkSound = true;
+        }
+    }
+    }
+    
 
     private void UpdateAnimation()
     {
@@ -205,6 +224,10 @@ public class HackedLightGrunt : MonoBehaviour
                 {
                     transform.localScale = new Vector3(Mathf.Abs(originalScale.x), originalScale.y, originalScale.z);
                 }
+                if (audioSource != null && attackSound != null)
+            {
+                audioSource.PlayOneShot(attackSound);
+            }
             }
 
             if (currentTarget != null)
