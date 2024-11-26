@@ -25,134 +25,75 @@ public class GameOverManager : MonoBehaviour
     }
 
     private void SetTextsAndButtonsInvisible()
+{
+    // Set Game Over button to be fully transparent at the beginning
+    Color buttonColor = gameOverButton.image.color;
+    buttonColor.a = 0f;
+    gameOverButton.image.color = buttonColor;
+
+    // Set all other buttons to be fully transparent at the beginning
+    foreach (Button button in otherButtons)
     {
-        // Set all other texts to be fully transparent at the beginning
-        foreach (TMP_Text text in otherTexts)
-        {
-            Color textColor = text.color;
-            textColor.a = 0f;
-            text.color = textColor;
-        }
-
-        // Set the Game Over button to be fully transparent at the beginning
-        Color buttonColor = gameOverButton.image.color;
+        buttonColor = button.image.color;
         buttonColor.a = 0f;
-        gameOverButton.image.color = buttonColor;
-
-        // If the Game Over button has text, set it to be transparent as well
-        if (gameOverButton.GetComponentInChildren<TMP_Text>())
-        {
-            TMP_Text buttonText = gameOverButton.GetComponentInChildren<TMP_Text>();
-            buttonText.color = new Color(buttonText.color.r, buttonText.color.g, buttonText.color.b, 0f);
-        }
-
-        // Set all other buttons to be fully transparent at the beginning
-        foreach (Button button in otherButtons)
-        {
-            buttonColor = button.image.color;
-            buttonColor.a = 0f;
-            button.image.color = buttonColor;
-
-            // If buttons have text, set their alpha to 0 as well
-            if (button.GetComponentInChildren<TMP_Text>())
-            {
-                TMP_Text buttonText = button.GetComponentInChildren<TMP_Text>();
-                buttonText.color = new Color(buttonText.color.r, buttonText.color.g, buttonText.color.b, 0f);
-            }
-        }
+        button.image.color = buttonColor;
     }
+}
+
 
     private IEnumerator FadeInGameOverElements()
+{
+    float elapsedTime = 0f;
+
+    while (elapsedTime < fadeDuration)
     {
-        float elapsedTime = 0f;
+        float alphaValue = Mathf.Lerp(0f, 1f, elapsedTime / fadeDuration);
 
-        // Fade in both the Game Over text and button together
-        while (elapsedTime < fadeDuration)
-        {
-            float alphaValue = Mathf.Lerp(0f, 1f, elapsedTime / fadeDuration);
+        // Fade in Game Over button's image
+        Color buttonColor = gameOverButton.image.color;
+        buttonColor.a = alphaValue;
+        gameOverButton.image.color = buttonColor;
 
-            // Fade in Game Over text
-            Color textColor = gameOverText.color;
-            textColor.a = alphaValue;
-            gameOverText.color = textColor;
-
-            // Fade in Game Over button
-            Color buttonColor = gameOverButton.image.color;
-            buttonColor.a = alphaValue;
-            gameOverButton.image.color = buttonColor;
-
-            // If the Game Over button has text, fade it in as well
-            if (gameOverButton.GetComponentInChildren<TMP_Text>())
-            {
-                TMP_Text buttonText = gameOverButton.GetComponentInChildren<TMP_Text>();
-                buttonText.color = new Color(buttonText.color.r, buttonText.color.g, buttonText.color.b, alphaValue);
-            }
-
-            elapsedTime += Time.deltaTime;
-            yield return null;
-        }
-
-        // Ensure both elements are fully visible after fading
-        Color finalTextColor = gameOverText.color;
-        finalTextColor.a = 1f;
-        gameOverText.color = finalTextColor;
-
-        Color finalButtonColor = gameOverButton.image.color;
-        finalButtonColor.a = 1f;
-        gameOverButton.image.color = finalButtonColor;
-
-        // Ensure button text is fully visible
-        if (gameOverButton.GetComponentInChildren<TMP_Text>())
-        {
-            TMP_Text buttonText = gameOverButton.GetComponentInChildren<TMP_Text>();
-            buttonText.color = new Color(buttonText.color.r, buttonText.color.g, buttonText.color.b, 1f);
-        }
-
-        // After Game Over text and button fade in, fade in the other buttons
-        StartCoroutine(FadeInOtherButtons());
+        elapsedTime += Time.deltaTime;
+        yield return null;
     }
 
+    // Ensure button is fully visible after fading
+    Color finalButtonColor = gameOverButton.image.color;
+    finalButtonColor.a = 1f;
+    gameOverButton.image.color = finalButtonColor;
+
+    // Fade in other buttons
+    StartCoroutine(FadeInOtherButtons());
+}
+
+
     private IEnumerator FadeInOtherButtons()
+{
+    float elapsedTime = 0f;
+
+    while (elapsedTime < fadeDuration)
     {
-        // Fade in all other buttons (Retry, Quit, Back to Main Menu)
-        float elapsedTime = 0f;
-
-        while (elapsedTime < fadeDuration)
-        {
-            // Fade other buttons and their text
-            foreach (Button button in otherButtons)
-            {
-                Color buttonColor = button.image.color;
-                buttonColor.a = Mathf.Lerp(0f, 1f, elapsedTime / fadeDuration);
-                button.image.color = buttonColor;
-
-                // Fade button text
-                if (button.GetComponentInChildren<TMP_Text>())
-                {
-                    TMP_Text buttonText = button.GetComponentInChildren<TMP_Text>();
-                    buttonText.color = new Color(buttonText.color.r, buttonText.color.g, buttonText.color.b, Mathf.Lerp(0f, 1f, elapsedTime / fadeDuration));
-                }
-            }
-
-            elapsedTime += Time.deltaTime;
-            yield return null;
-        }
-
-        // Ensure the final alpha value is 1 (fully visible) for all buttons
         foreach (Button button in otherButtons)
         {
             Color buttonColor = button.image.color;
-            buttonColor.a = 1f;
+            buttonColor.a = Mathf.Lerp(0f, 1f, elapsedTime / fadeDuration);
             button.image.color = buttonColor;
-
-            // Ensure button text is fully visible
-            if (button.GetComponentInChildren<TMP_Text>())
-            {
-                TMP_Text buttonText = button.GetComponentInChildren<TMP_Text>();
-                buttonText.color = new Color(buttonText.color.r, buttonText.color.g, buttonText.color.b, 1f);
-            }
         }
+
+        elapsedTime += Time.deltaTime;
+        yield return null;
     }
+
+    // Ensure all buttons are fully visible
+    foreach (Button button in otherButtons)
+    {
+        Color buttonColor = button.image.color;
+        buttonColor.a = 1f;
+        button.image.color = buttonColor;
+    }
+}
+
 
     public void Retry()
     {
