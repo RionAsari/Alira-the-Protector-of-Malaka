@@ -342,7 +342,9 @@ private void UpdateArrowTypeUI()
     {
         // Perbarui ikon panah
         arrowTypeUI.sprite = usingSpecialArrow ? specialArrowSprite : normalArrowSprite;
-        arrowTypeUI.SetNativeSize(); // Sesuaikan ukuran sprite
+
+        // Jangan gunakan SetNativeSize(); biarkan ukuran RectTransform tetap
+        // arrowTypeUI.SetNativeSize(); (hapus baris ini)
 
         // Perbarui warna latar belakang
         if (arrowBackground != null)
@@ -351,6 +353,7 @@ private void UpdateArrowTypeUI()
         }
     }
 }
+
 
 
     
