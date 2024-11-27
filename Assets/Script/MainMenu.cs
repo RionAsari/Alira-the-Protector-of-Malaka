@@ -2,6 +2,10 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using TMPro;
 using UnityEngine.UI;
+using UnityEngine.EventSystems; // For PointerEventData and EventSystem
+using System.Collections.Generic; // For List<>
+
+
 
 public class MainMenuScript : MonoBehaviour
 {
@@ -9,25 +13,52 @@ public class MainMenuScript : MonoBehaviour
     public GameObject mainMenuPanel;
     public GameObject loadMenuPanel;
     public Button loadButton;
-    public Transform levelListParent;
-    public Button levelButtonPrefab;
+    public Button levelButton1; // Tombol 1 untuk "TutorialLevel"
+    public Button levelButton2; // Tombol 2 untuk "LevelOne"
+    public Button levelButton3; // Tombol 3 untuk "LevelTwo"
+    public Button levelButton4; // Tombol 4 untuk "Level3"
+    public Button levelButton5; // Tombol 5 untuk "Level4"
     public TMP_Text warningText;
     public TMP_Text warningText2;
-    public AudioClip buttonClickSound; // Tambahkan referensi audio
-    private AudioSource audioSource; // Untuk memutar suara
+    public AudioClip buttonClickSound;
+    private AudioSource audioSource;
+    private bool showWarning = false; // Menandai apakah peringatan sedang ditampilkan
 
     void Start()
     {
-        // Inisialisasi AudioSource
         audioSource = GetComponent<AudioSource>();
         CheckLevelCompletion();
-        DisplaySavedGames();
-
-        // Tambahkan suara ke semua tombol
+        AssignButtonListeners(); // Assign listener untuk setiap tombol
         AssignButtonSounds();
     }
 
-    // Fungsi untuk memutar suara klik
+void Update()
+{
+if (showWarning)
+{
+    if (Input.GetMouseButtonDown(0) || Input.anyKeyDown)
+    {
+        Debug.Log("Input detected, hiding warning.");
+        HideWarning();
+    }
+}
+
+}
+
+
+
+    bool IsPointerOverUI()
+    {
+        PointerEventData pointerData = new PointerEventData(EventSystem.current)
+        {
+            position = Input.mousePosition
+        };
+
+        List<RaycastResult> results = new List<RaycastResult>();
+        EventSystem.current.RaycastAll(pointerData, results);
+        return results.Count > 0; // Jika ada elemen UI yang terkena raycast, return true
+    }
+
     void PlayButtonClickSound()
     {
         if (audioSource != null && buttonClickSound != null)
@@ -36,7 +67,16 @@ public class MainMenuScript : MonoBehaviour
         }
     }
 
-    // Fungsi untuk menambahkan suara klik ke semua tombol
+    void AssignButtonListeners()
+    {
+        // Menambahkan listener ke masing-masing tombol untuk memuat scene
+        levelButton1.onClick.AddListener(() => LoadLevel("TutorialLevel"));
+        levelButton2.onClick.AddListener(() => LoadLevel("LevelOne"));
+        levelButton3.onClick.AddListener(() => LoadLevel("LevelTwo"));
+        levelButton4.onClick.AddListener(() => LoadLevel("Level3"));
+        levelButton5.onClick.AddListener(() => LoadLevel("Level4"));
+    }
+
     void AssignButtonSounds()
     {
         foreach (Button button in FindObjectsOfType<Button>())
@@ -86,36 +126,63 @@ public class MainMenuScript : MonoBehaviour
         Application.Quit();
     }
 
-    void CheckLevelCompletion()
+void CheckLevelCompletion()
+{
+    Debug.Log("CheckLevelCompletion called");
+    int levelCompleted = PlayerPrefs.GetInt("LevelCompleted", 0);
+    Debug.Log("Level completed: " + levelCompleted);
+
+    if (levelCompleted < 4)
     {
-        if (PlayerPrefs.GetInt("LevelCompleted", 0) > 0)
-        {
-            warningText.text = "";
-            warningText2.text = "Load Game is available";
-        }
-        else
-        {
-            warningText.text = "You must complete all levels first.";
-            warningText2.text = "";
-        }
+        warningText.text = "Level Selection is not yet unlocked!";
+        warningText2.text = "";
+        showWarning = true;
+
+        warningText.gameObject.SetActive(true);
+        warningText2.gameObject.SetActive(false);
+
+        Debug.Log("showWarning set to true, first warning displayed.");
     }
+    else
+    {
+        warningText.text = "";
+        warningText2.text = "Load Game is available";
+        showWarning = true;
+        
+        warningText.gameObject.SetActive(false);
+        warningText2.gameObject.SetActive(true);
+
+        Debug.Log("showWarning set to true, second warning displayed.");
+    }
+}
+
+
+void HideWarning()
+{
+    Debug.Log("Hiding warning text");
+    // Hide warning text and reset flag
+    warningText.text = "";
+    warningText2.text = "";
+    showWarning = false;
+
+    // Set both warning texts to inactive
+    warningText.gameObject.SetActive(false);
+    warningText2.gameObject.SetActive(false);
+}
 
     public void ShowLoadMenu()
     {
         PlayButtonClickSound();
-        mainMenuPanel.SetActive(false);
-        loadMenuPanel.SetActive(true);
-    }
 
-    void DisplaySavedGames()
-    {
-        string[] savedScenes = { "Level1", "Level2", "Level3", "Level4" };
-
-        foreach (var sceneName in savedScenes)
+        if (PlayerPrefs.GetInt("LevelCompleted", 0) < 4) // Jika level belum selesai
         {
-            Button newButton = Instantiate(levelButtonPrefab, levelListParent);
-            newButton.GetComponentInChildren<TMP_Text>().text = sceneName;
-            newButton.onClick.AddListener(() => LoadLevel(sceneName));
+            warningText.text = "Level Selection is not yet unlocked!";
+            showWarning = true; // Tampilkan peringatan
+        }
+        else
+        {
+            mainMenuPanel.SetActive(false);
+            loadMenuPanel.SetActive(true);
         }
     }
 
