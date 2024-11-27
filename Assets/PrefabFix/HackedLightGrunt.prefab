@@ -32,7 +32,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -4.76, y: -0.4, z: 0}
-  m_LocalScale: {x: 0.2988, y: 0.2784, z: 1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 5493480641105597597}
@@ -79,7 +79,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 21300000, guid: d2560ba36ad22e14194c53904a32e793, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 90bad2b2c7e365c46821828d733b15fc, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -122,8 +122,8 @@ CapsuleCollider2D:
   m_IsTrigger: 0
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: 1.71, y: -0.43}
-  m_Size: {x: 7.87, y: 10.83}
+  m_Offset: {x: -0.08, y: -0.04}
+  m_Size: {x: 2.16, y: 1.7}
   m_Direction: 0
 --- !u!50 &1206563863709548633
 Rigidbody2D:
@@ -190,7 +190,7 @@ MonoBehaviour:
   healthbar: {fileID: 4234334354022299680}
   followDistance: 3
   followSpeed: 3
-  attackRange: 2
+  attackRange: 4
   enemyDetectRange: 10
   attackCooldown: 1
   damage: 10
