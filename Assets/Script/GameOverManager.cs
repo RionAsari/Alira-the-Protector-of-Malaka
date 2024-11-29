@@ -13,113 +13,121 @@ public class GameOverManager : MonoBehaviour
     public Button[] otherButtons; // Array to reference other buttons (Retry, Quit, Back to Main Menu buttons)
     public float fadeDuration = 1f; // Duration of the fade-in effect (1 second)
 
+    [Header("Audio Settings")]
+    public AudioSource audioSource; // Reference to the AudioSource component
+    public AudioClip buttonSound; // Audio clip for button click
+
     public void ShowGameOverMenu()
     {
         if (gameOverMenu != null)
         {
             gameOverMenu.SetActive(true); // Show the GameOver menu
-            // Set other texts and buttons to be invisible initially
             SetTextsAndButtonsInvisible();
             StartCoroutine(FadeInGameOverElements()); // Fade in both Game Over text and button together
         }
     }
 
     private void SetTextsAndButtonsInvisible()
-{
-    // Set Game Over button to be fully transparent at the beginning
-    Color buttonColor = gameOverButton.image.color;
-    buttonColor.a = 0f;
-    gameOverButton.image.color = buttonColor;
-
-    // Set all other buttons to be fully transparent at the beginning
-    foreach (Button button in otherButtons)
     {
-        buttonColor = button.image.color;
-        buttonColor.a = 0f;
-        button.image.color = buttonColor;
-    }
-}
-
-
-    private IEnumerator FadeInGameOverElements()
-{
-    float elapsedTime = 0f;
-
-    while (elapsedTime < fadeDuration)
-    {
-        float alphaValue = Mathf.Lerp(0f, 1f, elapsedTime / fadeDuration);
-
-        // Fade in Game Over button's image
+        // Set Game Over button to be fully transparent at the beginning
         Color buttonColor = gameOverButton.image.color;
-        buttonColor.a = alphaValue;
+        buttonColor.a = 0f;
         gameOverButton.image.color = buttonColor;
 
-        elapsedTime += Time.deltaTime;
-        yield return null;
+        // Set all other buttons to be fully transparent at the beginning
+        foreach (Button button in otherButtons)
+        {
+            buttonColor = button.image.color;
+            buttonColor.a = 0f;
+            button.image.color = buttonColor;
+        }
     }
 
-    // Ensure button is fully visible after fading
-    Color finalButtonColor = gameOverButton.image.color;
-    finalButtonColor.a = 1f;
-    gameOverButton.image.color = finalButtonColor;
+    private IEnumerator FadeInGameOverElements()
+    {
+        float elapsedTime = 0f;
 
-    // Fade in other buttons
-    StartCoroutine(FadeInOtherButtons());
-}
+        while (elapsedTime < fadeDuration)
+        {
+            float alphaValue = Mathf.Lerp(0f, 1f, elapsedTime / fadeDuration);
 
+            // Fade in Game Over button's image
+            Color buttonColor = gameOverButton.image.color;
+            buttonColor.a = alphaValue;
+            gameOverButton.image.color = buttonColor;
+
+            elapsedTime += Time.deltaTime;
+            yield return null;
+        }
+
+        // Ensure button is fully visible after fading
+        Color finalButtonColor = gameOverButton.image.color;
+        finalButtonColor.a = 1f;
+        gameOverButton.image.color = finalButtonColor;
+
+        // Fade in other buttons
+        StartCoroutine(FadeInOtherButtons());
+    }
 
     private IEnumerator FadeInOtherButtons()
-{
-    float elapsedTime = 0f;
-
-    while (elapsedTime < fadeDuration)
     {
+        float elapsedTime = 0f;
+
+        while (elapsedTime < fadeDuration)
+        {
+            foreach (Button button in otherButtons)
+            {
+                Color buttonColor = button.image.color;
+                buttonColor.a = Mathf.Lerp(0f, 1f, elapsedTime / fadeDuration);
+                button.image.color = buttonColor;
+            }
+
+            elapsedTime += Time.deltaTime;
+            yield return null;
+        }
+
+        // Ensure all buttons are fully visible
         foreach (Button button in otherButtons)
         {
             Color buttonColor = button.image.color;
-            buttonColor.a = Mathf.Lerp(0f, 1f, elapsedTime / fadeDuration);
+            buttonColor.a = 1f;
             button.image.color = buttonColor;
         }
-
-        elapsedTime += Time.deltaTime;
-        yield return null;
     }
 
-    // Ensure all buttons are fully visible
-    foreach (Button button in otherButtons)
+    public void PlayButtonSound()
     {
-        Color buttonColor = button.image.color;
-        buttonColor.a = 1f;
-        button.image.color = buttonColor;
+        if (audioSource != null && buttonSound != null)
+        {
+            audioSource.PlayOneShot(buttonSound); // Play the button sound
+        }
     }
-}
-
 
     public void Retry()
     {
-        // Logic to restart the game
-        Debug.Log("Game Restarted");
-        // Reload the current scene
+        PlayButtonSound();
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
     public void QuitGame()
     {
-        SaveCurrentScene(); // Save the last scene before quitting
-        Application.Quit(); // Close the application
+        PlayButtonSound();
+        SaveCurrentScene();
+        Application.Quit();
     }
 
     public void GoToMainMenu()
     {
-        SaveCurrentScene(); // Save the last scene before returning to the main menu
-        SceneManager.LoadScene("Main Menu"); // Go to the Main Menu
+        PlayButtonSound();
+        SaveCurrentScene();
+        SceneManager.LoadScene("Main Menu");
     }
 
     // Function to save the current scene name
     void SaveCurrentScene()
     {
-        string currentScene = SceneManager.GetActiveScene().name; // Get the active scene name
-        PlayerPrefs.SetString("SavedScene", currentScene); // Save the scene name
-        PlayerPrefs.Save(); // Ensure the data is saved
+        string currentScene = SceneManager.GetActiveScene().name;
+        PlayerPrefs.SetString("SavedScene", currentScene);
+        PlayerPrefs.Save();
     }
 }
