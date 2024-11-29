@@ -6191,7 +6191,7 @@ MonoBehaviour:
   footstepSound: {fileID: 8300000, guid: 1b1e407015fcc4a49bd0d0138be79426, type: 3}
   hackSound: {fileID: 8300000, guid: c692773cd263ce8479e2bcc7bb6c1c9d, type: 3}
   moveSpeed: 8
-  jumpForce: 15
+  jumpForce: 12
   fallMultiplier: 0
   KBForce: 4
   KBCounter: 0
@@ -6202,8 +6202,8 @@ MonoBehaviour:
   dashDuration: 0.2
   dashCooldown: 0.5
   health: {fileID: 2607876343338268133}
-  afterImagePrefab: {fileID: 6517789844118750891, guid: 18da2a6eb29677b49b6d1386bda35051, type: 3}
-  afterImageInterval: 0.05
+  afterImagePrefab: {fileID: 1040610594739337183, guid: 208bd4bfcd2a85546944ebc59733f347, type: 3}
+  afterImageInterval: 0.5
   isPaused: 0
   castFilter:
     useTriggers: 0
