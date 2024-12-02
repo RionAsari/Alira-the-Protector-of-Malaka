@@ -8,6 +8,7 @@ public class BowDialogManagerWithSceneTransition : MonoBehaviour
     public TMP_Text dialogText; // Tempat untuk menampilkan teks dialog
     public float typingSpeed = 0.05f; // Kecepatan pengetikan
     private bool isTyping = false; // Untuk memeriksa apakah dialog sedang mengetik
+    private bool skipTyping = false; // Untuk melewati pengetikan teks
 
     public SceneTransitionManager transitionManager; // Referensi ke SceneTransitionManager
 
@@ -27,27 +28,41 @@ public class BowDialogManagerWithSceneTransition : MonoBehaviour
     {
         dialogText.text = ""; // Menghapus teks sebelumnya
         isTyping = true;
+        skipTyping = false; // Reset skipTyping
 
         foreach (char letter in message.ToCharArray())
         {
-            dialogText.text += letter;
-            yield return new WaitForSeconds(typingSpeed);
+            if (skipTyping) // Jika pemain ingin melewati animasi mengetik
+            {
+                dialogText.text = message; // Tampilkan seluruh teks sekaligus
+                break;
+            }
+
+            dialogText.text += letter; // Tambahkan huruf satu per satu
+            yield return new WaitForSeconds(typingSpeed); // Tunggu sesuai kecepatan mengetik
         }
 
-        isTyping = false; // Dialog selesai mengetik
+        isTyping = false; // Pengetikan selesai
     }
 
     private void Update()
     {
-        if (!isTyping && (Input.GetKeyDown(KeyCode.Space) || Input.GetMouseButtonDown(0)))
+        if (Input.GetKeyDown(KeyCode.Space) || Input.GetMouseButtonDown(0)) // Deteksi input
         {
-            ContinueDialog();
+            if (isTyping)
+            {
+                skipTyping = true; // Langsung selesaikan teks
+            }
+            else
+            {
+                ContinueDialog(); // Lanjutkan ke dialog berikutnya
+            }
         }
     }
 
     private void ContinueDialog()
     {
-        dialogIndex++;
+        dialogIndex++; // Pindah ke dialog berikutnya
 
         if (dialogIndex == 1)
         {
@@ -60,9 +75,9 @@ public class BowDialogManagerWithSceneTransition : MonoBehaviour
         if (transitionManager != null)
         {
             transitionManager.StartFadeIn(); // Mulai fade-in
-            yield return new WaitForSeconds(transitionManager.fadeDuration); // Tunggu fade selesai
+            yield return new WaitForSeconds(transitionManager.fadeDuration); // Tunggu hingga fade selesai
         }
 
-        SceneManager.LoadScene("TutorialLevel");
+        SceneManager.LoadScene("TutorialLevel"); // Pindah ke scene berikutnya
     }
 }
