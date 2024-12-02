@@ -40012,6 +40012,14 @@ PrefabInstance:
       value: Cursor
       objectReference: {fileID: 0}
     - target: {fileID: 7105933966654417503, guid: 7543edce6b926cf49bc673682dae9488, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7105933966654417503, guid: 7543edce6b926cf49bc673682dae9488, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7105933966654417503, guid: 7543edce6b926cf49bc673682dae9488, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
       objectReference: {fileID: 0}
@@ -40051,6 +40059,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 8910365669583420554, guid: 7543edce6b926cf49bc673682dae9488, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: cbaf3ff148ef6bd439b1e623d55d346c, type: 3}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

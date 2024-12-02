@@ -323,7 +323,7 @@ private void ChaseTarget()
     DropHealingItem();
 
     // Destroy the LightGrunt prefab after a short delay
-    Destroy(gameObject, 0.2f);
+    Destroy(gameObject, 0.4f);
 }
 
 
@@ -381,6 +381,7 @@ private void DropHealingItem()
     private void OnEnable()
     {
         activeEnemies++; // Tambahkan ketika musuh diaktifkan
+        
     }
 
     private void OnDisable()

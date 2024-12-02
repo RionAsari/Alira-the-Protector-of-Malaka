@@ -269,7 +269,7 @@ private void Die()
     DropHealingItem();
 
     // Destroy the MiddleBot prefab after a short delay
-    Destroy(gameObject, 0.2f);
+    Destroy(gameObject, 0.6f);
 }
 
 

@@ -25,7 +25,10 @@ public class HackedMiddleBot : MonoBehaviour
     private Transform playerTransform;
 
     public float stopDistance = 2f;
-
+private void Awake()
+{
+    animator = GetComponent<Animator>();
+}
     private void Start()
     {
         health = maxHealth;
@@ -166,6 +169,13 @@ public class HackedMiddleBot : MonoBehaviour
             animator.SetBool("isWalking", false);
         }
     }
+    private void OnEnable()
+{
+    if (animator != null)
+    {
+        animator.SetTrigger("WakeUp");
+    }
+}
 
     private void Attack()
     {

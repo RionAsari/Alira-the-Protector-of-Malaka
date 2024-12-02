@@ -8,6 +8,7 @@ public class DialogManager : MonoBehaviour
     public GameObject dialogBackground; // Background dialog
     public float typingSpeed = 0.05f; // Kecepatan pengetikan
     private bool isTyping = false; // Untuk memeriksa apakah dialog sedang mengetik
+    private bool skipTyping = false; // Untuk melewati pengetikan
     public SceneTransitionManager transitionManager; // Komponen SceneTransitionManager untuk fade-in/fade-out
     public GameObject player; // Player untuk dihancurkan setelah dialog selesai
     public GameObject newPlayerPrefab; // Prefab player baru yang akan menggantikan yang lama
@@ -36,11 +37,18 @@ public class DialogManager : MonoBehaviour
     {
         dialogText.text = "";  // Menghapus teks sebelumnya
         isTyping = true; // Menandakan dialog sedang mengetik
+        skipTyping = false; // Reset skipTyping
 
         foreach (char letter in message.ToCharArray())
         {
-            dialogText.text += letter;
-            yield return new WaitForSeconds(typingSpeed);
+            if (skipTyping) // Jika skipTyping aktif, langsung tampilkan seluruh teks
+            {
+                dialogText.text = message;
+                break;
+            }
+
+            dialogText.text += letter; // Tambahkan huruf satu per satu
+            yield return new WaitForSeconds(typingSpeed); // Tunggu sebelum huruf berikutnya
         }
 
         isTyping = false; // Dialog selesai mengetik
@@ -48,9 +56,16 @@ public class DialogManager : MonoBehaviour
 
     private void Update()
     {
-        if (!isTyping && (Input.GetKeyDown(KeyCode.Space) || Input.GetMouseButtonDown(0)))
+        if (Input.GetKeyDown(KeyCode.Space) || Input.GetMouseButtonDown(0)) // Deteksi input
         {
-            ContinueDialog();
+            if (isTyping)
+            {
+                skipTyping = true; // Hentikan proses mengetik dan tampilkan seluruh kalimat
+            }
+            else
+            {
+                ContinueDialog(); // Jika tidak mengetik, lanjutkan ke dialog berikutnya
+            }
         }
     }
 

@@ -5,8 +5,6 @@ using UnityEngine.UI;
 using UnityEngine.EventSystems; // For PointerEventData and EventSystem
 using System.Collections.Generic; // For List<>
 
-
-
 public class MainMenuScript : MonoBehaviour
 {
     public GameObject settingsPanel;
@@ -18,6 +16,7 @@ public class MainMenuScript : MonoBehaviour
     public Button levelButton3; // Tombol 3 untuk "LevelTwo"
     public Button levelButton4; // Tombol 4 untuk "Level3"
     public Button levelButton5; // Tombol 5 untuk "Level4"
+    public Button backButton;  // Button in the load menu to go back
     public TMP_Text warningText;
     public TMP_Text warningText2;
     public AudioClip buttonClickSound;
@@ -30,22 +29,25 @@ public class MainMenuScript : MonoBehaviour
         CheckLevelCompletion();
         AssignButtonListeners(); // Assign listener untuk setiap tombol
         AssignButtonSounds();
+
+        // Assign listener for the back button to return to the main menu
+        if (backButton != null)
+        {
+            backButton.onClick.AddListener(BackToMainMenu);
+        }
     }
 
-void Update()
-{
-if (showWarning)
-{
-    if (Input.GetMouseButtonDown(0) || Input.anyKeyDown)
+    void Update()
     {
-        Debug.Log("Input detected, hiding warning.");
-        HideWarning();
+        if (showWarning)
+        {
+            if (Input.GetMouseButtonDown(0) || Input.anyKeyDown)
+            {
+                Debug.Log("Input detected, hiding warning.");
+                HideWarning();
+            }
+        }
     }
-}
-
-}
-
-
 
     bool IsPointerOverUI()
     {
@@ -56,7 +58,7 @@ if (showWarning)
 
         List<RaycastResult> results = new List<RaycastResult>();
         EventSystem.current.RaycastAll(pointerData, results);
-        return results.Count > 0; // Jika ada elemen UI yang terkena raycast, return true
+        return results.Count > 0; // If there are any UI elements under the raycast, return true
     }
 
     void PlayButtonClickSound()
@@ -126,49 +128,48 @@ if (showWarning)
         Application.Quit();
     }
 
-void CheckLevelCompletion()
-{
-    Debug.Log("CheckLevelCompletion called");
-    int levelCompleted = PlayerPrefs.GetInt("LevelCompleted", 0);
-    Debug.Log("Level completed: " + levelCompleted);
-
-    if (levelCompleted < 4)
+    void CheckLevelCompletion()
     {
-        warningText.text = "Level Selection is not yet unlocked!";
-        warningText2.text = "";
-        showWarning = true;
+        Debug.Log("CheckLevelCompletion called");
+        int levelCompleted = PlayerPrefs.GetInt("LevelCompleted", 0);
+        Debug.Log("Level completed: " + levelCompleted);
 
-        warningText.gameObject.SetActive(true);
-        warningText2.gameObject.SetActive(false);
+        if (levelCompleted < 4)
+        {
+            warningText.text = "Level Selection is not yet unlocked!";
+            warningText2.text = "";
+            showWarning = true;
 
-        Debug.Log("showWarning set to true, first warning displayed.");
+            warningText.gameObject.SetActive(true);
+            warningText2.gameObject.SetActive(false);
+
+            Debug.Log("showWarning set to true, first warning displayed.");
+        }
+        else
+        {
+            warningText.text = "";
+            warningText2.text = "Load Game is available";
+            showWarning = true;
+
+            warningText.gameObject.SetActive(false);
+            warningText2.gameObject.SetActive(true);
+
+            Debug.Log("showWarning set to true, second warning displayed.");
+        }
     }
-    else
+
+    void HideWarning()
     {
+        Debug.Log("Hiding warning text");
+        // Hide warning text and reset flag
         warningText.text = "";
-        warningText2.text = "Load Game is available";
-        showWarning = true;
-        
+        warningText2.text = "";
+        showWarning = false;
+
+        // Set both warning texts to inactive
         warningText.gameObject.SetActive(false);
-        warningText2.gameObject.SetActive(true);
-
-        Debug.Log("showWarning set to true, second warning displayed.");
+        warningText2.gameObject.SetActive(false);
     }
-}
-
-
-void HideWarning()
-{
-    Debug.Log("Hiding warning text");
-    // Hide warning text and reset flag
-    warningText.text = "";
-    warningText2.text = "";
-    showWarning = false;
-
-    // Set both warning texts to inactive
-    warningText.gameObject.SetActive(false);
-    warningText2.gameObject.SetActive(false);
-}
 
     public void ShowLoadMenu()
     {

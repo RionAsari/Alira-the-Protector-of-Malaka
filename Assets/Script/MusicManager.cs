@@ -14,6 +14,10 @@ public class MusicManager : MonoBehaviour
     public AudioClip cutSceneMusic;         // Musik untuk cutscene
     public AudioClip levelOneMusic;         // Musik untuk level one
     public AudioClip levelTwoMusic;         // Musik untuk level two
+    public AudioClip level3Music;           // Musik untuk level three
+    public AudioClip level4Music;           // Musik untuk level four
+    public AudioClip endingCutsceneMusic;   // Musik untuk ending cutscene
+    public AudioClip creditMusic;           // Musik untuk credit
 
     public static MusicManager instance;
 
@@ -82,6 +86,22 @@ public class MusicManager : MonoBehaviour
 
             case "LevelTwo":
                 clipToPlay = levelTwoMusic;
+                break;
+
+            case "Level3":
+                clipToPlay = level3Music;
+                break;
+
+            case "Level4":
+                clipToPlay = level4Music;
+                break;
+
+            case "Ending Cutscene":
+                clipToPlay = endingCutsceneMusic;
+                break;
+
+            case "Credit":
+                clipToPlay = creditMusic;
                 break;
 
             case "GameScene":
