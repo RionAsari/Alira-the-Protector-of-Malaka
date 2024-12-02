@@ -238,7 +238,7 @@ PlayableDirector:
   m_InitialTime: 0
   m_SceneBindings:
   - key: {fileID: 4559644010336714166, guid: 7f1a39e1d815ffc429a1ec6c0a2e500a, type: 2}
-    value: {fileID: 1586774557}
+    value: {fileID: 0}
   m_ExposedReferences:
     m_References: []
 --- !u!4 &167689670
@@ -5293,8 +5293,8 @@ Transform:
   m_GameObject: {fileID: 621270700}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -12.68, y: -1.51, z: 0}
-  m_LocalScale: {x: 0.5, y: 0.5, z: 1}
+  m_LocalPosition: {x: -13.04, y: -1.33, z: 0}
+  m_LocalScale: {x: 0.45, y: 0.45, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -15345,8 +15345,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 0.4
-  m_fontSizeBase: 0.4
+  m_fontSize: 0.3
+  m_fontSizeBase: 0.3
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -15730,7 +15730,7 @@ Animator:
   m_GameObject: {fileID: 1586774556}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: c7b6c4cad526f3945a1ba7fc24c659b7, type: 2}
+  m_Controller: {fileID: 9100000, guid: d4dddd02af7425c48aa0f4c2e2f3e135, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
