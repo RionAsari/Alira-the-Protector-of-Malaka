@@ -32,7 +32,11 @@ public class HackedLightGrunt : MonoBehaviour
 
     private bool isPlayingWalkSound = false;
     private bool hasPlayedDeathSound = false; // Flag to prevent multiple death sounds
-
+    
+    private void Awake()
+{
+    animator = GetComponent<Animator>();
+}
     private void Start()
     {
         health = maxHealth;
@@ -95,6 +99,13 @@ public class HackedLightGrunt : MonoBehaviour
             healthbar.UpdatePosition(transform.position);
         }
     }
+    private void OnEnable()
+{
+    if (animator != null)
+    {
+        animator.SetTrigger("WakeUp");
+    }
+}
 
     private void DetectEnemyOrFollowPlayer()
     {
